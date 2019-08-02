@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Import Katex -->
+    <link rel="stylesheet" href="katex/katex.min.css">
+    <script src="katex/katex.min.js"></script>
+    <!-- Import Katex auto-render -->
+    <script src="katex/contrib/auto-render.min.js"></script>
+
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="articles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Gene pool simulation</title>
+</head>
+<body>
+    <div id="content">
+        <img class="banner_img" src="evosim.png" alt="">
+        <div id="page_title">
+            Gene pool simulation
+        </div>
+        <div id="page_date">
+            02/05/2019
+        </div>
+        <p class="text">
+            This is the first in a series of projects around the simulation of the mecanisms of evolution and population dynamics. The goal of this project is to create a simple model of mutation and evolution through selection. Most of the code was first written in Python then translated to C++ for performance.
+        </p>
+        <p class="text">
+            For all the simulation graphs that will be shown, the total population is displayed in blue and the average fitness in red.
+        </p>
+        <p class="section">
+            First version
+        </p>
+        <p class="text">
+            The first iteration of this model is simple and features the basic concepts on which the later iterations are built. We simulate a population of Creatures. A creature is the basic entity containing a list of Genes. Each gene is a simple floating point value representing the effect of the gene of the creature's fitness. A positive number means this gene helps the creature and vice-versa.
+        </p>
+        <p class="text">
+            The simulation works in turns called years. Each year, every creatures are updated. First their probability of dying $$p_d$$ is calculated and a random number is generated to kill the creature. Then an other random number is generated for the creature to reproduce with probability $$p_r$$. 
+        </p>
+        <p class="text">
+            Reproduction involves a single creature whose genes are duplicated with random mutations : each gene of the list has a probability $$p_{gd}$$ of being destroyed during the reproduciton and one gene can be created per reproduction with probability $$p_{gc}$$. 
+        </p>
+        <p class="text">
+                When a creature is spawned, its fitness $$f$$ is calculated as the sum of the effects of its genes plus the base fitness $$f_0$$. The value (effect) of new genes follow a normal distribution with a given mean and standard deviation then multiplied : $$m_g\times\mathcal{N}(\mu_g, \sigma_g^2)$$.
+        </p>
+        <p class="text">
+            In order to prevent the population from growing too much, the probability for a creature to die $$p_d$$ depends on a crowding coefficient $$c_r$$, itself calculated with the current population size $$N$$, a carrying capacity factor $$c_{c}$$ and carrying capacity spread factor $$\sigma_{cc}$$.
+            ££c_r=\frac{1}{1+exp \left( \frac{N-c_{c}}{\sigma_{cc}} \right) }££
+            ££p_d=exp\left(\frac{-c_rf}{\epsilon_d}\right)££
+        </p>
+        <p class="text">
+            Here are the results with the following parameters.
+        </p>
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Description</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <th>$$N_0$$</th>
+                <th>Starting population</th>
+                <th>$$20$$</th>
+            </tr>
+            <tr>
+                <th>$$f_0$$</th>
+                <th>Base fitness</th>
+                <th>$$1.0$$</th>
+            </tr>
+            <tr>
+                <th>$$c_{c}$$</th>
+                <th>Carrying capacity factor</th>
+                <th>$$100$$</th>
+            </tr>
+            <tr>
+                <th>$$\sigma_{cc}$$</th>
+                <th>Carrying capacity spread</th>
+                <th>$$50$$</th>
+            </tr>
+            <tr>
+                <th>$$\epsilon_d$$</th>
+                <th>Death probability fitness exponential coefficient</th>
+                <th>$$0.2$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{r}$$</th>
+                <th>Reproduction probability</th>
+                <th>$$0.02$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{gd}$$</th>
+                <th>Gene deletion probability</th>
+                <th>$$0.01$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{gc}$$</th>
+                <th>Gene creation probability</th>
+                <th>$$0.001$$</th>
+            </tr>
+            <tr>
+                <th>$$\mu_{g}$$</th>
+                <th>Gene effect mean</th>
+                <th>$$0$$</th>
+            </tr>
+            <tr>
+                <th>$$\sigma_{g}$$</th>
+                <th>Gene effect standard deviation</th>
+                <th>$$0.5$$</th>
+            </tr>
+            <tr>
+                <th>$$m_{g}$$</th>
+                <th>Gene effect mutliplier</th>
+                <th>$$0.5$$</th>
+            </tr>
+        </table>
+        <div class="image_block">
+            <img class="image_bigger" src="evosim_1_10_10000.png" alt="">
+            <p class="caption">
+                10 simulations of 10000 years
+            </p>
+        </div>
+        <p class="text">
+            We can observe that when a new advantagious gene appears, it takes a few hundred years for it to be adopted by the whole population. The more positive the gene is, the faster it spreads. Also, as average fitness increases, the population size jumps to a higher plateau. Small dips in fitness reflect the destruction of genes or creation of negative genes, however they are only temporary as the creatures with sub-average fitness will have a higher probability of dying.
+        </p>
+
+
+        <p class="section">
+            Second version
+        </p>
+        <p class="text">
+            The first modification I made was the distribution of effects of genes. In real life biology, most mutations are negative. I searched the litterature and found two relevant papers. The first paper, <i>Distribution of fitness effects caused by random insertion mutations in Escherichia coli - Elena et al. Genetica 102/103: 349–358, 1998</i> shows a distribution centered around a slightly negative effect with a long tail in the negative and a small foot in the positive.
+        </p>
+        <div class="image_block">
+            <img class="image_small" src="evosim_ecoli.png" alt="">
+            <p class="caption">
+                Distributions of relative fitness values measured for three sets of insertion mutations - Elena et al.
+            </p>
+        </div>
+        <p class="text">
+            The second source I used is <i>The distribution of fitness effects of new mutations - Eyre-Walker et al. Nature Reviews Genetics Vol 8 August 2007</i>. The distribution is very similar.
+        </p>
+        <div class="image_block">
+            <img class="image_small" src="evosim_stomatitis.png" alt="">
+            <p class="caption">
+                The distribution of fitness effects of new mutations - Eyre-Walker et al.
+            </p>
+        </div>
+        <p class="text">
+            Therefore I chose a skewed normal distribution with skew, bias and multiplier $$m_g\times\mathcal{SN}(0,1,\gamma_g)+\delta_g$$. The multiplier was chosen to get about the same average fitness of the whole population at the end of the simulation
+        </p>
+        <div class="image_block">
+            <img class="image_bigger" src="evosim_skewedn.png" alt="">
+            <p class="caption">
+                Skewed normal distribution $$0.55\times\mathcal{SN}(0,1,-6)+0.32$$
+            </p>
+        </div>
+        <p class="text">
+            Here are the results with the following parameters.
+        </p>
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Description</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <th>$$N_0$$</th>
+                <th>Starting population</th>
+                <th>$$20$$</th>
+            </tr>
+            <tr>
+                <th>$$f_0$$</th>
+                <th>Base fitness</th>
+                <th>$$1.0$$</th>
+            </tr>
+            <tr>
+                <th>$$c_{c}$$</th>
+                <th>Carrying capacity factor</th>
+                <th>$$100$$</th>
+            </tr>
+            <tr>
+                <th>$$\sigma_{cc}$$</th>
+                <th>Carrying capacity spread</th>
+                <th>$$50$$</th>
+            </tr>
+            <tr>
+                <th>$$\epsilon_d$$</th>
+                <th>Death probability fitness exponential coefficient</th>
+                <th>$$0.2$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{r}$$</th>
+                <th>Reproduction probability</th>
+                <th>$$0.02$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{gd}$$</th>
+                <th>Gene deletion probability</th>
+                <th>$$0.01$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{gc}$$</th>
+                <th>Gene creation probability</th>
+                <th>$$0.001$$</th>
+            </tr>
+            <tr>
+                <th>$$\gamma_{g}$$</th>
+                <th>Gene effect skew</th>
+                <th>$$-6.0$$</th>
+            </tr>
+            <tr>
+                <th>$$\delta_{g}$$</th>
+                <th>Gene effect bias</th>
+                <th>$$0.32$$</th>
+            </tr>
+            <tr>
+                <th>$$m_{g}$$</th>
+                <th>Gene effect mutliplier</th>
+                <th>$$0.55$$</th>
+            </tr>
+        </table>
+        <div class="image_block">
+            <img class="image_bigger" src="evosim_2_10_10000.png" alt="">
+            <p class="caption">
+                10 simulations of 10000 years
+            </p>
+        </div>
+        <p class="text">
+            Compared to the previous simulation, we can observe more but smaller steps in average fitness.
+        </p>
+
+
+        <p class="section">
+            Third version
+        </p>
+        <p class="text">
+            The selection system is now based on energy and environment, basically food. The environment produces a given total amount of food per year $$E_{tot}$$ and each creature gets a share $$E_+$$ of the total depending on their fitness relative to the other creatures with a selectivity factor $$E_s$$. The food they collect is added to their energy $$E$$ and every year, a constant amount of energy is consumed $$E_-$$. Creatures with low energy are more likely to die. Initial creatures are given a basic amount of energy $$E_0$$ and child creatures spawned are given a basic amount of energy $$E_c$$.
+            ££E_+=E_{tot}\times\left(\frac{f^{E_s}}{\Sigma{f}}\right)££
+            ££E(n+1)=E(n)+E_+-E_-££
+            ££p_d=1-(1-p_{d0})\times ease(E^{p_{ds}})££
+        </p>
+        <p class="text">
+            The ease function is a quadratic ease in-out function defined as 
+            ££\begin{array}{cc}
+            ease=\Bigg\{ & 
+              \begin{array}{cc}
+                0 & x\leq 0 \\
+                2x^2 & x\leq \frac{1}{2} \\
+                -2x^2+4x-1 & x\leq 1 \\
+                1 & x\geq 1
+              \end{array}
+            \end{array}££
+        </p>
+        <p class="text">
+            There is one interesting parameter here, the fitness selectivity coefficient $$E_s$$ which regulates how much the fitness affects the share of the food supply a creature gets. Bellow are the results of simulations with different values for this parameter. The values of the other parameters are listed bellow.
+        </p>
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Description</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <th>$$N_0$$</th>
+                <th>Starting population</th>
+                <th>$$20$$</th>
+            </tr>
+            <tr>
+                <th>$$f_0$$</th>
+                <th>Base fitness</th>
+                <th>$$1.0$$</th>
+            </tr>
+            <tr>
+                <th>$$E_0$$</th>
+                <th>Initial population energy</th>
+                <th>$$1.0$$</th>
+            </tr>
+            <tr>
+                <th>$$E_c$$</th>
+                <th>Child energy</th>
+                <th>$$0.5$$</th>
+            </tr>
+            <tr>
+                <th>$$E_{tot}$$</th>
+                <th>Total yearly energy supply</th>
+                <th>$$10.0$$</th>
+            </tr>
+            <tr>
+                <th>$$E_-$$</th>
+                <th>Yearly energy consumption</th>
+                <th>$$0.1$$</th>
+            </tr>
+            <tr>
+                <th>$$p_d$$</th>
+                <th>Base death probability</th>
+                <th>$$0.01$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{ds}$$</th>
+                <th>Death probability energy skew coefficient</th>
+                <th>$$1.0$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{r}$$</th>
+                <th>Reproduction probability</th>
+                <th>$$0.02$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{gd}$$</th>
+                <th>Gene deletion probability</th>
+                <th>$$0.01$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{gc}$$</th>
+                <th>Gene creation probability</th>
+                <th>$$0.001$$</th>
+            </tr>
+            <tr>
+                <th>$$\gamma_{g}$$</th>
+                <th>Gene effect skew</th>
+                <th>$$-6.0$$</th>
+            </tr>
+            <tr>
+                <th>$$\delta_{g}$$</th>
+                <th>Gene effect bias</th>
+                <th>$$0.32$$</th>
+            </tr>
+            <tr>
+                <th>$$m_{g}$$</th>
+                <th>Gene effect mutliplier</th>
+                <th>$$0.55$$</th>
+            </tr>
+        </table>
+        <div class="image_block">
+            <img class="image_bigger" src="evosim_3_10_10000_0.1.png" alt="">
+            <p class="caption">
+                10 simulations of 10000 years $$E_s=0.1$$
+            </p>
+        </div>
+        <div class="image_block">
+            <img class="image_bigger" src="evosim_3_10_10000_1.0.png" alt="">
+            <p class="caption">
+                10 simulations of 10000 years $$E_s=1.0$$
+            </p>
+        </div>
+        <div class="image_block">
+            <img class="image_bigger" src="evosim_3_10_10000_10.0.png" alt="">
+            <p class="caption">
+                10 simulations of 10000 years $$E_s=10.0$$
+            </p>
+        </div>
+        <p class="text">
+            A selectivity coefficient close to 0 means that fitness has little impact on how much energy each creature gets, therefore small negative mutations can spread in the gene pool and positive mutations struggle to dominate and can simply disapear. Very little evolution is actually happening here and is very slow. On the contrary, a high selectivity coefficient makes every slightly negative gene a death sentence and every positive gene a guarantee of surviving and outperforming the others. Jumps in average fitness are faster and positive genes rarely fail to penetrate the gene pool. This parameter reflects the evolutionary pressure.
+        </p>
+        <p class="text">
+            Moreover, with a very high selectivity factor, when a positive gene appears, the creatures owning that gene will have a substentially larger share of the total supply than the ones without the genes. Therefore, thoses whithout the gene will not get enough food to survive. Basically, the ones with the gene are so much better at getting the food that the others are left with nothing and quickly die. We can see this phenomenon as a sudden dip of the total population and the near extinction of the population.
+        </p>
+        <p class="text">
+            We can also observe that fitness no longer allows the total population to increase way over the carrying capacity as the yearly energy supply is constant, the energy consumption of each creature is constant and the the share of the supply each creature gets only depends on how their fitness compares to the other creatures, and not how high it is in absolute. Each creature in a population of 50 creatures with a fitness of 1 each will get the same amount of energy as a population of 50 creatures with a fitness of 100 each. Therefore the graph of the population is no longer relevant.
+        </p>
+
+        
+        <p class="section">
+            Fourth version
+        </p>
+        <p class="text">
+            This version changes the reproduction system. Now, birth costs energy to the parent and the child starts with a share $$\alpha_r$$ of the parent's energy. The probability of reproducing is no longer constant. It depends on the parent's energy.
+            ££p_r=m_r\times \frac{1}{1-exp(-\sigma_rE^{\gamma_r}-\delta_r)}££
+        </p>
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Description</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <th>$$N_0$$</th>
+                <th>Starting population</th>
+                <th>$$20$$</th>
+            </tr>
+            <tr>
+                <th>$$f_0$$</th>
+                <th>Base fitness</th>
+                <th>$$1.0$$</th>
+            </tr>
+            <tr>
+                <th>$$E_0$$</th>
+                <th>Initial population energy</th>
+                <th>$$1.0$$</th>
+            </tr>
+            <tr>
+                <th>$$E_{tot}$$</th>
+                <th>Total yearly energy supply</th>
+                <th>$$10.0$$</th>
+            </tr>
+            <tr>
+                <th>$$E_-$$</th>
+                <th>Yearly energy consumption</th>
+                <th>$$0.1$$</th>
+            </tr>
+            <tr>
+                <th>$$E_s$$</th>
+                <th>Fitness selectivity</th>
+                <th>$$1.0$$</th>
+            </tr>
+            <tr>
+                <th>$$p_d$$</th>
+                <th>Base death probability</th>
+                <th>$$0.01$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{ds}$$</th>
+                <th>Death probability energy skew coefficient</th>
+                <th>$$1.0$$</th>
+            </tr>
+            <tr>
+                <th>$$\alpha_{r}$$</th>
+                <th>Share of the parent's energy given to the child</th>
+                <th>$$0.4$$</th>
+            </tr>
+            <tr>
+                <th>$$m_{r}$$</th>
+                <th>Reproduction probability multiplier</th>
+                <th>$$1.0$$</th>
+            </tr>
+            <tr>
+                <th>$$\sigma_{r}$$</th>
+                <th>Reproduction probability spread</th>
+                <th>$$8.0$$</th>
+            </tr>
+            <tr>
+                <th>$$\gamma_{r}$$</th>
+                <th>Reproduction probability skew</th>
+                <th>$$0.5$$</th>
+            </tr>
+            <tr>
+                <th>$$\delta_{r}$$</th>
+                <th>Reproduction probability biais</th>
+                <th>$$-10.0$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{gd}$$</th>
+                <th>Gene deletion probability</th>
+                <th>$$0.01$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{gc}$$</th>
+                <th>Gene creation probability</th>
+                <th>$$0.001$$</th>
+            </tr>
+            <tr>
+                <th>$$\gamma_{g}$$</th>
+                <th>Gene effect skew</th>
+                <th>$$-6.0$$</th>
+            </tr>
+            <tr>
+                <th>$$\delta_{g}$$</th>
+                <th>Gene effect bias</th>
+                <th>$$0.32$$</th>
+            </tr>
+            <tr>
+                <th>$$m_{g}$$</th>
+                <th>Gene effect mutliplier</th>
+                <th>$$0.55$$</th>
+            </tr>
+        </table>
+        <div class="image_block">
+            <img class="image_bigger" src="evosim_4_10_10000.png" alt="">
+            <p class="caption">
+                10 simulations of 10000 years
+            </p>
+        </div>
+        <p class="text">
+            Here the effects of the changes are not really striking. The model is accurate enough to observe evolution and the changes only make it more accurate. However, average fitness is quite boring. I decided to monitor other states of the simulation but for only one simulation. Here is the most interesting : a spectrum of the fitness of the whole population to have an idea of the composition and the spread of genes.
+        </p>
+        <div class="image_block">
+            <img class="image_bigger" src="evosim_4_1_50000.png" alt="">
+            <img class="image_bigger" src="evosim_4_1_50000_spectrum.png" alt="">
+            <p class="caption">
+                1 simulation of 50000 years
+            </p>
+        </div>
+        <p class="text">
+            We can see that for every big jump in fitness, that is a major positive gene has dominated the whole population, a straight line in the spectrum indicates the default of the population with all the positive genes aquired ever since. Bellow this line, the many dots represent the creatures who have mutated a new negative gene or lost a positive gene, and above those with a new positive gene. There are more dots bellow the line due to the distribution of the effects of new genes. Also, the more genes there are in the population, the bigger the cloud bellow the line is as there are more gene to be lost. Positive genes are simply too rare and even when they appear, the selectivity factor is small enough that their survival advantage doesn't guarantee them survival.
+        </p>
+
+        
+        <p class="section">
+            Fifth version
+        </p>
+        <p class="text">
+            In real life biology, genes don't just appear and disappear. The gene system now allows gene duplication (copy), modification (effect is changed with the same distribution as for a gene creation), turn off (the effect is no longer counted in the fitness of the creature) and turn off. A duplicated gene is set to inactive and needs to be turned on. Gene deletion still happens with a lower probability. Gene creation no longer exists. New genes appear with a duplication followed by a turning on. Maybe two duplicated genes should not be active at the same time and a gene modificaiton should be required but it is not how it works in this iteration.
+        </p>
+        <p class="text">
+            Actually, real genes are based on DNA sequence and the mutation affects this sequence of letters through insersions, deletions, duplications and other more complicated mutations. However, for this simulation, the simplifications made above are accurate enough.
+        </p>
+        <p class="text">
+            Another modification necessary for this new system to work was to replace the base fitness of $$1.0$$ by a base set of $$20$$ genes each with a value of $$0.05$$.
+        </p>
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Description</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <th>$$N_0$$</th>
+                <th>Starting population</th>
+                <th>$$20$$</th>
+            </tr>
+            <tr>
+                <th>$$n_0$$</th>
+                <th>Initial number of genes</th>
+                <th>$$20$$</th>
+            </tr>
+            <tr>
+                <th>$$g_0$$</th>
+                <th>Initial genes values</th>
+                <th>$$0.05$$</th>
+            </tr>
+            <tr>
+                <th>$$E_0$$</th>
+                <th>Initial population energy</th>
+                <th>$$1.0$$</th>
+            </tr>
+            <tr>
+                <th>$$E_{tot}$$</th>
+                <th>Total yearly energy supply</th>
+                <th>$$10.0$$</th>
+            </tr>
+            <tr>
+                <th>$$E_-$$</th>
+                <th>Yearly energy consumption</th>
+                <th>$$0.1$$</th>
+            </tr>
+            <tr>
+                <th>$$E_s$$</th>
+                <th>Fitness selectivity</th>
+                <th>$$1.0$$</th>
+            </tr>
+            <tr>
+                <th>$$p_d$$</th>
+                <th>Base death probability</th>
+                <th>$$0.01$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{ds}$$</th>
+                <th>Death probability energy skew coefficient</th>
+                <th>$$1.0$$</th>
+            </tr>
+            <tr>
+                <th>$$\alpha_{r}$$</th>
+                <th>Share of the parent's energy given to the child</th>
+                <th>$$0.4$$</th>
+            </tr>
+            <tr>
+                <th>$$m_{r}$$</th>
+                <th>Reproduction probability multiplier</th>
+                <th>$$1.0$$</th>
+            </tr>
+            <tr>
+                <th>$$\sigma_{r}$$</th>
+                <th>Reproduction probability spread</th>
+                <th>$$8.0$$</th>
+            </tr>
+            <tr>
+                <th>$$\gamma_{r}$$</th>
+                <th>Reproduction probability skew</th>
+                <th>$$0.5$$</th>
+            </tr>
+            <tr>
+                <th>$$\delta_{r}$$</th>
+                <th>Reproduction probability biais</th>
+                <th>$$-10.0$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{gd}$$</th>
+                <th>Gene deletion probability</th>
+                <th>$$0.005$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{gc}$$</th>
+                <th>Gene copy probability</th>
+                <th>$$0.002$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{gon}$$</th>
+                <th>Gene turn on probability</th>
+                <th>$$0.01$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{gof\!f}$$</th>
+                <th>Gene turn off probability</th>
+                <th>$$0.01$$</th>
+            </tr>
+            <tr>
+                <th>$$p_{gm}$$</th>
+                <th>Gene modification probability</th>
+                <th>$$0.01$$</th>
+            </tr>
+            <tr>
+                <th>$$\gamma_{g}$$</th>
+                <th>Gene effect skew</th>
+                <th>$$-6.0$$</th>
+            </tr>
+            <tr>
+                <th>$$\delta_{g}$$</th>
+                <th>Gene effect bias</th>
+                <th>$$0.32$$</th>
+            </tr>
+            <tr>
+                <th>$$m_{g}$$</th>
+                <th>Gene effect mutliplier</th>
+                <th>$$0.55$$</th>
+            </tr>
+        </table>
+        <div class="image_block">
+            <img class="image_bigger" src="evosim_5_1_10000_fitness.png" alt="">
+            <img class="image_bigger" src="evosim_5_1_10000_nbrgenes.png" alt="">
+            <img class="image_bigger" src="evosim_5_1_10000_spectrum.png" alt="">
+            <p class="caption">
+                1 simulation of 10000 years
+            </p>
+        </div>
+        <p class="text">
+            Here the results are very different from the previous versions. At first, we can observe a dip in average fitness for the first 1000 years. This can be explained as the only mutations for the basic set of genes is : modification, and the modifications will most likely be worse, turn off and deletion which also reduces the fitness of creatures, and copy which creates an inactive gene useless until turned on by another mutation. Even as the average fitness drops, the number of genes increases. Then the fitness increases as copied genes are turned on.
+        </p>
+        <p class="text">
+            In real life, mutations occur with a probability of about $$10^{-9}$$ per letters of the genome sequence. A gene is coded by about 1000 base pairs per year. Therefore a bacteria with 1000 genes, $$10^6$$ base pairs, would have a mutation rate of $$10^{-3}$$. According to <i>Rates of spontaneous mutation - Drake JW et al. Genetics 148 (4) 1667-86 April 1998</i>, it actually is about 0.003 mutations per genome per cell generation, close enough to my back-of-the-enveloppe calculation.
+        </p>
+        <p class="text">
+            The fitness spectrum is a complete mess. Mutations are way to frequent. Reducing the probabilities of mutations is necessary to obtain cleaner data and a more realistic simulation. However that requires to make the simulation several orders of magnitude longer, thus making the computation time longer as well. In Python, a simulation of 10000 years takes about 12 seconds on my computer and the simulations slows down as the number of genes increases. A simulation of a million years would take at least 20 minutes ; and 2 weeks for one billion years ! Increasing the population to something more akin that of a species and the number of genes to that of even a small bacteria with about 1000 genes would make the simulation take years on my poor poor computer.
+        </p>
+
+
+        <p class="text">
+            sixth version : food not entiery distributed, new selectivity
+        </p>
+        <p class="text">
+            nineth version : energy consumption depends on complexity ? TODO
+        </p>
+        <p class="text">
+            seventh version : environment regenerates, didn't work
+        </p>
+        <p class="text">
+            eight version : age, not very interesting, but usefull for later versions with sexual reproduction and a greater variety of gene expression
+        </p>
+        <p class="text">
+            future modifications : multiple attributes, predator-prey, isolation and speciation, sexual reproduction
+        </p>
+    </div>
+    <script>
+        renderMathInElement(document.body,{delimiters: [
+            {left: "$$", right: "$$", display: false},
+            {left: "££", right: "££", display: true}
+        ]});
+    </script>
+</body>
+</html>

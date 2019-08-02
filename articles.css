@@ -1,0 +1,140 @@
+@font-face{
+    font-family:"Museo W01_500";
+    src:url("fonts/905282/3a1a59f5-1f68-4ebd-84ad-a9048fe78e39.eot?#iefix");
+    src:url("fonts/905282/3a1a59f5-1f68-4ebd-84ad-a9048fe78e39.eot?#iefix") format("eot"),url("fonts/905282/52be0694-00c1-4daa-8782-419021c48e95.woff2") format("woff2"),url("fonts/905282/dee84039-06ae-4a61-89c4-709e594804a3.woff") format("woff"),url("fonts/905282/9547becc-44c3-4b00-8568-8d3debb4d299.ttf") format("truetype");
+}
+
+#content {
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 100px;
+}
+
+#page_title {
+    text-align: center;
+    font-family: 'Museo W01_500';
+    font-size: 50px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+#page_date {
+    text-align: center;
+    font-family: 'Museo W01_500';
+    font-size: 20px;
+    margin-top: 0px;
+    margin-bottom: 30px;
+    color: darkgray;
+}
+
+.banner_img {
+    display: block;
+    width: 200px;
+    margin: 0 auto;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.1);
+}
+
+.text {
+    font-family: 'Museo W01_500';
+    font-size: 18px;
+    line-height: 1.7;
+}
+
+.section {
+    margin-left: 20px;
+    font-family: 'Museo W01_500';
+    font-size: 22px;
+    font-style: italic;
+    line-height: 1.7;
+}
+
+.image_block {
+    text-align: center;
+}
+
+.image_two {
+    display:inline-block;
+    width:40%;
+}
+
+.image_small {
+    display:inline-block;
+    width:50%;
+}
+
+.image_big {
+    display:inline-block;
+    width:80%;
+}
+
+.image_bigger {
+    display:inline-block;
+    width:90%;
+}
+
+.video {
+    width: 100%;
+    text-align: center;
+}
+
+.caption {
+    font-family: 'Museo W01_500';
+    font-size: 12px;
+    color: darkgrey;
+    margin-top: 0px;
+}
+
+table {
+    margin: 0 auto;
+}
+
+@media only screen and (max-width: 1200px) {
+    #content {
+        width: 70%;
+    }
+}
+@media only screen and (max-width: 900px) {
+    #content {
+        width: 80%;
+    }
+    .image_two {
+        width:45%;
+    }
+
+    .image_small {
+        width:60%;
+    }
+
+    .image_big {
+        width:90%;
+    }
+
+    .image_bigger {
+        width:95%;
+    }
+}
+@media only screen and (max-width: 600px) {
+    #content {
+        width: 90%;
+    }
+    .image_two {
+        width:45%;
+    }
+
+    .image_small {
+        width:75%;
+    }
+
+    .image_big {
+        width:95%;
+    }
+
+    .image_bigger {
+        width:98%;
+    }
+    .text {
+        line-height: 1.6;
+    }
+}
