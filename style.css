@@ -1,0 +1,82 @@
+@font-face{
+    font-family:"Museo W01_500";
+    src:url("fonts/905282/3a1a59f5-1f68-4ebd-84ad-a9048fe78e39.eot?#iefix");
+    src:url("fonts/905282/3a1a59f5-1f68-4ebd-84ad-a9048fe78e39.eot?#iefix") format("eot"),url("fonts/905282/52be0694-00c1-4daa-8782-419021c48e95.woff2") format("woff2"),url("fonts/905282/dee84039-06ae-4a61-89c4-709e594804a3.woff") format("woff"),url("fonts/905282/9547becc-44c3-4b00-8568-8d3debb4d299.ttf") format("truetype");
+}
+
+#content {
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 100px;
+}
+
+#page_title {
+    text-align: center;
+    font-family: 'Museo W01_500';
+    font-size: 50px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.cards {
+    justify-content: center;
+    grid-template-columns: repeat(auto-fill, 300px);
+    display: grid;
+    grid-gap: 30px;
+}
+
+.card {
+    width: 300px;
+    height: 300px;
+    transition-duration: 0.1s;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.1);
+}
+
+.card_img > img {
+    max-width:100%;
+    max-height:100%;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card:not(:hover) {
+    transform: scale(1);
+}
+
+.card_content {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100px;
+}
+
+.card_dark {
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    opacity: 0.5;
+}
+
+.card_title {
+    color: white;
+    font-family: 'Museo W01_500';
+    font-size: 20px;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    padding: 20px;
+}
+
+.card_date {
+    color: white;
+    opacity: 0.5;
+    font-family: 'Museo W01_500';
+    font-size: 10px;
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    padding: 20px;
+}
