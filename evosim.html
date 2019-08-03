@@ -489,13 +489,25 @@
             Fifth version
         </p>
         <p class="text">
-            In real life biology, genes don't just appear and disappear. The gene system now allows gene duplication (copy), modification (effect is changed with the same distribution as for a gene creation), turn off (the effect is no longer counted in the fitness of the creature) and turn off. A duplicated gene is set to inactive and needs to be turned on. Gene deletion still happens with a lower probability. Gene creation no longer exists. New genes appear with a duplication followed by a turning on. Maybe two duplicated genes should not be active at the same time and a gene modificaiton should be required but it is not how it works in this iteration.
+            In real life biology, genes don't just appear and disappear. The gene system now allows gene duplication (copy), modification (effect is changed with the same distribution as for a gene creation), turn off (the effect is no longer counted in the fitness of the creature) and turn on. A duplicated gene is set to inactive and needs to be turned on. Gene deletion still happens with a lower probability. Gene creation no longer exists. New genes appear with a duplication followed by a modification mutation and a turning on mutation.
         </p>
         <p class="text">
-            Actually, real genes are based on DNA sequence and the mutation affects this sequence of letters through insersions, deletions, duplications and other more complicated mutations. However, for this simulation, the simplifications made above are accurate enough.
+            When a gene is duplicated, an issue appears : if it is copied with its effect but just turned off, then a simple turn on mutation is enough to double the effect of the original gene, something that doesn't really mirror real life. In real life, genes encode for proteins and having two copies of the gene doesn't just double the effect of the protein. Therefore, copied genes are set to a null effect as well as turned off.
         </p>
         <p class="text">
-            Another modification necessary for this new system to work was to replace the base fitness of $$1.0$$ by a base set of $$20$$ genes each with a value of $$0.05$$.
+            Actually, real genes are based on DNA sequence and the mutation affects this sequence of letters, base pairs, through insersions, deletions, duplications and other more complicated mutations. However, for this simulation, the simplifications made above are accurate enough.
+        </p>
+        <p class="text">
+            To set the probabilities, I turned once again to the litterature. I'm not a biologist and searching the litterature often without access to the full papers makes finding what I'm looking for tricky. My main source for duplication and deletion rates is <i>Copy-number changes in evolution: rates, fitness effects and adaptive significance - Katju et al. Frontiers in Genetics 10 December 2013</i>, a meta study on the topic. From this, we get a duplication rate of $$10^{-3}$$ to $$10^{-5}$$ per gene per generation for prokaryotes such as bacterias and $$10^{-5}$$ to $$10^{-7}$$ per gene per generation for eukaryotes such as human sperm. The deletion rate in bacteria is estimated to be around $$10^{-4}$$ to $$10^{-8}$$ per gene per generation for bacterias and $$10^{-5}$$ to $$10^{-6}$$ per gene per generation for human sperm and up to $$10^{-7}$$ per gene per generation in genome-wise estimations for other species (a small worm and an insect).
+        </p>
+        <p class="text">
+            For the gene modification mutation rate, in real life, base pairs mutations occur with a probability of about $$10^{-9}$$ per letters of the genome sequence. A gene is coded by about 1000 base pairs per year. Therefore a typical bacteria with around 1000 genes, $$10^6$$ base pairs, would have a mutation rate of $$10^{-3}$$. According to <i>Rates of spontaneous mutation - Drake JW et al. Genetics 148 (4) 1667-86 April 1998</i>, it actually is about 0.003 mutations per genome per cell generation, close enough to my back-of-the-enveloppe calculation.
+        </p>
+        <p class="text">
+            Gene turn on and off is a bit more difficult to estimate. In biology, genes can be turned on and off, such as genes in humans to produce certains vitamins we now need to get from food, but there is also gene expression. As I could not find freely available papers on the topic with clear figures, I'm gonna make a rough estimate and say it has a higher probability than the other mutations.
+        </p>
+        <p class="text">
+            Another modification necessary for this new system to work was to replace the base fitness of $$1.0$$ by an equivalent base set of $$50$$ genes each with a value of $$0.02$$.
         </p>
         <table>
             <tr>
@@ -511,12 +523,12 @@
             <tr>
                 <th>$$n_0$$</th>
                 <th>Initial number of genes</th>
-                <th>$$20$$</th>
+                <th>$$50$$</th>
             </tr>
             <tr>
                 <th>$$g_0$$</th>
                 <th>Initial genes values</th>
-                <th>$$0.05$$</th>
+                <th>$$0.02$$</th>
             </tr>
             <tr>
                 <th>$$E_0$$</th>
@@ -576,12 +588,12 @@
             <tr>
                 <th>$$p_{gd}$$</th>
                 <th>Gene deletion probability</th>
-                <th>$$0.005$$</th>
+                <th>$$0.000001$$</th>
             </tr>
             <tr>
                 <th>$$p_{gc}$$</th>
                 <th>Gene copy probability</th>
-                <th>$$0.002$$</th>
+                <th>$$0.0001$$</th>
             </tr>
             <tr>
                 <th>$$p_{gon}$$</th>
@@ -596,7 +608,7 @@
             <tr>
                 <th>$$p_{gm}$$</th>
                 <th>Gene modification probability</th>
-                <th>$$0.01$$</th>
+                <th>$$0.003$$</th>
             </tr>
             <tr>
                 <th>$$\gamma_{g}$$</th>
@@ -623,16 +635,37 @@
             </p>
         </div>
         <p class="text">
-            Here the results are very different from the previous versions. At first, we can observe a dip in average fitness for the first 1000 years. This can be explained as the only mutations for the basic set of genes is : modification, and the modifications will most likely be worse, turn off and deletion which also reduces the fitness of creatures, and copy which creates an inactive gene useless until turned on by another mutation. Even as the average fitness drops, the number of genes increases. Then the fitness increases as copied genes are turned on.
+            In Python, a simulation of the first 2000 years takes about 4 seconds on my computer and the simulations slows down as the number of genes increases to 8 seconds for the years 48000 to 50000. If the number of genes keeps increasing linearly, a simulation of a million years would take at least 6 hours ; and 3 weeks for ten million years ! Increasing the population to something more akin that of a species and the number of genes to that of even a small bacteria with about 1000 genes would make the simulation take years on my poor poor computer.
         </p>
         <p class="text">
-            In real life, mutations occur with a probability of about $$10^{-9}$$ per letters of the genome sequence. A gene is coded by about 1000 base pairs per year. Therefore a bacteria with 1000 genes, $$10^6$$ base pairs, would have a mutation rate of $$10^{-3}$$. According to <i>Rates of spontaneous mutation - Drake JW et al. Genetics 148 (4) 1667-86 April 1998</i>, it actually is about 0.003 mutations per genome per cell generation, close enough to my back-of-the-enveloppe calculation.
-        </p>
-        <p class="text">
-            The fitness spectrum is a complete mess. Mutations are way to frequent. Reducing the probabilities of mutations is necessary to obtain cleaner data and a more realistic simulation. However that requires to make the simulation several orders of magnitude longer, thus making the computation time longer as well. In Python, a simulation of 10000 years takes about 12 seconds on my computer and the simulations slows down as the number of genes increases. A simulation of a million years would take at least 20 minutes ; and 2 weeks for one billion years ! Increasing the population to something more akin that of a species and the number of genes to that of even a small bacteria with about 1000 genes would make the simulation take years on my poor poor computer.
+            However, even starting at only 50 genes, it reaches 140 genes in only 50000 years. If it does continue linearly, after a million years, each creature will have about 1850 genes, 18000 after ten million years. Viruses have less than 100 protein-coding genes. Prokaryotes such as bacterias have between 500 to 5000. Eukaryotes have at least in the 10000, and humans have over three billion ! Therefore our simulated creature jumps from virus to fongus in ten million years in term of genome size and even to small animal in one order of magnitude longer. That is why it might be interesting to slow down this growth in future version by, for instance, making the creature consume more energy with the size of its genome. But then the supply from the environment won't be enough to carry a sufficient population. Therefore a larger overhaul of the simulation would be required.
         </p>
 
 
+
+
+        <p class="section">
+            Bacteria colony
+        </p>
+        <p class="text">
+            Just for fun, I wanted to simulate a colony of bacteria. From what I read, a typical innoculation of a pitri dish consists of about $$10^{-4}$$ organisms and a typical bacteria has about 1000 genes. The yearly supply of food has also been updates to carry around 1000 bacterias. The simulation used 1Gb of RAM and 25% of my Intel Core i78650U running at about 3GHz due to thermal throttle.
+        </p>
+        <div class="image_block">
+            <img class="image_bigger" src="evosim_5_col_avgfit.png" alt="">
+            <img class="image_bigger" src="evosim_5_col_popsize.png" alt="">
+            <img class="image_bigger" src="evosim_5_col_nbrgenes.png" alt="">
+            <img class="image_bigger" src="evosim_5_col_spcfit.png" alt="">
+            <p class="caption">
+                Simulation of bacteria colony for 1000 generations
+            </p>
+        </div>
+        <p class="text">
+            We can observe two main phases. The first 50 years see a sudden jump in average fitness increasing 2700%. The population size also does some crazy jumps above and bellow the equilibrium. This phase corresponds to all the base genes undergoing modification mutations and having a reroll close to the most positive effects the random distribution can probabilistically give. Then, the next phase sees a slower evolution in the order of 1 fitness point per 1000 years. Here, further evolution requires the creation of new genes through duplication, modification and activation. The existance of the first phase is due to the initial genome given to creatures. A more realistic bacteria would have evolved more effective genes before reaching such a large genome. 
+        </p>
+
+        <p class="section">
+            Sixth version
+        </p>
         <p class="text">
             sixth version : food not entiery distributed, new selectivity
         </p>
