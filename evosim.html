@@ -23,7 +23,7 @@
             02/05/2019
         </div>
         <p class="text">
-            This is the first in a series of projects around the simulation of the mecanisms of evolution and population dynamics. The goal of this project is to create a simple model of mutation and evolution through selection. Most of the code was first written in Python then translated to C++ for performance.
+            This is the first in a series of projects around the simulation of the mechanisms of evolution and population dynamics. The goal of this project is to create a simple model of mutation and evolution through selection. Most of the code was first written in Python then translated to C++ for performance.
         </p>
         <p class="text">
             For all the simulation graphs that will be shown, the total population is displayed in blue and the average fitness in red.
@@ -38,7 +38,7 @@
             The simulation works in turns called years. Each year, every creatures are updated. First their probability of dying $$p_d$$ is calculated and a random number is generated to kill the creature. Then an other random number is generated for the creature to reproduce with probability $$p_r$$. 
         </p>
         <p class="text">
-            Reproduction involves a single creature whose genes are duplicated with random mutations : each gene of the list has a probability $$p_{gd}$$ of being destroyed during the reproduciton and one gene can be created per reproduction with probability $$p_{gc}$$. 
+            Reproduction involves a single creature whose genes are duplicated with random mutations : each gene of the list has a probability $$p_{gd}$$ of being destroyed during the reproduction and one gene can be created per reproduction with probability $$p_{gc}$$. 
         </p>
         <p class="text">
                 When a creature is spawned, its fitness $$f$$ is calculated as the sum of the effects of its genes plus the base fitness $$f_0$$. The value (effect) of new genes follow a normal distribution with a given mean and standard deviation then multiplied : $$m_g\times\mathcal{N}(\mu_g, \sigma_g^2)$$.
@@ -109,7 +109,7 @@
             </tr>
             <tr>
                 <th>$$m_{g}$$</th>
-                <th>Gene effect mutliplier</th>
+                <th>Gene effect multiplier</th>
                 <th>$$0.5$$</th>
             </tr>
         </table>
@@ -120,7 +120,7 @@
             </p>
         </div>
         <p class="text">
-            We can observe that when a new advantagious gene appears, it takes a few hundred years for it to be adopted by the whole population. The more positive the gene is, the faster it spreads. Also, as average fitness increases, the population size jumps to a higher plateau. Small dips in fitness reflect the destruction of genes or creation of negative genes, however they are only temporary as the creatures with sub-average fitness will have a higher probability of dying.
+            We can observe that when a new advantageous gene appears, it takes a few hundred years for it to be adopted by the whole population. The more positive the gene is, the faster it spreads. Also, as average fitness increases, the population size jumps to a higher plateau. Small dips in fitness reflect the destruction of genes or creation of negative genes, however they are only temporary as the creatures with sub-average fitness will have a higher probability of dying.
         </p>
 
 
@@ -128,7 +128,7 @@
             Second version
         </p>
         <p class="text">
-            The first modification I made was the distribution of effects of genes. In real life biology, most mutations are negative. I searched the litterature and found two relevant papers. The first paper, <i>Distribution of fitness effects caused by random insertion mutations in Escherichia coli - Elena et al. Genetica 102/103: 349–358, 1998</i> shows a distribution centered around a slightly negative effect with a long tail in the negative and a small foot in the positive.
+            The first modification I made was the distribution of effects of genes. In real life biology, most mutations are negative. I searched the literature and found two relevant papers. The first paper, <i>Distribution of fitness effects caused by random insertion mutations in Escherichia coli - Elena et al. Genetica 102/103: 349–358, 1998</i> shows a distribution centered around a slightly negative effect with a long tail in the negative and a small foot in the positive.
         </p>
         <div class="image_block">
             <img class="image_small" src="evosim_ecoli.png" alt="">
@@ -215,7 +215,7 @@
             </tr>
             <tr>
                 <th>$$m_{g}$$</th>
-                <th>Gene effect mutliplier</th>
+                <th>Gene effect multiplier</th>
                 <th>$$0.55$$</th>
             </tr>
         </table>
@@ -327,7 +327,7 @@
             </tr>
             <tr>
                 <th>$$m_{g}$$</th>
-                <th>Gene effect mutliplier</th>
+                <th>Gene effect multiplier</th>
                 <th>$$0.55$$</th>
             </tr>
         </table>
@@ -350,10 +350,10 @@
             </p>
         </div>
         <p class="text">
-            A selectivity coefficient close to 0 means that fitness has little impact on how much energy each creature gets, therefore small negative mutations can spread in the gene pool and positive mutations struggle to dominate and can simply disapear. Very little evolution is actually happening here and is very slow. On the contrary, a high selectivity coefficient makes every slightly negative gene a death sentence and every positive gene a guarantee of surviving and outperforming the others. Jumps in average fitness are faster and positive genes rarely fail to penetrate the gene pool. This parameter reflects the evolutionary pressure.
+            A selectivity coefficient close to 0 means that fitness has little impact on how much energy each creature gets, therefore small negative mutations can spread in the gene pool and positive mutations struggle to dominate and can simply disappear. Very little evolution is actually happening here and is very slow. On the contrary, a high selectivity coefficient makes every slightly negative gene a death sentence and every positive gene a guarantee of surviving and outperforming the others. Jumps in average fitness are faster and positive genes rarely fail to penetrate the gene pool. This parameter reflects the evolutionary pressure.
         </p>
         <p class="text">
-            Moreover, with a very high selectivity factor, when a positive gene appears, the creatures owning that gene will have a substentially larger share of the total supply than the ones without the genes. Therefore, thoses whithout the gene will not get enough food to survive. Basically, the ones with the gene are so much better at getting the food that the others are left with nothing and quickly die. We can see this phenomenon as a sudden dip of the total population and the near extinction of the population.
+            Moreover, with a very high selectivity factor, when a positive gene appears, the creatures owning that gene will have a substantially larger share of the total supply than the ones without the genes. Therefore, those without the gene will not get enough food to survive. Basically, the ones with the gene are so much better at getting the food that the others are left with nothing and quickly die. We can see this phenomenon as a sudden dip of the total population and the near extinction of the population.
         </p>
         <p class="text">
             We can also observe that fitness no longer allows the total population to increase way over the carrying capacity as the yearly energy supply is constant, the energy consumption of each creature is constant and the the share of the supply each creature gets only depends on how their fitness compares to the other creatures, and not how high it is in absolute. Each creature in a population of 50 creatures with a fitness of 1 each will get the same amount of energy as a population of 50 creatures with a fitness of 100 each. Therefore the graph of the population is no longer relevant.
@@ -435,7 +435,7 @@
             </tr>
             <tr>
                 <th>$$\delta_{r}$$</th>
-                <th>Reproduction probability biais</th>
+                <th>Reproduction probability bias</th>
                 <th>$$-10.0$$</th>
             </tr>
             <tr>
@@ -460,7 +460,7 @@
             </tr>
             <tr>
                 <th>$$m_{g}$$</th>
-                <th>Gene effect mutliplier</th>
+                <th>Gene effect multiplier</th>
                 <th>$$0.55$$</th>
             </tr>
         </table>
@@ -481,7 +481,7 @@
             </p>
         </div>
         <p class="text">
-            We can see that for every big jump in fitness, that is a major positive gene has dominated the whole population, a straight line in the spectrum indicates the default of the population with all the positive genes aquired ever since. Bellow this line, the many dots represent the creatures who have mutated a new negative gene or lost a positive gene, and above those with a new positive gene. There are more dots bellow the line due to the distribution of the effects of new genes. Also, the more genes there are in the population, the bigger the cloud bellow the line is as there are more gene to be lost. Positive genes are simply too rare and even when they appear, the selectivity factor is small enough that their survival advantage doesn't guarantee them survival.
+            We can see that for every big jump in fitness, that is a major positive gene has dominated the whole population, a straight line in the spectrum indicates the default of the population with all the positive genes acquired ever since. Bellow this line, the many dots represent the creatures who have mutated a new negative gene or lost a positive gene, and above those with a new positive gene. There are more dots bellow the line due to the distribution of the effects of new genes. Also, the more genes there are in the population, the bigger the cloud bellow the line is as there are more gene to be lost. Positive genes are simply too rare and even when they appear, the selectivity factor is small enough that their survival advantage doesn't guarantee them survival.
         </p>
 
         
@@ -495,16 +495,16 @@
             When a gene is duplicated, an issue appears : if it is copied with its effect but just turned off, then a simple turn on mutation is enough to double the effect of the original gene, something that doesn't really mirror real life. In real life, genes encode for proteins and having two copies of the gene doesn't just double the effect of the protein. Therefore, copied genes are set to a null effect as well as turned off.
         </p>
         <p class="text">
-            Actually, real genes are based on DNA sequence and the mutation affects this sequence of letters, base pairs, through insersions, deletions, duplications and other more complicated mutations. However, for this simulation, the simplifications made above are accurate enough.
+            Actually, real genes are based on DNA sequence and the mutation affects this sequence of letters, base pairs, through insertions, deletions, duplications and other more complicated mutations. However, for this simulation, the simplifications made above are accurate enough.
         </p>
         <p class="text">
-            To set the probabilities, I turned once again to the litterature. I'm not a biologist and searching the litterature often without access to the full papers makes finding what I'm looking for tricky. My main source for duplication and deletion rates is <i>Copy-number changes in evolution: rates, fitness effects and adaptive significance - Katju et al. Frontiers in Genetics 10 December 2013</i>, a meta study on the topic. From this, we get a duplication rate of $$10^{-3}$$ to $$10^{-5}$$ per gene per generation for prokaryotes such as bacterias and $$10^{-5}$$ to $$10^{-7}$$ per gene per generation for eukaryotes such as human sperm. The deletion rate in bacteria is estimated to be around $$10^{-4}$$ to $$10^{-8}$$ per gene per generation for bacterias and $$10^{-5}$$ to $$10^{-6}$$ per gene per generation for human sperm and up to $$10^{-7}$$ per gene per generation in genome-wise estimations for other species (a small worm and an insect).
+            To set the probabilities, I turned once again to the literature. I'm not a biologist and searching the literature often without access to the full papers makes finding what I'm looking for tricky. My main source for duplication and deletion rates is <i>Copy-number changes in evolution: rates, fitness effects and adaptive significance - Katju et al. Frontiers in Genetics 10 December 2013</i>, a meta study on the topic. From this, we get a duplication rate of $$10^{-3}$$ to $$10^{-5}$$ per gene per generation for prokaryotes such as bacteria and $$10^{-5}$$ to $$10^{-7}$$ per gene per generation for eukaryotes such as human sperm. The deletion rate in bacterium is estimated to be around $$10^{-4}$$ to $$10^{-8}$$ per gene per generation for bacteria and $$10^{-5}$$ to $$10^{-6}$$ per gene per generation for human sperm and up to $$10^{-7}$$ per gene per generation in genome-wise estimations for other species (a small worm and an insect).
         </p>
         <p class="text">
-            For the gene modification mutation rate, in real life, base pairs mutations occur with a probability of about $$10^{-9}$$ per letters of the genome sequence. A gene is coded by about 1000 base pairs per year. Therefore a typical bacteria with around 1000 genes, $$10^6$$ base pairs, would have a mutation rate of $$10^{-3}$$. According to <i>Rates of spontaneous mutation - Drake JW et al. Genetics 148 (4) 1667-86 April 1998</i>, it actually is about 0.003 mutations per genome per cell generation, close enough to my back-of-the-enveloppe calculation.
+            For the gene modification mutation rate, in real life, base pairs mutations occur with a probability of about $$10^{-9}$$ per letters of the genome sequence. A gene is coded by about 1000 base pairs per year. Therefore a typical bacterium with around 1000 genes, $$10^6$$ base pairs, would have a mutation rate of $$10^{-3}$$. According to <i>Rates of spontaneous mutation - Drake JW et al. Genetics 148 (4) 1667-86 April 1998</i>, it actually is about 0.003 mutations per genome per cell generation, close enough to my back-of-the-envelope calculation.
         </p>
         <p class="text">
-            Gene turn on and off is a bit more difficult to estimate. In biology, genes can be turned on and off, such as genes in humans to produce certains vitamins we now need to get from food, but there is also gene expression. As I could not find freely available papers on the topic with clear figures, I'm gonna make a rough estimate and say it has a higher probability than the other mutations.
+            Gene turn on and off is a bit more difficult to estimate. In biology, genes can be turned on and off, such as genes in humans to produce certain vitamins we now need to get from food, but there is also gene expression. As I could not find freely available papers on the topic with clear figures, I'm gonna make a rough estimate and say it has a higher probability than the other mutations.
         </p>
         <p class="text">
             Another modification necessary for this new system to work was to replace the base fitness of $$1.0$$ by an equivalent base set of $$50$$ genes each with a value of $$0.02$$.
@@ -582,7 +582,7 @@
             </tr>
             <tr>
                 <th>$$\delta_{r}$$</th>
-                <th>Reproduction probability biais</th>
+                <th>Reproduction probability bias</th>
                 <th>$$-10.0$$</th>
             </tr>
             <tr>
@@ -622,7 +622,7 @@
             </tr>
             <tr>
                 <th>$$m_{g}$$</th>
-                <th>Gene effect mutliplier</th>
+                <th>Gene effect multiplier</th>
                 <th>$$0.55$$</th>
             </tr>
         </table>
@@ -635,10 +635,10 @@
             </p>
         </div>
         <p class="text">
-            In Python, a simulation of the first 2000 years takes about 4 seconds on my computer and the simulations slows down as the number of genes increases to 8 seconds for the years 48000 to 50000. If the number of genes keeps increasing linearly, a simulation of a million years would take at least 6 hours ; and 3 weeks for ten million years ! Increasing the population to something more akin that of a species and the number of genes to that of even a small bacteria with about 1000 genes would make the simulation take years on my poor poor computer.
+            In Python, a simulation of the first 2000 years takes about 4 seconds on my computer and the simulations slows down as the number of genes increases to 8 seconds for the years 48000 to 50000. If the number of genes keeps increasing linearly, a simulation of a million years would take at least 6 hours ; and 3 weeks for ten million years ! Increasing the population to something more akin that of a species and the number of genes to that of even a small bacterium with about 1000 genes would make the simulation take years on my poor poor computer.
         </p>
         <p class="text">
-            However, even starting at only 50 genes, it reaches 140 genes in only 50000 years. If it does continue linearly, after a million years, each creature will have about 1850 genes, 18000 after ten million years. Viruses have less than 100 protein-coding genes. Prokaryotes such as bacterias have between 500 to 5000. Eukaryotes have at least in the 10000, and humans have over three billion ! Therefore our simulated creature jumps from virus to fongus in ten million years in term of genome size and even to small animal in one order of magnitude longer. That is why it might be interesting to slow down this growth in future version by, for instance, making the creature consume more energy with the size of its genome. But then the supply from the environment won't be enough to carry a sufficient population. Therefore a larger overhaul of the simulation would be required.
+            However, even starting at only 50 genes, it reaches 140 genes in only 50000 years. If it does continue linearly, after a million years, each creature will have about 1850 genes, 18000 after ten million years. Viruses have less than 100 protein-coding genes. Prokaryotes such as bacteria have between 500 to 5000. Eukaryotes have at least in the 10000, and humans have over three billion ! Therefore our simulated creature jumps from virus to fongi in ten million years in term of genome size and even to small animal in one order of magnitude longer. That is why it might be interesting to slow down this growth in future version by, for instance, making the creature consume more energy with the size of its genome. But then the supply from the environment won't be enough to carry a sufficient population. Therefore a larger overhaul of the simulation would be required.
         </p>
 
 
@@ -648,7 +648,7 @@
             Bacteria colony
         </p>
         <p class="text">
-            Just for fun, I wanted to simulate a colony of bacteria. From what I read, a typical innoculation of a pitri dish consists of about $$10^{-4}$$ organisms and a typical bacteria has about 1000 genes. The yearly supply of food has also been updates to carry around 1000 bacterias. The simulation used 1Gb of RAM and 25% of my Intel Core i78650U running at about 3GHz due to thermal throttle.
+            Just for fun, I wanted to simulate a colony of bacterium. From what I read, a typical inoculation of a petri dish consists of about $$10^{-4}$$ organisms and a typical bacterium has about 1000 genes. The yearly supply of food has also been updates to carry around 1000 bacteria. The simulation used 1Gb of RAM and 25% of my Intel Core i78650U running at about 3GHz due to thermal throttle. Each year took about 4 seconds to simulate.
         </p>
         <div class="image_block">
             <img class="image_bigger" src="evosim_5_col_avgfit.png" alt="">
@@ -656,27 +656,27 @@
             <img class="image_bigger" src="evosim_5_col_nbrgenes.png" alt="">
             <img class="image_bigger" src="evosim_5_col_spcfit.png" alt="">
             <p class="caption">
-                Simulation of bacteria colony for 1000 generations
+                Simulation of bacterium colony for 1000 generations
             </p>
         </div>
         <p class="text">
-            We can observe two main phases. The first 50 years see a sudden jump in average fitness increasing 2700%. The population size also does some crazy jumps above and bellow the equilibrium. This phase corresponds to all the base genes undergoing modification mutations and having a reroll close to the most positive effects the random distribution can probabilistically give. Then, the next phase sees a slower evolution in the order of 1 fitness point per 1000 years. Here, further evolution requires the creation of new genes through duplication, modification and activation. The existance of the first phase is due to the initial genome given to creatures. A more realistic bacteria would have evolved more effective genes before reaching such a large genome. 
+            We can observe two main phases. The first 50 years see a sudden jump in average fitness increasing 2700%. The population size also does some crazy jumps above and bellow the equilibrium. This phase corresponds to all the base genes undergoing modification mutations and having a reroll close to the most positive effects the random distribution can probabilistically give. Then, the next phase sees a slower evolution in the order of 1 fitness point per 1000 years. Here, further evolution requires the creation of new genes through duplication, modification and activation. The existence of the first phase is due to the initial genome given to creatures. A more realistic bacterium would have evolved more effective genes before reaching such a large genome. 
         </p>
 
         <p class="section">
             Sixth version
         </p>
         <p class="text">
-            sixth version : food not entiery distributed, new selectivity
+            sixth version : food not entirely distributed, new selectivity
         </p>
         <p class="text">
-            nineth version : energy consumption depends on complexity ? TODO
+            ninth version : energy consumption depends on complexity ? TODO
         </p>
         <p class="text">
             seventh version : environment regenerates, didn't work
         </p>
         <p class="text">
-            eight version : age, not very interesting, but usefull for later versions with sexual reproduction and a greater variety of gene expression
+            eight version : age, not very interesting, but useful for later versions with sexual reproduction and a greater variety of gene expression
         </p>
         <p class="text">
             future modifications : multiple attributes, predator-prey, isolation and speciation, sexual reproduction

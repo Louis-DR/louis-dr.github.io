@@ -17,11 +17,11 @@
             18/07/2019
         </div>
         <p class="text">
-            For the forth time during the developement of my 4X game, I decided to reimagine how the map looked. What started out as straight hexagons, then rounded hexagons, then pixels is now tiles of geometricaly pleasing shapes. Everything was coded in C++. This is my new, and hopefully final, map engine. It's called the <b>Blobmap Engine</b>.
+            For the forth time during the development of my 4X game, I decided to reimagine how the map looked. What started out as straight hexagons, then rounded hexagons, then pixels is now tiles of geometrically pleasing shapes. Everything was coded in C++. This is my new, and hopefully final, map engine. It's called the Blobmap Engine.
             <br>
         </p>
         <p class="text">
-            I had a clear idea of how the blobmap would look as it was used in many infographics as well as an infographics book on WW2 I recently bought. The whole map constists of simples shapes : horizontal and vertical lines, 45° slopes and arcs of different diameters. Before strating implementing the algorithm, I wanted to make sure it would be suited for fantasy maps. I therefore created a basic tileset in paint and used Tiled to create a blobmap version of Westeros from A Song of Ice and Fire. Here is how it looked. I imediatly loved it and it motivated me to keep going.
+            I had a clear idea of how the blobmap would look as it was used in many infographics as well as an infographics book on WW2 I recently bought. The whole map consists of simples shapes : horizontal and vertical lines, 45° slopes and arcs of different diameters. Before starting implementing the algorithm, I wanted to make sure it would be suited for fantasy maps. I therefore created a basic tileset in paint and used Tiled to create a blobmap version of Westeros from A Song of Ice and Fire. Here is how it looked. I immediately loved it and it motivated me to keep going.
         </p>
         <div class="image_block">
             <img class="image_two" src="blobmap_westeros_cyowari.jpg" alt="">
@@ -31,10 +31,10 @@
             </p>
         </div>
         <p class="text">
-            The basic map is actually still a 2D grid instead of the hexagonal grid of my first version. And compared to the previous version I showed in the last three articles, I kept most of the code intact so the weather simulation and the biomes are still the same. The resolution of the basic grid is jsut way smaller.
+            The basic map is actually still a 2D grid instead of the hexagonal grid of my first version. And compared to the previous version I showed in the last three articles, I kept most of the code intact so the weather simulation and the biomes are still the same. The resolution of the basic grid is just way smaller.
         </p>
         <p class="text">
-            The first step is to generate the basic 2D heightmap similarly to the article I did on the subject. I used the same code with similar parameters, just with a smaller resolution from around 600px in height to only 120px. I removed the erosion algorithm as it was not suited to such a small resolution and small landmasses. I will replace it with a basic montain range generator, probably using the absolute value of a perlin fractal noise.
+            The first step is to generate the basic 2D heightmap similarly to the article I did on the subject. I used the same code with similar parameters, just with a smaller resolution from around 600px in height to only 120px. I removed the erosion algorithm as it was not suited to such a small resolution and small landmasses. I will replace it with a basic mountain range generator, probably using the absolute value of a Perlin fractal noise.
         </p>
         <p class="text">
             Then to create the tiles, instead of using a tileset, as I wanted to be able to zoom very closely and have full control on the resolution and colors, I decided to go for a vertex array displayed a triangles. For every tile, a function is called and pushes the the vector the triangles to create the tile. Then the whole array is sent in only one draw call to the GPU. This is very efficient and even with a large grid, any GPU can handle this amount of triangles.
@@ -49,7 +49,7 @@
             The most basic map to draw is a coast, so from the heightmap, I want to draw the outline of the continents. I decided to write a long rule based algorithm to turn every pixel of the grid into one tile. Actually, the larger arcs are four tiles in a square. There are in total about 1500 lines of code to describe the rules.
         </p>
         <p class="text">
-            There are two types of rules. The large patterns such as the large arcs that require checking a large neighbourhood, and the small patterns that only check the 8 close neighbours. The rules are executed one by one on the whole grid, starting with the large patterns. The rules also include checks to avoid conflicts.
+            There are two types of rules. The large patterns such as the large arcs that require checking a large neighborhood, and the small patterns that only check the 8 close neighbors. The rules are executed one by one on the whole grid, starting with the large patterns. The rules also include checks to avoid conflicts.
         </p>
         <p class="text">
             Each rule gives a probability for every possible tile. A random int is attributed to each pixel for this purpose before the rules are run and those numbers never change. Therefore even if the algorithm is executed again (for instance if the coast changed and we want to update the drawn map) the whole coast won't change.
@@ -57,7 +57,7 @@
         <div class="image_block">
             <img class="image_small" src="blobmap_rule.png" alt="">
             <p class="caption">
-                Rule for the small pattern with 3 neighbours in a corner
+                Rule for the small pattern with 3 neighbors in a corner
             </p>
         </div>
         <p class="text">
@@ -79,28 +79,28 @@
             </p>
         </div>
         <p class="text">
-            Those rules work for two colors, enought for the map of a coastline. However, for a 4X game, I need to display nations, biomes, etc. That is why more work was required to make it work for any number of colors.
+            Those rules work for two colors, enough for the map of a coastline. However, for a 4X game, I need to display nations, biomes, etc. That is why more work was required to make it work for any number of colors.
         </p>
         <p class="text">
-            This was a challenge at first. I could not realistically write rules taking into consideration neighbours of different colors. The solution I settled with is to consider only two types of neighbours : same color and different color, and apply the rules on those two categories.
+            This was a challenge at first. I could not realistically write rules taking into consideration neighbors of different colors. The solution I settled with is to consider only two types of neighbors : same color and different color, and apply the rules on those two categories.
         </p>
         <p class="text">
-            That worked, however artifacts still appeared on the border between three colors. The solution was to first paint the background of every cell with the four colors of its direct neighbours.
+            That worked, however artifacts still appeared on the border between three colors. The solution was to first paint the background of every cell with the four colors of its direct neighbors.
         </p>
         <div class="image_block">
             <img class="image_small" src="blobmap_neighbours.png" alt="">
             <p class="caption">
-                Circle tile with neighbours of four different colors
+                Circle tile with neighbors of four different colors
             </p>
         </div>
         <p class="text">
-            There were still conflicts if two non-full tiles were next to each other at the border with a third color. An iteration over every cell checking for this situation and replacing all but one of the neighbours with full tiles solved this issue.
+            There were still conflicts if two non-full tiles were next to each other at the border with a third color. An iteration over every cell checking for this situation and replacing all but one of the neighbors with full tiles solved this issue.
         </p>
         <p class="text">
-            As stated earlier, the randomness is fixed for everycell ; nevertheless if the borders between two regions changes at a cell touching a third region, the tiles way change the border of the third region. This is a minor issue even with nations so I wont be addressing it for a while.
+            As stated earlier, the randomness is fixed for every cell ; nevertheless if the borders between two regions changes at a cell touching a third region, the tiles way change the border of the third region. This is a minor issue even with nations so I wont be addressing it for a while.
         </p>
         <p class="text">
-            However, this issue is annoying if it changes the coastline of the continent everytime the nations gain and lose territory. To solve this, I separated the coastline map from the regions inside the continents. The land color of the coastline map is transparent (actually it is replaced with a shader after drawing to a render texture). The colors of the interior regions are extended one cell in the ocean to make the ocean borders match with the coast.
+            However, this issue is annoying if it changes the coastline of the continent every time the nations gain and lose territory. To solve this, I separated the coastline map from the regions inside the continents. The land color of the coastline map is transparent (actually it is replaced with a shader after drawing to a render texture). The colors of the interior regions are extended one cell in the ocean to make the ocean borders match with the coast.
         </p>
         <div class="image_block">
             <img class="image_big" src="blobmap_ex3.png" alt="">

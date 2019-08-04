@@ -17,10 +17,10 @@
             28/06/2019
         </div>
         <p class="text">
-            Once again, this project is part of my 4X game. In the last two articles, I coded the generation of the height map and the simulation of the weather. This time, I am working on the biomes. Biomes are crucial for this game as they will influence the resources, the fertility of the land, the mobility of civilisations and armies, the cultre and so on. Again, everything is coded in C++.
+            Once again, this project is part of my 4X game. In the last two articles, I coded the generation of the height map and the simulation of the weather. This time, I am working on the biomes. Biomes are crucial for this game as they will influence the resources, the fertility of the land, the mobility of civilizations and armies, the culture and so on. Again, everything is coded in C++.
         </p>
         <p class="text">
-            In my model, biomes are determined by height, temperature and humidity. Temperature and humidity are simulated and averaged over a year and this average is used to mark the biomes. The principles of meteorology I covered in the previous article influence the distribution of the biomes. For instance, the direction of the wind in the different lattitudes will carry the humidity and temperature on one side of the continent more than the other. This is something we also see in real life earth. See these videos by Artifexian.
+            In my model, biomes are determined by height, temperature and humidity. Temperature and humidity are simulated and averaged over a year and this average is used to mark the biomes. The principles of meteorology I covered in the previous article influence the distribution of the biomes. For instance, the direction of the wind in the different latitudes will carry the humidity and temperature on one side of the continent more than the other. This is something we also see in real life earth. See these videos by Artifexian.
         </p>
         <div class="video">
             <iframe width="560" height="315" src="http://www.youtube.com/embed/5lCbxMZJ4zA&scheme=https" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -29,22 +29,22 @@
             <iframe width="560" height="315" src="https://www.youtube.com/embed/fag48Nh8PXE&scheme=https" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
         <p class="text">
-            The biomes I chose to include are the following. For water biomes, the Ocean biome is the main one, attributed to all large bodies of water, while the Lake biome corresponds to small bodies of water. The Coast overwites the Ocean biome in shallow water. The River biome is listed by not used yet in the code as river generation is a story for another time. The Icecap biome covers the poles, where there is water but the temperature is low enough for ice.
+            The biomes I chose to include are the following. For water biomes, the Ocean biome is the main one, attributed to all large bodies of water, while the Lake biome corresponds to small bodies of water. The Coast overwrites the Ocean biome in shallow water. The River biome is listed by not used yet in the code as river generation is a story for another time. The Icecap biome covers the poles, where there is water but the temperature is low enough for ice.
         </p>
         <p class="text">
             Then the cold land biomes. The Tundra is the colder one, basically a cold snowy desert. Then the Taiga is slightly warmer and might feature forests and basic fauna and flora.
         </p>
         <p class="text">
-            In the first iteration, I included three temeprate climates : Shrubland, Glassland and Forest. I decided to only keep the first two as the amount of vegetation will be described with the resources when I get around to implementing that aspect of the game. The Shrubland is drier than the Grassland.
+            In the first iteration, I included three temperate climates : Shrubland, Grassland and Forest. I decided to only keep the first two as the amount of vegetation will be described with the resources when I get around to implementing that aspect of the game. The Shrubland is drier than the Grassland.
         </p>
         <p class="text">
-            There are more hot biomes. In order of humidity, the drier and hotter is the Desert. Alsmost as dry but cooler is the Steppe, with more vegetation and dirt instead of sand. More humid is the Savanna and finaly Tropical.
+            There are more hot biomes. In order of humidity, the drier and hotter is the Desert. Almost as dry but cooler is the Steppe, with more vegetation and dirt instead of sand. More humid is the Savanna and finally Tropical.
         </p>
         <p class="text">
             The final biome is the Mountain biome, for wherever the height is above a certain threshold. I though about including other biomes such as Swamp and Temperate Rainforest, but for now the current set will suffice.
         </p>
         <p class="text">
-            My first try used a bunch of if else statements to describe the boundaries of humidity and temperature between those biomes. However for more flexibility, I decided to encode everything in a temeprature-humidity diagram as a bitmap image. When calculating the biome of a land non-mountainous cell, the average temeprature and humidity are used as coordinates in this image and the resulting shade of grey represents the biome (shades of gray in increments of 20/255 to make it easier to modify with paint). Then the map is drawn with fitting colors to display the biome map.
+            My first try used a bunch of if else statements to describe the boundaries of humidity and temperature between those biomes. However for more flexibility, I decided to encode everything in a temperature-humidity diagram as a bitmap image. When calculating the biome of a land non-mountainous cell, the average temperature and humidity are used as coordinates in this image and the resulting shade of grey represents the biome (shades of gray in increments of 20/255 to make it easier to modify with paint). Then the map is drawn with fitting colors to display the biome map.
         </p>
         <div class="image_block">
             <img class="image_small" src="biomes_diagram.png" alt="">
@@ -53,7 +53,7 @@
             </p>
         </div>
         <p class="text">
-            After a while of tweaking the temeprature-humidity diagram and testing with many different seeds, the results are very satisfying in my opinion. Here is a small gallery of examples with different kinds of worlds. As you can see, the east coast is more dry with deserts and shrubland, while the west coast, recieving the humid wind from the ocean will feature tropical biomes and grassland. The Icecaps are only present in the south but that is a mistake when calculating the average as I only averaged half of the year (see the previous article about weather for details about seasons).
+            After a while of tweaking the temperature-humidity diagram and testing with many different seeds, the results are very satisfying in my opinion. Here is a small gallery of examples with different kinds of worlds. As you can see, the east coast is more dry with deserts and shrubland, while the west coast, receiving the humid wind from the ocean will feature tropical biomes and grassland. The Icecaps are only present in the south but that is a mistake when calculating the average as I only averaged half of the year (see the previous article about weather for details about seasons).
         </p>
         <div class="image_block">
             <img class="image_two" src="biomes_ex1.png" alt="">
