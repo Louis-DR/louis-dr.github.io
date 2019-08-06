@@ -42,6 +42,14 @@
     line-height: 1.7;
 }
 
+.link {
+    font-family: 'Museo W01_500';
+    color: rgb(60, 60, 60);
+    font-size: 18px;
+    line-height: 1.7;
+    font-style: italic;
+}
+
 .section {
     margin-left: 20px;
     font-family: 'Museo W01_500';
@@ -50,7 +58,7 @@
     line-height: 1.7;
 }
 
-.image_block {
+.center_block {
     text-align: center;
 }
 
@@ -74,16 +82,27 @@
     width:90%;
 }
 
-.video {
-    width: 100%;
-    text-align: center;
-}
-
 .caption {
     font-family: 'Museo W01_500';
     font-size: 12px;
     color: darkgrey;
     margin-top: 0px;
+}
+
+.iconlabel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px
+}
+
+.iconlabel img {
+    display: block;
+    width:60px;
+}
+
+.iconlabel p, .iconlabel a {
+    margin-left: 10px;
 }
 
 table {
@@ -136,5 +155,9 @@ table {
     }
     .text {
         line-height: 1.6;
+    }
+
+    video {
+        width: 100%;
     }
 }

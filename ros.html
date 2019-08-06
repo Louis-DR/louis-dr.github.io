@@ -22,7 +22,7 @@
         <p class="text">
             My first task was to develop a simulation of a Turtlebot and its LiDar in a previously generated map. The map is just a rasterized image of the walls of a room. I programmed a ROS package taking the command of angular and linear velocity and displays the robot moving and the LiDar data. The package is made of three nodes : one reconstructing the odometry (positioning) of the robot by integrating the command, then one using the odometry and openCV2 with the provided map to simulate the LiDar sensor data through raytracing and displays this data as a pink circle and red borders on the image matrix, and the final node to display this image in a separate window. The middle node was coded in C++ for performance reasons while the odometry and image window ones are simple Python scripts.
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_big" src="ros_simumap.png" alt="">
             <p class="caption">
                 Simulation of the LiDar and odometry in a sample map
@@ -37,7 +37,7 @@
         <p class="text">
             Then I was tasked with generating new maps using Google Cartographer. I first drove the Turtlebot in two buildings of Centrale Nantes to record bag files containing the sensor data of the onboard odometry, the tf data and the LiDar data. Then I tried using the ROS integration of Cartographer to generate the maps, however the results were appalling. After many iterations, the algorithm collapsed all the walls together in a giant mess. The parameters of the Cartographer algorithm didn't work at all for my setup. I followed the tunning guide of Cartographer and the documentation. I went through all the available parameters, tried a range of value for each, recorded the resulting maps, wrote a small guide of the interesting parameters to tune and finally created a lua configuration file that produced satisfying results.
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_two" src="ros_notwell.png" alt="">
             <img class="image_two" src="ros_well.png" alt="">
             <p class="caption">
@@ -50,6 +50,12 @@
         <div class="video">
             <iframe width="560" height="315" src="http://www.youtube.com/embed/QLZFTZ6D0Pk&scheme=https" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
+        <div class="iconlabel">
+                <img src="github.svg" alt="">
+                <a class="link" href="https://github.com/Louis-DR/LS2N_ROS">
+                    See the project on GitHub
+                </a>
+            </div>
     </div>
 </body>
 </html>

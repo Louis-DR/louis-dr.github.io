@@ -113,7 +113,7 @@
                 <th>$$0.5$$</th>
             </tr>
         </table>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_bigger" src="evosim_1_10_10000.png" alt="">
             <p class="caption">
                 10 simulations of 10000 years
@@ -130,7 +130,7 @@
         <p class="text">
             The first modification I made was the distribution of effects of genes. In real life biology, most mutations are negative. I searched the literature and found two relevant papers. The first paper, <i>Distribution of fitness effects caused by random insertion mutations in Escherichia coli - Elena et al. Genetica 102/103: 349–358, 1998</i> shows a distribution centered around a slightly negative effect with a long tail in the negative and a small foot in the positive.
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_small" src="evosim_ecoli.png" alt="">
             <p class="caption">
                 Distributions of relative fitness values measured for three sets of insertion mutations - Elena et al.
@@ -139,7 +139,7 @@
         <p class="text">
             The second source I used is <i>The distribution of fitness effects of new mutations - Eyre-Walker et al. Nature Reviews Genetics Vol 8 August 2007</i>. The distribution is very similar.
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_small" src="evosim_stomatitis.png" alt="">
             <p class="caption">
                 The distribution of fitness effects of new mutations - Eyre-Walker et al.
@@ -148,7 +148,7 @@
         <p class="text">
             Therefore I chose a skewed normal distribution with skew, bias and multiplier $$m_g\times\mathcal{SN}(0,1,\gamma_g)+\delta_g$$. The multiplier was chosen to get about the same average fitness of the whole population at the end of the simulation
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_bigger" src="evosim_skewedn.png" alt="">
             <p class="caption">
                 Skewed normal distribution $$0.55\times\mathcal{SN}(0,1,-6)+0.32$$
@@ -219,7 +219,7 @@
                 <th>$$0.55$$</th>
             </tr>
         </table>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_bigger" src="evosim_2_10_10000.png" alt="">
             <p class="caption">
                 10 simulations of 10000 years
@@ -331,19 +331,19 @@
                 <th>$$0.55$$</th>
             </tr>
         </table>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_bigger" src="evosim_3_10_10000_0.1.png" alt="">
             <p class="caption">
                 10 simulations of 10000 years $$E_s=0.1$$
             </p>
         </div>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_bigger" src="evosim_3_10_10000_1.0.png" alt="">
             <p class="caption">
                 10 simulations of 10000 years $$E_s=1.0$$
             </p>
         </div>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_bigger" src="evosim_3_10_10000_10.0.png" alt="">
             <p class="caption">
                 10 simulations of 10000 years $$E_s=10.0$$
@@ -464,7 +464,7 @@
                 <th>$$0.55$$</th>
             </tr>
         </table>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_bigger" src="evosim_4_10_10000.png" alt="">
             <p class="caption">
                 10 simulations of 10000 years
@@ -473,7 +473,7 @@
         <p class="text">
             Here the effects of the changes are not really striking. The model is accurate enough to observe evolution and the changes only make it more accurate. However, average fitness is quite boring. I decided to monitor other states of the simulation but for only one simulation. Here is the most interesting : a spectrum of the fitness of the whole population to have an idea of the composition and the spread of genes.
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_bigger" src="evosim_4_1_50000.png" alt="">
             <img class="image_bigger" src="evosim_4_1_50000_spectrum.png" alt="">
             <p class="caption">
@@ -626,7 +626,7 @@
                 <th>$$0.55$$</th>
             </tr>
         </table>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_bigger" src="evosim_5_1_10000_fitness.png" alt="">
             <img class="image_bigger" src="evosim_5_1_10000_nbrgenes.png" alt="">
             <img class="image_bigger" src="evosim_5_1_10000_spectrum.png" alt="">
@@ -650,7 +650,7 @@
         <p class="text">
             Just for fun, I wanted to simulate a colony of bacterium. From what I read, a typical inoculation of a petri dish consists of about $$10^{4}$$ organisms and a typical bacterium has about 1000 genes. The yearly supply of food has also been updates to carry around 1000 bacteria. The simulation used 1Gb of RAM and 25% of my Intel Core i78650U running at about 3GHz due to thermal throttle. Each year took about 4 seconds to simulate.
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_bigger" src="evosim_5_col_avgfit.png" alt="">
             <img class="image_bigger" src="evosim_5_col_popsize.png" alt="">
             <img class="image_bigger" src="evosim_5_col_nbrgenes.png" alt="">

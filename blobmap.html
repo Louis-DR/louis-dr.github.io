@@ -23,7 +23,7 @@
         <p class="text">
             I had a clear idea of how the blobmap would look as it was used in many infographics as well as an infographics book on WW2 I recently bought. The whole map consists of simples shapes : horizontal and vertical lines, 45° slopes and arcs of different diameters. Before starting implementing the algorithm, I wanted to make sure it would be suited for fantasy maps. I therefore created a basic tileset in paint and used Tiled to create a blobmap version of Westeros from A Song of Ice and Fire. Here is how it looked. I immediately loved it and it motivated me to keep going.
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_two" src="blobmap_westeros_cyowari.jpg" alt="">
             <img class="image_two" src="blobmap_westeros_blob.png" alt="">
             <p class="caption">
@@ -39,7 +39,7 @@
         <p class="text">
             Then to create the tiles, instead of using a tileset, as I wanted to be able to zoom very closely and have full control on the resolution and colors, I decided to go for a vertex array displayed a triangles. For every tile, a function is called and pushes the the vector the triangles to create the tile. Then the whole array is sent in only one draw call to the GPU. This is very efficient and even with a large grid, any GPU can handle this amount of triangles.
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_small" src="blobmap_tiles.png" alt="">
             <p class="caption">
                 All the tiles possible
@@ -54,7 +54,7 @@
         <p class="text">
             Each rule gives a probability for every possible tile. A random int is attributed to each pixel for this purpose before the rules are run and those numbers never change. Therefore even if the algorithm is executed again (for instance if the coast changed and we want to update the drawn map) the whole coast won't change.
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_small" src="blobmap_rule.png" alt="">
             <p class="caption">
                 Rule for the small pattern with 3 neighbors in a corner
@@ -66,13 +66,13 @@
         <p class="text">
             Applying this algorithm to a whole map gives something very pleasing close up even though it looks a bit blocky from afar.
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_big" src="blobmap_ex1.png" alt="">
             <p class="caption">
                 Map rendered with Blobmap Engine
             </p>
         </div>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_big" src="blobmap_ex2.png" alt="">
             <p class="caption">
                 Close up of the map above
@@ -87,7 +87,7 @@
         <p class="text">
             That worked, however artifacts still appeared on the border between three colors. The solution was to first paint the background of every cell with the four colors of its direct neighbors.
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_small" src="blobmap_neighbours.png" alt="">
             <p class="caption">
                 Circle tile with neighbors of four different colors
@@ -102,7 +102,7 @@
         <p class="text">
             However, this issue is annoying if it changes the coastline of the continent every time the nations gain and lose territory. To solve this, I separated the coastline map from the regions inside the continents. The land color of the coastline map is transparent (actually it is replaced with a shader after drawing to a render texture). The colors of the interior regions are extended one cell in the ocean to make the ocean borders match with the coast.
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_big" src="blobmap_ex3.png" alt="">
             <p class="caption">
                 Biome map with multiple colors

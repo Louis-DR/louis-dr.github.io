@@ -22,7 +22,7 @@
         <p class="text">
             In graphic design, I love working with Hue Saturation Value/Luminosity colors. Therefore I also wanted to use this color system as much as possible and define the atmosphere in term of angle on the color wheel (hue) and saturation-luminosity, using color theory to express feelings and moods. The first part of the shader I created is basically a HSL to RGB translator. Using Adobe Illustrator, I create the graphics in RGB, then export them in high resolution in PNG. Then using a small Python script, I change the color of each pixel so that the hue is encoded in the red channel, the saturation in the blue channel and the luminosity in the green channel. Then I display the RGB-coded-HSL graphics in game and apply the shader to restore the original color of each pixel.
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <img class="image_two" src="shaderday_rgb.png" alt="">
             <img class="image_two" src="shaderday_hsl.png" alt="">
             <p class="caption">
@@ -35,7 +35,7 @@
         <p class="text">
             I then used this algorithm for a basic day-night cycle shader. It also goes through a golden hour between night and day at dusk and dawn. Here is a short loop of the cycle in action.
         </p>
-        <div class="image_block">
+        <div class="center_block">
             <video width="320" height="320" controls loop autoplay>
                 <source src="shaderday_cycle.mp4" type="video/mp4">
             Your browser does not support videos.
@@ -46,6 +46,15 @@
         </p>
         <p class="text">
             I wont be working on this game project for a while as it started a few years ago in my head when I deeply wanted a new Animal Crossing game but now Nintendo has announced one coming soon. I have other shader exercises planned for this project, such as one to simulate the rolling-log effect without having to use 3D projection and fragment shaders.
+        </p>
+        <div class="iconlabel">
+            <img src="github.svg" alt="">
+            <a class="link" href="https://github.com/Louis-DR/Shaderday">
+                See the project on GitHub
+            </a>
+        </div>
+        <p class="text">
+
         </p>
     </div>
 </body>
