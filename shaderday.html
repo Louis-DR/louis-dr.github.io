@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="articles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Shader cycle</title>
+</head>
+<body>
+    <div id="content">
+        <img class="banner_img" src="shaderday.png" alt="">
+        <div id="page_title">
+            Shader-based night-day cycle
+        </div>
+        <div id="page_date">
+            12/05/2019
+        </div>
+        <p class="text">
+            I love shaders. I'm still learning how to properly use them but I like using them in weird ways for side projects. This project is a game similar to an Animal Crossing but more mature and with a philosophical meaning (#deep). As you will see in the screenshots, the current graphics are copied from Animal Crossing. For this game, the mood is very important and I want to be able to change the whole atmosphere of the scene dynamically : colors, saturation, etc.
+        </p>
+        <p class="text">
+            In graphic design, I love working with Hue Saturation Value/Luminosity colors. Therefore I also wanted to use this color system as much as possible and define the atmosphere in term of angle on the color wheel (hue) and saturation-luminosity, using color theory to express feelings and moods. The first part of the shader I created is basically a HSL to RGB translator. Using Adobe Illustrator, I create the graphics in RGB, then export them in high resolution in PNG. Then using a small Python script, I change the color of each pixel so that the hue is encoded in the red channel, the saturation in the blue channel and the luminosity in the green channel. Then I display the RGB-coded-HSL graphics in game and apply the shader to restore the original color of each pixel.
+        </p>
+        <div class="image_block">
+            <img class="image_two" src="shaderday_rgb.png" alt="">
+            <img class="image_two" src="shaderday_hsl.png" alt="">
+            <p class="caption">
+                left : original RGB image  ;  right : RGB-coded-HSL image
+            </p>
+        </div>
+        <p class="text">
+            What's the point, except maybe losing in quality ? Well, then I can modify the shader to shift the red channel corresponding to the hue before translating, thus easily changing the hue with a simple algorithm. I know there exists algorithm just for that that don't require RGB-coded-HSL images, but... Ok maybe I'll give them a try and compare the results.
+        </p>
+        <p class="text">
+            I then used this algorithm for a basic day-night cycle shader. It also goes through a golden hour between night and day at dusk and dawn. Here is a short loop of the cycle in action.
+        </p>
+        <div class="image_block">
+            <video width="320" height="320" controls loop autoplay>
+                <source src="shaderday_cycle.mp4" type="video/mp4">
+            Your browser does not support videos.
+            </video> 
+        </div>
+        <p class="text">
+            With this system, I could show fog with saturation, cloud coverage and seasons with luminosity, special events with hue, etc. The possibilities are endless.
+        </p>
+        <p class="text">
+            I wont be working on this game project for a while as it started a few years ago in my head when I deeply wanted a new Animal Crossing game but now Nintendo has announced one coming soon. I have other shader exercises planned for this project, such as one to simulate the rolling-log effect without having to use 3D projection and fragment shaders.
+        </p>
+    </div>
+</body>
+</html>
