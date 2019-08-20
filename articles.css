@@ -11,6 +11,16 @@
     margin-bottom: 100px;
 }
 
+#indexlink {
+    text-align: center;
+    font-family: 'Museo W01_500';
+    font-size: 12px;
+    color: lightgray;
+    text-decoration: none;
+    margin: 10px auto;
+    display:block; 
+}
+
 #page_title {
     text-align: center;
     font-family: 'Museo W01_500';
