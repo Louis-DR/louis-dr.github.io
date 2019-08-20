@@ -32,7 +32,7 @@
             The odometry isn't a perfect simulation as it simply integrates the command without taking into consideration friction or inertia, but for demonstration without having to operate a Turtlebot in a room, this is useful. The LiDar sensor data can then be visualized in Rviz.
         </p>
         <div class="video">
-            <iframe width="560" height="315" src="http://www.youtube.com/embed/He_eonDwdGY&scheme=https" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/He_eonDwdGY&scheme=https" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
         <p class="text">
             Then I was tasked with generating new maps using Google Cartographer. I first drove the Turtlebot in two buildings of Centrale Nantes to record bag files containing the sensor data of the onboard odometry, the tf data and the LiDar data. Then I tried using the ROS integration of Cartographer to generate the maps, however the results were appalling. After many iterations, the algorithm collapsed all the walls together in a giant mess. The parameters of the Cartographer algorithm didn't work at all for my setup. I followed the tunning guide of Cartographer and the documentation. I went through all the available parameters, tried a range of value for each, recorded the resulting maps, wrote a small guide of the interesting parameters to tune and finally created a lua configuration file that produced satisfying results.
@@ -48,7 +48,7 @@
             Finally, I experimented with 3D SLAM with a Kinect attached to the TurtleBot. After recording very heavy bag files of the robot driving in a small room, I tried to adapt my Cartographer configuration to create a 3D map. After multiple unsuccessful attempts, I gave up on Cartographer and searched for better suited software and libraries. I ended up using RTABmap in ROS. That worked really well and with the first try, I obtained a rather satisfying 3D point cloud map of the laboratory.
         </p>
         <div class="center_block">
-            <iframe width="560" height="315" src="http://www.youtube.com/embed/QLZFTZ6D0Pk&scheme=https" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/QLZFTZ6D0Pk&scheme=https" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
         <div class="iconlabel">
                 <img src="github.svg" alt="">
