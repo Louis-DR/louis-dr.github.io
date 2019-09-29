@@ -52,12 +52,34 @@
     line-height: 1.7;
 }
 
+tr {
+    font-family: 'Museo W01_500';
+}
+
+td {
+    text-align: center;
+}
+
+td b {
+    /* color: darkblue; */
+    background-color: lightblue;
+    font-weight: normal;
+}
+
 .link {
     font-family: 'Museo W01_500';
     color: rgb(60, 60, 60);
     font-size: 18px;
     line-height: 1.7;
     font-style: italic;
+}
+
+.chapter {
+    margin-left: 50px;
+    font-family: 'Museo W01_500';
+    font-size: 30px;
+    font-variant: small-caps;
+    line-height: 1.7;
 }
 
 .section {

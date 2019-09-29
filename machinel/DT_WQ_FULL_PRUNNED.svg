@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   viewBox="0 0 1836 732"
+   height="732"
+   width="1836"
+   xml:space="preserve"
+   id="svg2"
+   version="1.1"><metadata
+     id="metadata8"><rdf:RDF><cc:Work
+         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+     id="defs6"><clipPath
+       id="clipPath20"
+       clipPathUnits="userSpaceOnUse"><path
+         id="path18"
+         d="M 36,36 H 1340.5 V 513 H 36 Z" /></clipPath></defs><g
+     transform="matrix(1.3333333,0,0,-1.3333333,0,732)"
+     id="g10"><g
+       id="g12" /><g
+       id="g14"><g
+         clip-path="url(#clipPath20)"
+         id="g16"><path
+           id="path22"
+           style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           d="M 36,36 V 513 H 1340.5 V 36 Z" /><path
+           id="path24"
+           style="fill:none;stroke:#fffffe;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:0"
+           d="M 36,36 V 513 H 1340.5 V 36 Z" /><path
+           id="path26"
+           style="fill:#d3f9f2;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="M 867,509 H 652 v -68 h 215 z" /><text
+           id="text36"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,719,493.80078)"><tspan
+             id="tspan28"
+             y="0"
+             x="0 9.7440004 14.252 21 27.747999 32.242001 35.993999 44.240002 52.472 56.223999 62.972 66.723999 73.472">X[10] &lt;= 0.46</tspan><tspan
+             id="tspan30"
+             y="15.000006"
+             x="-4.5000062 1.491994 8.239994 11.977994 16.471994 23.975994 31.479994 38.227993 41.979996 50.211994 53.963993 60.711994 64.463997 71.21199 77.959991">entropy = 1.818</tspan><tspan
+             id="tspan32"
+             y="30.000011"
+             x="-3.5000055 2.4919944 8.4839945 18.969994 26.473995 29.455994 35.447994 41.453995 45.191994 53.437996 57.189995 63.937996 70.685997 77.433998">samples = 4163</tspan><tspan
+             id="tspan34"
+             y="45.000019"
+             x="-59.000011 -52.25201 -46.26001 -43.278011 -36.53001 -30.53801 -26.786009 -18.55401 -14.80201 -10.294009 -3.5460095 3.2019904 9.9499903 13.70199 17.453991 24.20199 30.949991 37.69799 44.445992 48.19799 51.949989 58.69799 65.445992 72.207993 78.955994 82.749992 86.501991 93.249992 99.997993 106.74599 110.49799 114.24999 120.99799 127.74599 134.49399">value = [139, 1244, 1892, 735, 153]</tspan></text>
+<path
+           id="path38"
+           style="fill:#f6fefc;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 754.5,405 h -208 v -68 h 208 z" /><text
+           id="text48"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,610,389.80078)"><tspan
+             id="tspan40"
+             y="0"
+             x="0 9.7440004 14.252 21 25.493999 29.246 37.478001 45.723999 49.476002 56.223999 59.976002 66.723999 73.472">X[1] &lt;= 0.154</tspan><tspan
+             id="tspan42"
+             y="15.000006"
+             x="-4.5000062 1.491994 8.239994 11.977994 16.471994 23.975994 31.479994 38.227993 41.979996 50.211994 53.963993 60.711994 64.463997 71.21199 77.959991">entropy = 1.613</tspan><tspan
+             id="tspan44"
+             y="30.000011"
+             x="-3.5000055 2.4919944 8.4839945 18.969994 26.473995 29.455994 35.447994 41.453995 45.191994 53.437996 57.189995 63.937996 70.685997 77.433998">samples = 2619</tspan><tspan
+             id="tspan46"
+             y="45.000019"
+             x="-55.500011 -48.75201 -42.76001 -39.778011 -33.03001 -27.03801 -23.286009 -15.054009 -11.30201 -6.7940097 -0.0460096 6.7019906 13.44999 17.20199 20.953991 27.70199 34.449989 41.19799 47.945992 51.69799 55.449989 62.19799 68.945992 75.707993 82.455994 86.249992 90.001991 96.749992 103.49799 110.24599 113.99799 117.74999 124.49799 131.24599">value = [103, 1094, 1166, 222, 34]</tspan></text>
+<path
+           id="path50"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 724.109,440.883 c -9.707,-9.086 -20.343,-19.039 -30.437,-28.481" /><path
+           id="path52"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 695.777,409.578 -9.691,-4.277 4.91,9.387 z" /><text
+           id="text56"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,673.41406,426.58594)"><tspan
+             id="tspan54"
+             y="0"
+             x="0 8.9879999 13.482 20.243999">True</tspan></text>
+<path
+           id="path58"
+           style="fill:#d6faf3;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 966.5,405 h -194 v -68 h 194 z" /><text
+           id="text68"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,829,389.80078)"><tspan
+             id="tspan60"
+             y="0"
+             x="0 9.7440004 14.252 21 25.493999 29.246 37.478001 45.723999 49.476002 56.223999 59.976002 66.723999 73.472">X[5] &lt;= 0.033</tspan><tspan
+             id="tspan62"
+             y="15.000006"
+             x="-4.5000062 1.491994 8.239994 11.977994 16.471994 23.975994 31.479994 38.227993 41.979996 50.211994 53.963993 60.711994 64.463997 71.21199 77.959991">entropy = 1.778</tspan><tspan
+             id="tspan64"
+             y="30.000011"
+             x="-3.5000055 2.4919944 8.4839945 18.969994 26.473995 29.455994 35.447994 41.453995 45.191994 53.437996 57.189995 63.937996 70.685997 77.433998">samples = 1544</tspan><tspan
+             id="tspan66"
+             y="45.000019"
+             x="-48.500011 -41.75201 -35.76001 -32.778011 -26.03001 -20.03801 -16.286009 -8.0540094 -4.3020096 0.2059904 6.9539905 13.70199 17.453991 21.20599 27.953991 34.701992 41.449989 45.201992 48.953991 55.701992 62.449989 69.19799 72.949989 76.701988 83.449989 90.19799 96.999985 100.75199 104.50399 111.25199 117.99998 124.74799">value = [36, 150, 726, 513, 119]</tspan></text>
+<path
+           id="path70"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 795.215,440.883 c 9.894,-9.176 20.742,-19.235 31.015,-28.762" /><path
+           id="path72"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 828.637,414.664 4.953,-9.363 -9.715,4.23 z" /><text
+           id="text76"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,817.64453,426.58203)"><tspan
+             id="tspan74"
+             y="0"
+             x="0 8.2460003 14.238 17.219999 23.226">False</tspan></text>
+<path
+           id="path78"
+           style="fill:#aaf4e6;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 549.5,301 h -188 v -68 h 188 z" /><text
+           id="text88"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,411.5,285.80078)"><tspan
+             id="tspan80"
+             y="0"
+             x="0 9.7440004 14.252 21 27.747999 32.242001 35.993999 44.240002 52.472 56.223999 62.972 66.723999 73.472 80.220001">X[10] &lt;= 0.153</tspan><tspan
+             id="tspan82"
+             y="15.000006"
+             x="-1.0000004 4.9919996 11.74 15.478 19.972 27.476 34.98 41.728001 45.48 53.711998 57.464001 64.211998 67.963997 74.711998 81.459999">entropy = 1.628</tspan><tspan
+             id="tspan84"
+             y="30.000011"
+             x="2.9999957 8.9919958 14.983995 25.469995 32.973995 35.955997 41.947994 47.953995 51.691994 59.937996 63.689995 70.437996 77.185997">samples = 966</tspan><tspan
+             id="tspan86"
+             y="45.000019"
+             x="-42.000008 -35.252007 -29.260008 -26.278008 -19.530008 -13.538009 -9.7860088 -1.5540084 2.1979916 6.7059917 13.453992 20.201992 23.953991 27.705992 34.453991 41.201992 47.949993 51.701992 55.453991 62.201992 68.949989 75.69799 79.449989 83.201988 89.949989 96.69799 103.49999 107.25199 111.00399 117.75199 124.49999">value = [18, 223, 543, 156, 26]</tspan></text>
+<path
+           id="path90"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 587.188,336.883 c -18.911,-9.891 -39.79,-20.813 -59.239,-30.988" /><path
+           id="path92"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 529.309,302.66 -10.481,-1.535 7.238,7.734 z" /><path
+           id="path94"
+           style="fill:#dff9cf;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 741.5,301 h -174 v -68 h 174 z" /><text
+           id="text104"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,610.5,285.80078)"><tspan
+             id="tspan96"
+             y="0"
+             x="0 9.7440004 14.252 21 27.747999 32.242001 35.993999 44.240002 52.472 56.223999 62.972 66.723999 73.472 80.220001">X[10] &lt;= 0.298</tspan><tspan
+             id="tspan98"
+             y="15.000006"
+             x="-1.0000004 4.9919996 11.74 15.478 19.972 27.476 34.98 41.728001 45.48 53.711998 57.464001 64.211998 67.963997 74.711998 81.459999">entropy = 1.461</tspan><tspan
+             id="tspan100"
+             y="30.000011"
+             x="0 5.9920001 11.984 22.469999 29.974001 32.956001 38.948002 44.953999 48.692001 56.938 60.689999 67.438004 74.185997 80.933998">samples = 1653</tspan><tspan
+             id="tspan102"
+             y="45.000019"
+             x="-35 -28.252001 -22.26 -19.278 -12.53 -6.5380001 -2.786 5.4460001 9.198 13.706 20.454 27.202 30.954 34.706001 41.453999 48.202 54.950001 58.702 62.453999 69.202003 75.949997 82.697998 86.449997 90.202003 96.949997 103.698 107.49999 111.25199 117.99999">value = [85, 871, 623, 66, 8]</tspan></text>
+<path
+           id="path106"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 651.797,336.883 c 0.32,-8.106 0.664,-16.903 1,-25.41" /><path
+           id="path108"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 656.301,311.43 -3.106,-10.129 -3.89,9.855 z" /><path
+           id="path110"
+           style="fill:#dbfaf5;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="M 348,197 H 187 v -68 h 161 z" /><text
+           id="text120"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,227,181.80078)"><tspan
+             id="tspan112"
+             y="0"
+             x="0 9.7440004 14.252 21 25.493999 29.246 37.478001 45.723999 49.476002 56.223999 59.976002 66.723999 73.472">X[0] &lt;= 0.293</tspan><tspan
+             id="tspan114"
+             y="15.000006"
+             x="-4.5000062 1.491994 8.239994 11.977994 16.471994 23.975994 31.479994 38.227993 41.979996 50.211994 53.963993 60.711994 64.463997 71.21199 77.959991">entropy = 1.888</tspan><tspan
+             id="tspan116"
+             y="30.000011"
+             x="2.99999 8.9919901 14.98399 25.46999 32.973991 35.95599 41.94799 47.953991 51.69199 59.937988 63.689991 70.437988">samples = 99</tspan><tspan
+             id="tspan118"
+             y="45.000019"
+             x="-32.000011 -25.25201 -19.26001 -16.278009 -9.5300102 -3.5380099 0.21399 8.4459896 12.19799 16.70599 23.453991 27.20599 30.957991 37.70599 44.453991 48.20599 51.957989 58.70599 65.453987 69.205994 72.957993 79.705994 86.453987 90.205994 93.957993 100.70599 107.45399">value = [0, 27, 40, 15, 17]</tspan></text>
+<path
+           id="path122"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="M 394.461,232.883 C 376.227,222.992 356.098,212.07 337.348,201.895" /><path
+           id="path124"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 339.012,198.816 -10.457,-1.691 7.121,7.844 z" /><path
+           id="path126"
+           style="fill:#a4f3e4;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="M 547,189.5 H 366 v -53 h 181 z" /><text
+           id="text134"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,411.5,174.30078)"><tspan
+             id="tspan128"
+             y="0"
+             x="0 5.9920001 12.74 16.478001 20.972 28.476 35.98 42.728001 46.48 54.712002 58.464001 65.211998 68.963997 75.711998 82.459999">entropy = 1.551</tspan><tspan
+             id="tspan130"
+             y="15.000006"
+             x="3.9999959 9.9919958 15.983996 26.469995 33.973995 36.955997 42.947994 48.953995 52.691998 60.937996 64.689995 71.437996 78.185997">samples = 867</tspan><tspan
+             id="tspan132"
+             y="30.000011"
+             x="-37.500008 -30.752008 -24.760008 -21.778008 -15.030008 -9.0380077 -5.2860079 2.945992 6.6979918 11.205992 17.953993 24.701992 28.453993 32.205994 38.953991 45.701992 52.449993 56.201992 59.953991 66.701988 73.449989 80.19799 83.949989 87.701988 94.449989 101.19799 107.99999 111.75199 115.50399 122.25199">value = [18, 196, 503, 141, 9]</tspan></text>
+<path
+           id="path136"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 455.824,232.883 c 0.106,-10.559 0.219,-22.285 0.324,-33.028" /><path
+           id="path138"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 459.652,199.555 -3.402,-10.035 -3.598,9.964 z" /><path
+           id="path140"
+           style="fill:#a3f3e4;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="M 187,93 H 40 V 40 h 147 z" /><text
+           id="text148"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,68.5,77.800781)"><tspan
+             id="tspan142"
+             y="0"
+             x="0 5.9920001 12.74 16.478001 20.972 28.476 35.98 42.728001 46.48 54.712002 58.464001 65.211998 68.963997 75.711998 82.459999">entropy = 1.059</tspan><tspan
+             id="tspan144"
+             y="15.000006"
+             x="7.4999962 13.491996 19.483995 29.969995 37.473995 40.455997 46.447994 52.453995 56.191998 64.437996 68.189995 74.937996">samples = 45</tspan><tspan
+             id="tspan146"
+             y="30.000011"
+             x="-20.500004 -13.752004 -7.760004 -4.7780042 1.969996 7.9619961 11.713996 19.945995 23.697996 28.205996 34.953995 38.705997 42.457996 49.205997 55.953995 59.705997 63.457996 70.205994 76.953995 80.705994 84.457993 91.205994 94.957993 98.695999 105.45799">value = [0, 15, 29, 1, 0]</tspan></text>
+<path
+           id="path150"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="M 213.637,128.949 C 197.539,119.07 179.949,108.277 164.066,98.531" /><path
+           id="path152"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 165.797,95.484 -10.356,-2.246 6.692,8.211 z" /><path
+           id="path154"
+           style="fill:#fdf0fa;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="M 366,93 H 205 V 40 h 161 z" /><text
+           id="text162"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,244,77.800781)"><tspan
+             id="tspan156"
+             y="0"
+             x="0 5.9920001 12.74 16.478001 20.972 28.476 35.98 42.728001 46.48 54.712002 58.464001 65.211998 68.963997 75.711998">entropy = 1.98</tspan><tspan
+             id="tspan158"
+             y="15.000006"
+             x="3.9999959 9.9919958 15.983996 26.469995 33.973995 36.955997 42.947994 48.953995 52.691998 60.937996 64.689995 71.437996">samples = 54</tspan><tspan
+             id="tspan160"
+             y="30.000011"
+             x="-31.000004 -24.252005 -18.260004 -15.278004 -8.5300035 -2.5380039 1.2139961 9.4459963 13.197996 17.705996 24.453997 28.205996 31.943996 38.705997 45.453995 49.205997 52.957996 59.705997 66.453995 70.205994 73.957993 80.705994 87.453995 91.205994 94.957993 101.70599 108.45399">value = [0, 12, 11, 14, 17]</tspan></text>
+<path
+           id="path164"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 273.797,128.949 c 1.586,-8.324 3.293,-17.297 4.902,-25.746" /><path
+           id="path166"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 282.164,103.715 -1.566,-10.477 -5.309,9.168 z" /><path
+           id="path168"
+           style="fill:#c5f4a8;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 740.5,197 h -174 v -68 h 174 z" /><text
+           id="text178"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,616.5,181.80078)"><tspan
+             id="tspan170"
+             y="0"
+             x="0 9.7440004 14.252 21 25.493999 29.246 37.478001 45.723999 49.476002 56.223999 59.976002 66.723999">X[5] &lt;= 0.04</tspan><tspan
+             id="tspan172"
+             y="15.000006"
+             x="-8.0000057 -2.0080061 4.739994 8.477994 12.971994 20.475994 27.979994 34.727993 38.479996 46.711994 50.463993 57.211994 60.963993 67.71199 74.459991">entropy = 1.316</tspan><tspan
+             id="tspan174"
+             y="30.000011"
+             x="-7.0000057 -1.0080056 4.9839945 15.469995 22.973995 25.955994 31.947994 37.953995 41.691994 49.937996 53.689995 60.437996 67.185997 73.933998">samples = 1058</tspan><tspan
+             id="tspan176"
+             y="45.000019"
+             x="-42.000004 -35.252007 -29.260006 -26.278006 -19.530006 -13.538006 -9.786006 -1.5540056 2.1979945 6.7059946 13.453995 20.201994 23.953995 27.705994 34.453995 41.201996 47.949993 51.701996 55.453995 62.201996 68.949997 75.697998 79.449997 83.201996 89.949997 96.697998 100.49998 104.25199 110.99998">value = [55, 648, 329, 25, 1]</tspan></text>
+<path
+           id="path180"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 654.176,232.883 c -0.078,-8.106 -0.168,-16.903 -0.25,-25.41" /><path
+           id="path182"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 657.426,207.266 -3.598,-9.965 -3.402,10.031 z" /><path
+           id="path184"
+           style="fill:#d9faf4;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 932.5,197 h -174 v -68 h 174 z" /><text
+           id="text194"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,805,181.80078)"><tspan
+             id="tspan186"
+             y="0"
+             x="0 9.7440004 14.252 21 25.493999 29.246 37.478001 45.723999 49.476002 56.223999 59.976002 66.723999 73.472">X[5] &lt;= 0.082</tspan><tspan
+             id="tspan188"
+             y="15.000006"
+             x="-4.5000062 1.491994 8.239994 11.977994 16.471994 23.975994 31.479994 38.227993 41.979996 50.211994 53.963993 60.711994 64.463997 71.21199 77.959991">entropy = 1.592</tspan><tspan
+             id="tspan190"
+             y="30.000011"
+             x="-0.50001001 5.4919901 11.48399 21.96999 29.473989 32.45599 38.44799 44.453991 48.19199 56.437988 60.189991 66.937988 73.685989">samples = 595</tspan><tspan
+             id="tspan192"
+             y="45.000019"
+             x="-38.500015 -31.752014 -25.760014 -22.778013 -16.030014 -10.038014 -6.2860141 1.945986 5.6979861 10.205986 16.953985 23.701986 27.453985 31.205986 37.953987 44.701984 51.449986 55.201984 58.953987 65.701988 72.449989 79.197983 82.949989 86.701988 93.449989 100.19798 103.99998 107.75198 114.49998">value = [30, 223, 294, 41, 7]</tspan></text>
+<path
+           id="path196"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 716.512,232.883 c 18.523,-9.891 38.976,-20.813 58.027,-30.988" /><path
+           id="path198"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 776.301,204.922 7.172,-7.797 -10.469,1.625 z" /><path
+           id="path200"
+           style="fill:#bef29e;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="M 550,93 H 403 V 40 h 147 z" /><text
+           id="text208"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,431.5,77.800781)"><tspan
+             id="tspan202"
+             y="0"
+             x="0 5.9920001 12.74 16.478001 20.972 28.476 35.98 42.728001 46.48 54.712002 58.464001 65.211998 68.963997 75.711998 82.459999">entropy = 1.303</tspan><tspan
+             id="tspan204"
+             y="15.000006"
+             x="7.4999962 13.491996 19.483995 29.969995 37.473995 40.455997 46.447994 52.453995 56.191998 64.437996 68.189995 74.937996">samples = 76</tspan><tspan
+             id="tspan206"
+             y="30.000011"
+             x="-20.500004 -13.752004 -7.760004 -4.7780042 1.969996 7.9619961 11.713996 19.945995 23.697996 28.205996 34.953995 41.701996 45.453995 49.205997 55.953995 62.701996 66.453995 70.205994 76.953995 80.705994 84.457993 91.205994 94.957993 98.695999 105.45799">value = [21, 48, 6, 1, 0]</tspan></text>
+<path
+           id="path210"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="M 591.594,128.949 C 572.66,118.84 551.938,107.777 533.355,97.855" /><path
+           id="path212"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 534.895,94.711 -10.469,-1.625 7.172,7.797 z" /><path
+           id="path214"
+           style="fill:#c8f4ac;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 742.5,93 h -174 V 40 h 174 z" /><text
+           id="text222"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,610.5,77.800781)"><tspan
+             id="tspan216"
+             y="0"
+             x="0 5.9920001 12.74 16.478001 20.972 28.476 35.98 42.728001 46.48 54.712002 58.464001 65.211998 68.963997 75.711998 82.459999">entropy = 1.271</tspan><tspan
+             id="tspan218"
+             y="15.000006"
+             x="3.9999959 9.9919958 15.983996 26.469995 33.973995 36.955997 42.947994 48.953995 52.691998 60.937996 64.689995 71.437996 78.185997">samples = 982</tspan><tspan
+             id="tspan220"
+             y="30.000011"
+             x="-34.000008 -27.252008 -21.260008 -18.278008 -11.530008 -5.5380082 -1.786008 6.445992 10.197992 14.705992 21.453993 28.201992 31.953993 35.705994 42.453991 49.201992 55.949993 59.701992 63.453991 70.201988 76.949989 83.69799 87.449989 91.201988 97.949989 104.69799 108.49998 112.25198 118.99998">value = [34, 600, 323, 24, 1]</tspan></text>
+<path
+           id="path224"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 654.199,128.949 c 0.176,-8.234 0.364,-17.101 0.539,-25.469" /><path
+           id="path226"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 658.242,103.309 -3.285,-10.071 -3.711,9.922 z" /><path
+           id="path228"
+           style="fill:#eefce6;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="M 923,93 H 762 V 40 h 161 z" /><text
+           id="text236"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,797.5,77.800781)"><tspan
+             id="tspan230"
+             y="0"
+             x="0 5.9920001 12.74 16.478001 20.972 28.476 35.98 42.728001 46.48 54.712002 58.464001 65.211998 68.963997 75.711998 82.459999">entropy = 1.544</tspan><tspan
+             id="tspan232"
+             y="15.000006"
+             x="3.9999959 9.9919958 15.983996 26.469995 33.973995 36.955997 42.947994 48.953995 52.691998 60.937996 64.689995 71.437996 78.185997">samples = 212</tspan><tspan
+             id="tspan234"
+             y="30.000011"
+             x="-27.500004 -20.752005 -14.760004 -11.778004 -5.030004 0.96199602 4.7139959 12.945996 16.697996 21.205996 27.953997 34.701996 38.453995 42.205997 48.953995 55.701996 62.449997 66.201996 69.953995 76.701996 83.449997 87.201996 90.953995 97.701996 101.45399 105.20599 111.95399">value = [22, 100, 84, 5, 1]</tspan></text>
+<path
+           id="path238"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 844.449,128.949 c -0.261,-8.234 -0.543,-17.101 -0.808,-25.469" /><path
+           id="path240"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 847.133,103.121 -3.817,-9.883 -3.179,10.106 z" /><path
+           id="path242"
+           style="fill:#bdf6ec;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="M 1108,93 H 941 V 40 h 167 z" /><text
+           id="text250"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,979.5,77.800781)"><tspan
+             id="tspan244"
+             y="0"
+             x="0 5.9920001 12.74 16.478001 20.972 28.476 35.98 42.728001 46.48 54.712002 58.464001 65.211998 68.963997 75.711998 82.459999">entropy = 1.533</tspan><tspan
+             id="tspan246"
+             y="15.000006"
+             x="3.9999959 9.9919958 15.983996 26.469995 33.973995 36.955997 42.947994 48.953995 52.691998 60.937996 64.689995 71.437996 78.185997">samples = 383</tspan><tspan
+             id="tspan248"
+             y="30.000011"
+             x="-30.500008 -23.752008 -17.760008 -14.778008 -8.0300083 -2.038008 1.713992 9.9459925 13.697992 18.205992 24.953993 28.705992 32.457993 39.205994 45.953991 52.701992 56.453991 60.205994 66.953995 73.701988 80.449989 84.201988 87.953995 94.701988 101.44999 105.20199 108.95399 115.75">value = [8, 123, 210, 36, 6]</tspan></text>
+<path
+           id="path252"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="M 908.105,128.949 C 927.254,118.84 948.211,107.777 967,97.855" /><path
+           id="path254"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 968.824,100.852 7.211,-7.766 -10.476,1.574 z" /><path
+           id="path256"
+           style="fill:#dafaf4;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="M 938,293.5 H 777 v -53 h 161 z" /><text
+           id="text264"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,812.5,278.30078)"><tspan
+             id="tspan258"
+             y="0"
+             x="0 5.9920001 12.74 16.478001 20.972 28.476 35.98 42.728001 46.48 54.712002 58.464001 65.211998 68.963997 75.711998 82.459999">entropy = 1.951</tspan><tspan
+             id="tspan260"
+             y="15.000006"
+             x="3.9999959 9.9919958 15.983996 26.469995 33.973995 36.955997 42.947994 48.953995 52.691998 60.937996 64.689995 71.437996 78.185997">samples = 100</tspan><tspan
+             id="tspan262"
+             y="30.000011"
+             x="-27.500004 -20.752005 -14.760004 -11.778004 -5.030004 0.96199602 4.7139959 12.945996 16.697996 21.205996 27.953997 34.701996 38.453995 42.205997 48.953995 55.701996 59.453995 63.205997 69.953995 76.701996 80.453995 84.205994 90.953995 97.701996 101.45399 105.20599 111.95399">value = [23, 25, 39, 12, 1]</tspan></text>
+<path
+           id="path266"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 865.605,336.883 c -1.257,-10.668 -2.652,-22.531 -3.925,-33.363" /><path
+           id="path268"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 865.148,303.043 -4.644,-9.523 -2.309,10.339 z" /><path
+           id="path270"
+           style="fill:#d8faf4;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 1150.5,301 h -194 v -68 h 194 z" /><text
+           id="text280"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,1009.5,285.80078)"><tspan
+             id="tspan272"
+             y="0"
+             x="0 9.7440004 14.252 21 27.747999 32.242001 35.993999 44.240002 52.472 56.223999 62.972 66.723999 73.472 80.220001">X[10] &lt;= 0.659</tspan><tspan
+             id="tspan274"
+             y="15.000006"
+             x="-1.0000004 4.9919996 11.74 15.478 19.972 27.476 34.98 41.728001 45.48 53.711998 57.464001 64.211998 67.963997 74.711998 81.459999">entropy = 1.702</tspan><tspan
+             id="tspan276"
+             y="30.000011"
+             x="0 5.9920001 11.984 22.469999 29.974001 32.956001 38.948002 44.953999 48.692001 56.938 60.689999 67.438004 74.185997 80.933998">samples = 1444</tspan><tspan
+             id="tspan278"
+             y="45.000019"
+             x="-45.000004 -38.252003 -32.260002 -29.278004 -22.530005 -16.538004 -12.786004 -4.5540042 -0.80200398 3.705996 10.453996 17.201996 20.953997 24.705996 31.453997 38.201996 44.949997 48.701996 52.453995 59.201996 65.949997 72.697998 76.449997 80.201996 86.949997 93.697998 100.49999 104.25199 108.004 114.75199 121.49999 128.248">value = [13, 125, 687, 501, 118]</tspan></text>
+<path
+           id="path282"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 929.238,336.883 c 17.766,-9.848 37.371,-20.715 55.653,-30.848" /><path
+           id="path284"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 986.695,309.035 7.051,-7.91 -10.445,1.785 z" /><path
+           id="path286"
+           style="fill:#c2f7ed;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 1144.5,189.5 h -188 v -53 h 188 z" /><text
+           id="text294"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,1005.5,174.30078)"><tspan
+             id="tspan288"
+             y="0"
+             x="0 5.9920001 12.74 16.478001 20.972 28.476 35.98 42.728001 46.48 54.712002 58.464001 65.211998 68.963997 75.711998 82.459999">entropy = 1.685</tspan><tspan
+             id="tspan290"
+             y="15.000006"
+             x="3.9999959 9.9919958 15.983996 26.469995 33.973995 36.955997 42.947994 48.953995 52.691998 60.937996 64.689995 71.437996 78.185997">samples = 881</tspan><tspan
+             id="tspan292"
+             y="30.000011"
+             x="-41.000008 -34.252007 -28.260008 -25.278008 -18.530008 -12.538008 -8.7860079 -0.55400801 3.1979921 7.7059922 14.453992 21.201992 24.953993 28.705992 35.453991 42.201992 48.949993 52.701992 56.453991 63.201992 69.949989 76.69799 80.449989 84.201988 90.949989 97.69799 104.49999 108.25199 112.00399 118.75199 125.49999">value = [10, 110, 452, 263, 46]</tspan></text>
+<path
+           id="path296"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 1052.527,232.883 c -0.316,-10.668 -0.664,-22.531 -0.984,-33.363" /><path
+           id="path298"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 1055.043,199.414 -3.793,-9.894 -3.203,10.097 z" /><path
+           id="path300"
+           style="fill:#fdfdff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 1336.5,189.5 h -174 v -53 h 174 z" /><text
+           id="text308"
+           style="font-variant:normal;font-weight:normal;font-size:14px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRoman;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           transform="matrix(1,0,0,-1,1208,174.30078)"><tspan
+             id="tspan302"
+             y="0"
+             x="0 5.9920001 12.74 16.478001 20.972 28.476 35.98 42.728001 46.48 54.712002 58.464001 65.211998 68.963997 75.711998">entropy = 1.61</tspan><tspan
+             id="tspan304"
+             y="15.000006"
+             x="0.50000018 6.4920001 12.484 22.969999 30.474001 33.456001 39.448002 45.453999 49.192001 57.438 61.189999 67.938004 74.685997">samples = 563</tspan><tspan
+             id="tspan306"
+             y="30.000011"
+             x="-37.500004 -30.752005 -24.760004 -21.778004 -15.030004 -9.0380039 -5.2860036 2.9459963 6.6979961 11.205997 17.953997 21.705996 25.457996 32.205997 38.953995 42.705997 46.457996 53.205997 59.953995 66.701996 70.453995 74.205994 80.953995 87.701996 94.449997 98.201996 101.95399 108.75 115.498">value = [3, 15, 235, 238, 72]</tspan></text>
+<path
+           id="path310"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 1117.137,232.883 c 23.879,-12.426 50.875,-26.477 74.234,-38.633" /><path
+           id="path312"
+           style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+           d="m 1193.207,197.242 7.254,-7.722 -10.484,1.511 z" /></g></g><g
+       id="g314" /></g></svg>
