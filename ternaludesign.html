@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Import Katex -->
+    <link rel="stylesheet" href="katex/katex.min.css">
+    <script src="katex/katex.min.js"></script>
+    <!-- Import Katex auto-render -->
+    <script src="katex/contrib/auto-render.min.js"></script>
+
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="articles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Ternary logic</title>
+    <style>
+        .gate {
+            width: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <a id="indexlink" href="index.html" style="margin-bottom: 30px">
+            Go back to the list of projects
+        </a>
+        <img class="banner_img" src="ternaludesign.png" alt="">
+        <div id="page_title">
+            Ternary ALU design
+        </div>
+        <div id="page_date">
+            30/06/2018
+        </div>
+
+        <p class="text">
+            Last time, we looked at the basics of ternary logic. Now let's implement a more complex circuit : an Arithmetic Logic Unit. This component adds two ternary words and outputs the sum. In addition, we want to be able to do subtractions. Here, to keep diagrams reasonable, I will describe a 3-trit (tribble) ALU.
+        </p>
+        <p class="text">
+            The main operation of the ALU is the addition. This operation, as in any numerical base requires a carry system, a way to propagate the carry from the addition from one digit to the next. I will use a ripple-carry system and not a carry-lookahead. That means adding the two trits of one digit of the words requires the carry of the previous pair of digits, therefore we have to wait for the previous sum to be completed. Consequently, as the word length increases, so does the time required for the operation to complete. In a full processor, this reduces the maximum frequency, or requires complex timing. 
+        </p>
+        <p class="text">
+            As with binary, we start by creating a half-adder, which add two trits and outputs the sum as well as the carry of this operation. For instance, $$1 + 1 = 2$$ in ternary is $$(+) + (+) = (+$$$$-)$$, meaning the sum of $$+$$ and $$+$$ is $$-$$ and the carry is $$+$$. In truth table : <br>
+            Sum of A and B :
+            $$
+            \begin{bmatrix} 
+            + & - & 0 \\
+            - & 0 & +\\
+            0 & + & -
+            \end{bmatrix}
+            $$, 
+            carry of A and B :
+            $$
+            \begin{bmatrix} 
+            - & 0 & 0 \\
+            0 & 0 & 0\\
+            0 & 0 & +
+            \end{bmatrix}
+            $$. <br>
+            We recognize the sum of A and B to be the SUM gate (obviously) and the carry is the CONS. 
+        </p>
+        <div class="center_block">
+            <img class="image_small" src="ternaludesign_half.png" alt="">
+            <p class="caption">
+                Half-adder
+            </p>
+        </div>
+        <p class="text">
+            When building the half-adder with transistors, we can actually spare the CONS gate by using the one inside the SUM gate (see the previous post).
+        </p>
+        <p class="text">
+            Then we combine two half-adders to create a full-adder to add two trits as well as the previous carry. We also have to combine the carries of the two additions. 
+        </p>
+        <div class="center_block">
+            <img class="image_big" src="ternaludesign_full.png" alt="">
+            <p class="caption">
+                Full-adder
+            </p>
+        </div>
+        <p class="text">
+            This is the heart of the ALU. The first and last additions of the chain of digits are special as they respectively don’t have a previous carry and don’t have to output a carry. Therefore, the first digit only requires one half-adder, and the last one requires two SUM gates. For a n-trit word :
+        </p>
+        <div class="center_block">
+            <img class="image_smaller" src="ternaludesign_chain.png" alt="">
+            <p class="caption">
+                Adder chain
+            </p>
+        </div>
+        <p class="text">
+            We can actually save many transistors by negating most of the outputs.
+        </p>
+        <p class="text">
+            Then to subtract B from A, we can just invert B before the addition. For this, we can create a sign controller with MUL gates :
+            <ul>
+                <li>$$neg=-1 \quad \Rightarrow \quad Q=-B$$</li>
+                <li>$$neg=0 \quad \Rightarrow \quad Q=0$$</li>
+                <li>$$neg=+1 \quad \Rightarrow \quad Q=+B$$</li>
+            </ul>
+        </p>
+        <p class="text">
+            For a 3-trit word :
+        </p>
+        <div class="center_block">
+            <img class="image_smaller" src="ternaludesign_neg.png" alt="">
+            <p class="caption">
+                Signal controler
+            </p>
+        </div>
+        <p class="text">
+            There might be a way to bring the cost of each NMUL gate by factoring some of the transistors between one NAND and the OR gate and thus spare one CMOS pair per gate. Another factorization might be possible between the NMUL gate inside the signal controller circuit further reducing the cost. This will be explored in the future. Anyway, factorizing CMOS pairs between gates won’t be practical for the many-boards modular design approach I described earlier and the savings might not be worth it. Therefore, it would be more useful for a single board design.
+        </p>
+        <p class="text">
+            Finally, here is the ALU with the $$neg$$ signal to control B and do subtractions. I a full processor, this signal will be controlled by the instruction decoder.
+        </p>
+        <div class="center_block">
+            <img class="image_small" src="ternaludesign_alu.png" alt="">
+            <p class="caption">
+                ALU with subtraction
+            </p>
+        </div>
+
+        <a id="indexlink" href="index.html" style="margin-top: 60px">
+            Go back to the list of projects
+        </a>
+        <script>
+            renderMathInElement(document.body,{delimiters: [
+                {left: "$$", right: "$$", display: false},
+                {left: "££", right: "££", display: true}
+            ]});
+        </script>
+    </div>
+</body>
+</html>

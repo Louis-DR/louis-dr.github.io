@@ -39,10 +39,16 @@
             Therefore a computer using ternary logic could be more efficient by requiring less digits and less circuitry for a similarly powerful processor. The most famous ternary computer was the Setun made by the soviets in the 1970s and was more efficient. However, binary processors are easier to develop and binary won. As Moore's law slows down, it might be time to bring ternary computing back to gain performance.
         </p>
         <p class="text">
-            Switching to ternary logic requires redefining a whole new algrebra, and a more complex one as the number of possible states and thus gates is larger. In this article, I will go through the most common ternary gates, their algebra and the notations I've chosen. Papers on the topic may use slightly different notations and gate symbols.
+            Switching to ternary logic requires redefining a whole new algebra, and a more complex one as the number of possible states and thus gates is larger. In this article, I will go through the most common ternary gates, their algebra and the notations I've chosen. Papers on the topic may use slightly different notations and gate symbols.
         </p>
         <p class="text">
-            As the binary set of values is written $$\mathbb{B}=\{0,1\}$$, I will use $$\mathbb{T}$$ for the set of ternary values. There exist multiple ternary sets of values and thus multiple algebras : unbalanced ternary $$\mathbb{T}=\{0,1,2\}$$ perhaps the most obvious, balanced ternary $$\mathbb{T}=\{-,0,+\}$$ the most elegant in my opinion, unknown-state ternary $$\mathbb{T}=\{F,?,T\}$$ similar to an epistemological set of truth values, and a few others. I will only use balanced ternary. In pratice on an electrical computer, balanced ternary would be represented by positive, negative and zero voltage. Exotic ternary computers could use microfluid direction or light polarization.
+            As the binary set of values is written $$\mathbb{B}=\{0,1\}$$, I will use $$\mathbb{T}$$ for the set of ternary values. There exist multiple ternary sets of values and thus multiple algebras : unbalanced ternary $$\mathbb{T}=\{0,1,2\}$$ perhaps the most obvious, balanced ternary $$\mathbb{T}=\{-,0,+\}$$ the most elegant in my opinion, unknown-state ternary $$\mathbb{T}=\{F,?,T\}$$ similar to an epistemological set of truth values, and a few others. I will only use balanced ternary. In practice on an electrical computer, balanced ternary would be represented by positive, negative and zero voltage. Exotic ternary computers could use micro-fluid direction or light polarization.
+        </p>
+        <p class="text">
+            Analogous to the binary 8-bit byte and 4-bit nibble, I will define a 3-trit word as a tribble and a 9-trit word as a tryte. I've also seen tryte being used for a smaller 6-trit word, but I prefer to use powers of 3. A byte is two nibbles. A tryte is three tribbles.
+        </p>
+        <p class="section">
+            One-input gates
         </p>
         <p class="text">
             In binary, a gate with one-input and one output can be represented as a two by one matrix. The following gate
@@ -364,6 +370,9 @@
         <p class="text">
             I won't show the implementation in transistors in this article but an important thing to not is that some gates are very easy to implement with a small amount of transistors and resistors, while others, like Rotate up and Rotate down, require using more complex two-inputs gates and cost much more.
         </p>
+        <p class="section">
+            Two-input gates
+        </p>
         <p class="text">
             Similarly to one-input gates, two-inputs gates can also be represented with a matrix. For a simple binary OR gate :
         </p>
@@ -499,7 +508,7 @@
             </tr>
         </table>
         <p class="text">
-            In ternary logic, two-inputs gates are represented with a three by three matrix. Thus there are $$3^9=19683$$ possible gates ! I will only list 6 useful gates and their inverted versions, however some other gates can be useful such as some asymetrical gates (as in switching the inputs produces differents results and the matrix is asymetrical).
+            In ternary logic, two-inputs gates are represented with a three by three matrix. Thus there are $$3^9=19683$$ possible gates ! I will only list 6 useful gates and their inverted versions, however some other gates can be useful such as some asymmetrical gates (as in switching the inputs produces different results and the matrix is asymmetrical).
         </p>
         <table>
             <tr>
@@ -690,16 +699,20 @@
                 <th>$$\overline {A \oplus B}$$</th>
             </tr>
         </table>
-
-
         <p class="text">
-            The gate symbols I used are similar to the US binary gate symbols with modifications for the more complex operations. In addition, as with the US symbols, a dot on the output signifies an inverted output. The small triangle indicates that it's a ternary gate, to differentiate between equivalent binary and ternary gates.
+            AND and OR ternary gates are sometimes called MIN and MAX for obvious reasons. The MUL gate is also sometimes called XOR.
+        </p>
+        <p class="text">
+            The gate symbols I used are similar to the US binary gate symbols with modifications for the more complex operations. In addition, as with the US symbols, a dot on the output signifies an inverted output. The small triangle indicates that it's a ternary gate, to differentiate between equivalent binary and ternary gates. The symbols are based on the binary AND and OR gates : if we only look at the 2x2 $$(0+)^2$$ submatrix of the ternary gates, some look like binary AND and other like binary OR, so this is the base used for their symbols, then alterations are added.
+        </p>
+        <p class="section">
+            Some useful formulas
         </p>
         <p class="text">
             As said earlier, some gates are easy to implement with a few transistors and resistors, while others require combining other simpler gates. This increases the cost but also the transmission time of the signal through the gate and thus the length of the transient before reaching the static phase with the correct output of the circuit. This can be a bottleneck for the frequency of a logic circuit such as a processor. We will explore this more in detail with a future project. Therefore finding the best implementation of a gate is critical.
         </p>
         <p class="text">
-            To find the formulas of logic gates from simple ones, I created a small and dirty Python script to test every possible combinaisons of basic logic gates with simple operation prototypes. For instance, every combinaisons with the pattern $$A \bigstar B$$ with $$\bigstar$$ a two-inputs gate, or every combinaisons with the pattern $$(\clubsuit(A)) \; \bigstar \; (\spadesuit(B))$$ with $$\clubsuit$$ and $$\spadesuit$$ one-input gates. The script searches all the combinaisons for the simplest solutions with the smallest transistor and resistor cost.
+            To find the formulas of logic gates from simple ones, I created a small and dirty Python script to test every possible combinations of basic logic gates with simple operation prototypes. For instance, every combinations with the pattern $$A \bigstar B$$ with $$\bigstar$$ a two-inputs gate, or every combinations with the pattern $$(\clubsuit(A)) \; \bigstar \; (\spadesuit(B))$$ with $$\clubsuit$$ and $$\spadesuit$$ one-input gates. The script searches all the combinations for the simplest solutions with the smallest transistor and resistor cost.
         </p>
         <p class="text">
             The simple one-input gates are BUF, NOT, NNOT, PNOT as well as CLU and CLD if we allow the use of diodes. The simple two-inputs gates are NAND, NOR, NCONS and NANY.
@@ -719,8 +732,27 @@
             ££\left \lceil{A}\right \rceil = A + (0)££
             ££\left \lfloor{A}\right \rfloor = A \times (0)££
             ££A \otimes B = (A + \overline{B}) \times (\overline{A} + B) ££
-            ££A \otimes B = \overline{\overline{(A \times B)} \times (A + B)} ££
             ££A \oplus B = \left( (A⊞B) ⊞ \overline {(A⊠B)} \right) ⊞ \overline {(A⊠B)}££
+        <p class="text">
+            However, in practice, we won't use those formulas when implementing the gates with transistors. For example, to implement the MUL gate, as AND and OR gates require inverting the output of the basic NAND and NOR gates, they are 50% more expensive. Thus, we prefer to use another formula, more complex on paper but simpler in circuitry 
+            ££A \otimes B = \overline{\overline{(A \times B)} \times (A + B)} ££
+            This gate is useful for instance to control one signal with an other : the signal comes in A, and if B is positive, the output is A, if B is negative, the output is NOT(A) and if B is zero, the output is null. Here is the diagram of the formula above :
+        </p>
+        <div class="center_block">
+            <img class="image_big" src="ternlogic_mul.png" alt="">
+            <p class="caption">
+                MUL gate
+            </p>
+        </div>
+        <p class="text">
+            Similarly, we can implement the SUM gate :
+        </p>
+        <div class="center_block">
+            <img class="image_big" src="ternlogic_sum.png" alt="">
+            <p class="caption">
+                MUL gate
+            </p>
+        </div>
         <p class="text">
             Here are other useful ternary algebra formulas :
         </p>
@@ -730,10 +762,6 @@
             ££\overline{A ⊞ B} = \overline{A} ⊞ \overline{B} ££
             ££\overline{A \otimes B} = \overline{A} \otimes \overline{B} ££
             ££\overline{A \oplus B} = \overline{A} \oplus \overline{B} ££
-        <p class="text">
-            In the next article, I'm going to explain how to implement basic ternary gates with transistors.
-        </p>
-
         <a id="indexlink" href="index.html" style="margin-top: 60px">
             Go back to the list of projects
         </a>
