@@ -254,11 +254,14 @@
         <p class="text">I tried pruning the tree with the full 258k dataset and with the reduced 80k dataset. </p>
         <p class="text">First with 258k samples : </p>
         <div class="center_block">
-            <img class="image_two" src="machinel/DT_WR_MaxDepth.svg" alt="">
-            <img class="image_two" src="machinel/DT_WR_MaxLeaves.svg" alt="">
+            <img class="image_small" src="machinel/DT_WR_MaxDepth.svg" alt="">
+            <img class="image_small" src="machinel/DT_WR_MaxLeaves.svg" alt="">
         </div>
         <p class="text">Here no maximum is reached before the previous result and pruning the leaves would result is a significantly lower accuracy. Overfitting isn’t a problem with this dataset. </p>
         <p class="text">We can still prune the depth to 50 without affecting the accuracy much. </p>
+        <div class="center_block">
+            <img class="image_small" src="machinel/DT_WR_280k_P_LC.svg" alt="">
+        </div>
         <table>
             <tr>
                 <th></th>
@@ -286,14 +289,14 @@
             </tr>
         </table>
         <div class="center_block">
-            <!-- <img class="image_two" src="machinel/DT_WR_FULL_CM.svg" alt="">
-            <img class="image_two" src="machinel/DT_WR_FULL_NCM.svg" alt=""> -->
+            <img class="image_two" src="machinel/DT_WR_280k_P_CM.svg" alt="">
+            <img class="image_two" src="machinel/DT_WR_280k_P_NCM.svg" alt="">
         </div>
         <p class="text">As expected, the performances are slightly degraded. The number of leaves barely decreased so this pruning probably only cut some thin and long branches of the tree. The confusion matrix shows that the pruning affected the minority classes the most. </p>
         <p class="text">Then with 80k : </p>
         <div class="center_block">
-            <img class="image_two" src="machinel/DT_WR_80k_MaxDepth.svg" alt="">
-            <img class="image_two" src="machinel/DT_WR_80k_MaxLeaves.svg" alt="">
+            <img class="image_small" src="machinel/DT_WR_80k_MaxDepth.svg" alt="">
+            <img class="image_small" src="machinel/DT_WR_80k_MaxLeaves.svg" alt="">
         </div>
         <p class="text">Again, while the accuracy almost plateaus after a certain tree size, it still increases slightly and there is no problem with overfitting. We can still prune this tree to a depth of 10. I then checked if the optimal number of leaves would could be lowered in this case. </p>
         <div class="center_block">
@@ -366,8 +369,8 @@
         <p class="text">The accuracy is worse than the naïve classifiers. </p> 
         <p class="text">I tried pruning the tree to see if this was due to overfitting. Thus, I modified the hyperparameters for the maximum depth and the maximum number of leaves.</p> 
         <div class="center_block">
-            <img class="image_two" src="machinel/DT_WQ_MaxDepth.svg" alt="">
-            <img class="image_two" src="machinel/DT_WQ_MaxLeaves.svg" alt="">
+            <img class="image_small" src="machinel/DT_WQ_MaxDepth.svg" alt="">
+            <img class="image_small" src="machinel/DT_WQ_MaxLeaves.svg" alt="">
         </div>
         <p class="text">As we can see, while the testing accuracy keeps improving, the cross-validation accuracy reaches a peak score for a depth of 4 and 10 leaves only</p>
         <div class="center_block">
@@ -424,8 +427,8 @@
 
         <p class="text">I first tried to run the study on the pruned decision tree obtained with the 80k sample of the dataset in the previous chapter. However, the computation time was again too large and I had to shrink the dataset to a tiny 5k sample. I ran the decision tree on it and pruned it successfully. </p> 
         <div class="center_block">
-            <img class="image_two" src="machinel/DT_WR_5k_MaxDepth.svg" alt="">
-            <img class="image_two" src="machinel/DT_WR_5k_MaxLeaves.svg" alt="">
+            <img class="image_small" src="machinel/DT_WR_5k_MaxDepth.svg" alt="">
+            <img class="image_small" src="machinel/DT_WR_5k_MaxLeaves.svg" alt="">
         </div>
         <table>
             <tr>
@@ -561,8 +564,8 @@
         <p class="text">And again, the best learning rate is around 0.01. </p> 
         <p class="text">I fixed the learning rate at that value and varied the number of estimators, first exponentially and then between 1 and 100.</p> 
         <div class="center_block">
-            <img class="image_two" src="machinel/BST_WQ_P_Est_log.svg" alt="">
-            <img class="image_two" src="machinel/BST_WQ_P_Est.svg" alt="">
+            <img class="image_small" src="machinel/BST_WQ_P_Est_log.svg" alt="">
+            <img class="image_small" src="machinel/BST_WQ_P_Est.svg" alt="">
         </div>
         <p class="text">This plot isn’t as clear but we can still tell that about 40 estimators is slightly better. This is slightly less than the default value of 50 even though we lowered the learning rate by two orders of magnitude, however the variation with this hyperparameter isn’t striking.  </p> 
         <p class="text">I checked that reducing the number of estimators from 50 to 40 didn’t affect the optimal learning rate much and the results are the same. This is a sort of gradient ascent method to finding a local maximum of accuracy in a landscape of hyperparameters. </p> 
@@ -969,7 +972,7 @@
         <p class="text">First, I wanted to know how much the initial weights and biases of the network affects the accuracy scores so I ran the training with the same parameters five times and the differences in accuracy was less than 2% from run to run. I also increased the maximum number of iterations in order to make sure we reached a local maximum of accuracy at least. </p>
         <p class="text">I then thought about a methodology to search the best network structure. But there are just too many options such as number of layers, number of neurons in each layer, shapes of the structure (increasing number of neurons, decreasing number of neurons, concave, convex, etc). I started with two equal layers with increasing number of neurons.</p>
         <div class="center_block">
-            <img class="image_two" src="machinel/NN_WQ_NbLayer2.svg" alt="">
+            <img class="image_small" src="machinel/NN_WQ_NbLayer2.svg" alt="">
         </div>
         <p class="text">The trend isn’t clear. I then tried varying the number of layers but again the accuracy scores are all over the place. I ended up trying many different structures randomly. The 1212-12 structure led to the best results. </p>
         <p class="text">Then I studied the impact of different activation functions with the 12-12-12 network. </p>
@@ -1012,7 +1015,7 @@
         </table>
         <p class="text">In this case, the relu activation produced the best results especially compared to the famous logistic sigmoid. This was very unexpected to me. Tanh also produced decent results. </p>
         <div class="center_block">
-            <img class="image_two" src="machinel/NN_WQ_LC.svg" alt="">
+            <img class="image_small" src="machinel/NN_WQ_LC.svg" alt="">
         </div>
         <table>
             <tr>
@@ -1039,7 +1042,7 @@
 
         <p class="text">As the computation load with this dataset is huge, I decided to reuse the observations of the other dataset. Therefore, I used the same parameters. </p>
         <div class="center_block">
-            <img class="image_two" src="machinel/NN_WR_LC.svg" alt="">
+            <img class="image_small" src="machinel/NN_WR_LC.svg" alt="">
         </div>
         <table>
             <tr>
