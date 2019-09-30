@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Import Katex -->
+    <link rel="stylesheet" href="katex/katex.min.css">
+    <script src="katex/katex.min.js"></script>
+    <!-- Import Katex auto-render -->
+    <script src="katex/contrib/auto-render.min.js"></script>
+
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="articles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Ternary ALU PCB</title>
+</head>
+<body>
+    <div id="content">
+        <a id="indexlink" href="index.html" style="margin-bottom: 30px">
+            Go back to the list of projects
+        </a>
+        <img class="banner_img" src="ternalu2.png" alt="">
+        <div id="page_title">
+            Revising ternary ALU design
+        </div>
+        <div id="page_date">
+            ongoing
+        </div>
+
+        <p class="text">
+            As promised, more of my Ternary Computer project. In the previous article on the topic, I promised I would explain how I designed the PCB to build the ALU. However, before doing that, I wanted to count how many gates I would need for the 3-trit ALU. A while ago, I wrote an article on the design of a ternary ALU. I also said in that article that we could spare gates by tweaking the design slightly.
+        </p>
+        <p class="text">
+            Small spoiler altert for the next article, but here are the PCBs I designed and the number of CD4007 chips on each :
+        </p>
+        <ul class="text">
+            <li>2x(NOT+NNOT+PNOT) = 2 chips</li>
+            <li>NAND = 2 chips</li>
+            <li>NOR = 2 chips</li>
+            <li>NCONS = 2 chips</li>
+            <li>NANY = 2 chips</li>
+            <li>MUL = 7 chips</li>
+            <li>NSUM+NCONS = 10 chips</li>
+            <li>3-trit LED display = 2 chips</li>
+        </ul>
+        <p class="text">
+            As you can see, some PCB combine multiple gates, either because I had extra space or because some gates include other gates, which is the case of the NSUM gate which requires a NCONS gate.
+        </p>
+        <div class="center_block">
+            <img class="image_big" src="ternalu2_nsumncons.png" alt="">
+            <p class="caption">
+                NSUM with NCONS secondary output
+            </p>
+        </div>
+        <p class="text">
+            But first, let's take the original design and count the cost in chips and the PCBs needed by climbing the layers of abstraction. First, the fundamental gate of the ALU is the SUM gate. Using the formula and diagram described in the first article I made about ternary logic, each SUM gate costs 11 CMOS pairs, thus 11 CD4007 chips. Then to build a half-adder, we need a SUM gate and a CONS gate for a total of 14 chips. Then the full-adder requires two half-adders and a ANY gate, 31 chips. The first digit of the ALU is a half adder, 14 chips, and the last digits is two SUM gates, 22 chips ; the rest are full-adders. For a $$n$$-trit ALU ($$n\geq 2$$), the total cost of the ALU (not including the sign controller required for subtraction) is $$(14+31(n-2)+22) = (31n-26)$$ chips. For a 3-trit ALU, that amounts to 67 chips.
+        </p>
+        <p class="text">
+            As stated earlier, we can spare one CONS gate, per half-adder by using the NCONS gate in the SUM gate and adding just a NOT gate. That saves 2 chips per half-adder. The new total cost is $$(27n-20)$$ chips, 61 chips for a 3-trit ALU (-6).
+        </p>
+        <p class="text">
+            Another economy comes from something else. In the first article, I mentioned the following formulas.
+            ££{A ⊠ B} = \overline{A} ⊠ \overline{B} ££
+            ££{A ⊞ B} = \overline{A} ⊞ \overline{B} ££
+            ££{A \otimes B} = \overline{A} \otimes \overline{B} ££
+            ££{A \oplus B} = \overline{A} \oplus \overline{B} ££
+            And this is huge. If we invert both inputs of a SUM gate, the output is unchanged. But why invert the inputs ? Adding NOT gates will increase the cost ! Well, yes, obviously. The trick is to use inverted gates before the input, and since those inverted gates are usually cheaper, we can save chips. This is simpler to understand with diagrams :
+        </p>
+        <div class="center_block">
+            <img class="image_small" src="ternalu2_nhalf.png" alt="">
+            <p class="caption">
+                N-half-adder
+            </p>
+        </div>
+        <p class="text">
+            Here I defined an alternative half-adder. I created two symbols and here is why. The circle on the output still means that the output is inverted compared to the default gate (here the half-adder). The round cup on the input is supposed to indicate an inverter should be present on the input, that is, to get the behavior of the default gate, we have to invert this input. Here, the two symbols, taken with the labels, are the same : to get the behavior of the default half-adder, we can either invert both output or both inputs. This is a direct consequence of the formulas listed above.
+        </p>
+        <p class="text">
+            Using this N-half-adder, we can create a N-full-adder :
+        </p>
+        <div class="center_block">
+            <img class="image_big" src="ternalu2_nfull.png" alt="">
+            <p class="caption">
+                N-full-adder
+            </p>
+        </div>
+        <p class="text">
+            Again, let me remind you that both N-half-adders on this diagram correspond to the same internal circuitry described above. However, on the bottom one, we feed the original A and B signals, so we get the inverted sum and inverted carry of A and B. While on the top one, we feed in the inverted incoming carry and the inverted sum from the first N-half-adder, so we get the un-inverted final sum and the un-inverted carry. So, one carry is inverted and the other is not. To combine the two carries, we have to invert one and thus add a NOT gate. Then, as we want the inverted total carry, we have to use a NANY which is more expensive than the ANY.
+        </p>
+        <p class="text">
+            Finally, we can built our full ALU again. As expected, the first and last digits are also different.
+        </p>
+        <div class="center_block">
+            <img class="image_smaller" src="ternalu2_chain.png" alt="">
+            <p class="caption">
+                New adder chain
+            </p>
+        </div>
+        <p class="text">
+            Now let's calculate the new cost. With those modifications, the N-half-adder costs 10 chips (-2), the N-full-adder 24 chips (-2), the first digit 11 chips (-1) and the last digit 21 chips (-1). The total and final cost is $$(24n-16)$$ chips, 56 chips for a 3-trit ALU (-5).
+        </p>
+        <p class="text">
+            Finally, let's count the PCBs required. Each N-half-adder is 1 NSUM+NCONS. A N-full-adder is 2 NSUM+NCONS, 1 NANY and 1 full 2xNOT (one NOT for the ANY and one for the carry). The first digit is 1 NSUM+NCONS and 0.5 2xNOT. The last digit is 2 NSUM+NCONS (only the NSUM are used). For a 3-trit ALU, this amounts to 5 NSUM+NCONS, 1 NANY and 1.5 2xNOT.
+        </p>
+        <p class="text">
+            Beside an economy of chips and PCBs, the optimizations also reduce the number of CMOS pairs the signal has to propagate through, and thus increases the maximum frequency of the processor. We will take a look at this much later.
+        </p>
+        <p class="text">
+            That was a lot of new circuitry ! I could have done a mistake, so I checked the whole behavior of the circuit, once on paper and once with TelociDesi, the piece of software I developed last year to simulate whole ternary circuits. I can confirm everything works perfectly. Here are the circuits :
+        </p>
+        <div class="center_block">
+            <img class="image_smaller" src="ternalu2_telo_nhalf.png" alt="">
+            <p class="caption">
+                N-half-adder
+            </p>
+        </div>
+        <div class="center_block">
+            <img class="image_small" src="ternalu2_telo_nfull.png" alt="">
+            <p class="caption">
+                N-full-adder
+            </p>
+        </div>
+        <div class="center_block">
+            <img class="image_smaller" src="ternalu2_telo_alu.png" alt="">
+            <p class="caption">
+                3-trit ALU
+            </p>
+        </div>
+
+
+
+        <a id="indexlink" href="index.html" style="margin-top: 60px">
+            Go back to the list of projects
+        </a>
+        <script>
+            renderMathInElement(document.body,{delimiters: [
+                {left: "$$", right: "$$", display: false},
+                {left: "££", right: "££", display: true}
+            ]});
+        </script>
+    </div>
+</body>
+</html>
