@@ -14,18 +14,96 @@
         </a>
         <img class="banner_img" src="pcbtern.png" alt="">
         <div id="page_title">
-            Implementation of ternary ALU
+            Design of PCBs for ternary gates
         </div>
         <div id="page_date">
-            ongoing
+            05/10/2019
         </div>
 
         <p class="text">
-            As promised, more of my Ternary Computer project. In the previous article on the topic, I built the basic gates (NOT, NAND, NOR, NCONS, NANY) on breadboards using the CD4007 chip. However, the goal is tu build a 3-trit ALU, which requires many many gates. Therefore, I decided to manufature PCBs for the different gates and then build more complex circuits like Lego.
+            In a previous article about my Ternary Computer, I built the basic gates (NOT, NAND, NOR, NCONS, NANY) on breadboards using the CD4007 chip. However, the goal is tu build a 3-trit ALU, which requires many many gates. Therefore, I decided to manufacture PCBs for the different gates and then build more complex circuits like Lego.
         </p>
         <p class="text">
-            First, let's calculate how many gates and thus PCBs and chips we will need. A while ago, I wrote an article about the design of a ternary ALU, however, as I stated in this article, we can actually use a slightly different design with inverters, or lack of inverters, to do the same function but inverted and spare many chips.
+            Instead of having a mess cables everywhere for power and data running between free floating PCBs, I decided to mount everything on a structure both for stability, readability and power delivery. The key component is some 40pins triple-width female headers.
         </p>
+        <div class="center_block">
+            <img class="image_smaller" src="pcbtern_header.jpg" alt="">
+            <p class="caption">
+                Triple-width headers
+            </p>
+        </div>
+        <p class="text">
+            By connecting the columns into three rails, we can easily mount and power multiple devices with angled male headers on the side.
+        </p>
+        <p class="text">
+            Then, the PCBs. I designed everything with EasyEDA because it is easy to use, it's simple, I don't need more advanced features and it's integrated with JLCPCB to order the PCBs. I prefer placing the components and routing everything by hand.
+        </p>
+        <p class="text">
+            As I said in the previous article, here is the list of PCBs :
+        </p>
+        <ul class="text">
+            <li>2x(NOT+NNOT+PNOT) = 2 chips</li>
+            <li>NAND = 2 chips</li>
+            <li>NOR = 2 chips</li>
+            <li>NCONS = 2 chips</li>
+            <li>NANY = 2 chips</li>
+            <li>MUL = 7 chips</li>
+            <li>NSUM+NCONS = 10 chips</li>
+            <li>3-trit LED display = 2 chips</li>
+            <li>Power rail bridge connector</li>
+        </ul>
+        <p class="text">
+            The basic gates with 2 chips only can fit on a small PCB about 3x4cm. Other require a multiple of this basic size unit. Here are the schematics of the PCBs. To save on cost, I decided to panel multiple together with small 3mm bridges (the smallest JLCPCB accepted) and will just have to cut them and file the edges flat.
+        </p>
+        <div class="center_block">
+            <img class="image_bigger" src="pcbtern_panel.png" alt="">
+            <p class="caption">
+                Combine panel ; left:front side ; right:back side
+            </p>
+            <img class="image_small" src="pcbtern_mul.png" alt="">
+            <p class="caption">
+                MUL ; left:front side ; right:back side
+            </p>
+            <img class="image_small" src="pcbtern_sum.png" alt="">
+            <p class="caption">
+                NSUM+NCONS ; left:front side ; right:back side
+            </p>
+            <img class="image_small" src="pcbtern_bridge.png" alt="">
+            <p class="caption">
+                Bridge ; left:front side ; right:back side
+            </p>
+        </div>
+        <p class="text">
+            As you can see I also added labels and schematics to show which board is which gate. I ordered a bunch of them on JLCPCB and got them manufactured and delivered in about a week.
+        </p>
+        <div class="center_block">
+            <img class="image_bigger" src="pcbtern_stack.jpg" alt="">
+            <p class="caption">
+                Stacks of cool PCBs !
+            </p>
+        </div>
+        <p class="text">
+            It will take a bit of time to solder everything is place and I don't have that much free time right now. I still wanted to at least check if it worked. I soldered a NCONS gate and put the chips in.
+        </p>
+        <div class="center_block">
+            <img class="image_bigger" src="pcbtern_ncons.jpg" alt="">
+            <p class="caption">
+                Stacks of cool PCBs !
+            </p>
+        </div>
+        <p class="text">
+            Fortunately, It works like a charm. I also tested the header power rails.
+        </p>
+        <div class="center_block">
+            <img class="image_bigger" src="pcbtern_assembly.jpg" alt="">
+            <p class="caption">
+                Stacks of cool PCBs !
+            </p>
+        </div>
+        <p class="text">
+            I am very satisfied with how it looks and works. Hopefully the next article will be about putting everything together and finishing the ALU. Stay tuned !
+        </p>
+
 
         <a id="indexlink" href="index.html" style="margin-top: 60px">
             Go back to the list of projects
