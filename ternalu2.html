@@ -88,7 +88,7 @@
             Again, let me remind you that both N-half-adders on this diagram correspond to the same internal circuitry described above. However, on the bottom one, we feed the original A and B signals, so we get the inverted sum and inverted carry of A and B. While on the top one, we feed in the inverted incoming carry and the inverted sum from the first N-half-adder, so we get the un-inverted final sum and the un-inverted carry. So, one carry is inverted and the other is not. To combine the two carries, we have to invert one and thus add a NOT gate. Then, as we want the inverted total carry, we have to use a NANY which is more expensive than the ANY.
         </p>
         <p class="text">
-            Finally, we can built our full ALU again. As expected, the first and last digits are also different.
+            Finally, we can build our full ALU again. As expected, the first and last digits are also different.
         </p>
         <div class="center_block">
             <img class="image_smaller" src="ternalu2_chain.png" alt="">
