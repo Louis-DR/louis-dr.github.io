@@ -29,6 +29,15 @@
     margin-bottom: 30px;
 }
 
+#subtitle {
+    text-align: center;
+    font-family: 'Museo W01_500';
+    font-size: 40px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    color: gray;
+}
+
 #page_date {
     text-align: center;
     font-family: 'Museo W01_500';
@@ -64,6 +73,22 @@ td b {
     /* color: darkblue; */
     background-color: lightblue;
     font-weight: normal;
+}
+
+.series-header {
+    font-family: 'Museo W01_500';
+    font-size: 18px;
+    font-style: italic;
+    line-height: 1.7;
+    width: 80%;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    color: lightgray;
+}
+
+.series-header a{
+    color: lightgray;
 }
 
 .link {
