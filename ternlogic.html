@@ -56,7 +56,7 @@
             One-input gates
         </p>
         <p class="text">
-            In binary, a gate with one-input and one output can be represented as a two by one matrix. The following gate
+            In binary, a gate with one input and one output can be represented as a two by one matrix. The following gate
         </p>
         <table>
             <tr>
@@ -145,7 +145,7 @@
             </tr>
         </table>
         <p class="text">
-            Only the last two are useful. We can also note that ISZ is the same gate as NNOT.
+            Only the last two are useful.
         </p>
         <p class="text">
             In ternary however, one-input and one output is a three by one matrix with three possible values for each cell, so $$3^3=27$$ possible gates. I wont list them all but the useful ones are :
@@ -200,7 +200,7 @@
                 </th>
                 <th><img src="ternlogic/PNOT.png" class="gate"></th>
                 <th>Positively biased inverter</th>
-                <th>NOT</th>
+                <th>PNOT</th>
                 <th>$$\hat{A}$$</th>
             </tr>
             <tr>
@@ -215,7 +215,7 @@
                 </th>
                 <th><img src="ternlogic/NNOT.png" class="gate"></th>
                 <th>Negatively biased inverter</th>
-                <th>NOT</th>
+                <th>NNOT</th>
                 <th>$$\check{A}$$</th>
             </tr>
             <tr>
@@ -329,7 +329,7 @@
                     \begin{bmatrix} 
                     -\\
                     -\\
-                    0
+                    +
                     \end{bmatrix}
                     $$
                 </th>
@@ -343,8 +343,8 @@
                     $$
                     \begin{bmatrix} 
                     -\\
-                    -\\
-                    0
+                    +\\
+                    -
                     \end{bmatrix}
                     $$
                 </th>
@@ -357,9 +357,9 @@
                 <th>
                     $$
                     \begin{bmatrix} 
+                    +\\
                     -\\
-                    -\\
-                    0
+                    -
                     \end{bmatrix}
                     $$
                 </th>
@@ -370,10 +370,10 @@
             </tr>
         </table>
         <p class="text">
-            That's a lot of gates ! Most of them are only useful in rare situations when building a processor. The ones to remember are the buffer and the three inverter gates.
+            That's a lot of gates ! Most of them are only useful in rare situations when building a processor. We can also note that ISZ is the same gate as NNOT. The ones to remember are the buffer and the three inverter gates.
         </p>
         <p class="text">
-            I won't show the implementation in transistors in this article but an important thing to not is that some gates are very easy to implement with a small amount of transistors and resistors, while others, like Rotate up and Rotate down, require using more complex two-inputs gates and cost much more.
+            I won't show the implementation in transistors in this article but an important thing to note is that some gates are very easy to implement with a small amount of transistors and resistors, while others, like Rotate up and Rotate down, require using more complex two-inputs gates and cost much more.
         </p>
         <p class="section">
             Two-input gates

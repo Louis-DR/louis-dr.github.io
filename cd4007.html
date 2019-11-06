@@ -45,7 +45,7 @@
             The gates I'm going to implement are the five basic gates : NOT, NAND, NOR, NCONS, NANY. NOT actually comes in three versions, the neutral NOT and the positive and negatively biased NNOT and PNOT, but they don't require more circuitry : just one CMOS pair and two resistors to stabilize the output. The other basic gates have two inputs, thus two CMOS pairs plus the two resistors. I initially used resistors on the inputs as well but it's unnecessary.
         </p>
         <p class="text">
-            I also acquired a new dual-rail positive-negative power-supply since the one I had built a few month ago doesn’t work anymore (the capacitors look blown up so I guess I fed it reverse polarity at some point). I use 5V positive and negative but the CD4007 can be driven with up to 15V.
+            I also acquired a new dual-rail positive-negative power-supply since the one I had built a few months ago doesn’t work anymore (the capacitors look blown up so I guess I fed it reverse polarity at some point). I use 5V positive and negative but the CD4007 can be driven with up to 15V.
         </p>
         <p class="text">
             For the two-input gates, the two corresponding transistors of the two CMOS pairs can either be setup in parallel or in series. Two configurations for the NMOS and the PMOS, so four configurations in total for the two pairs. Those are the four basic gates : NAND, NOR, NCONS, NANY.
@@ -176,7 +176,7 @@
 
         <p class="section">Electrical properties</p>
         <p class="text">
-            While building the gates, I noticed there seams to be a small voltage bias : even when using precise $$+5.00V$$ and $$-5.00V$$, the $$0$$ output was about $$-0.7V$$. I examined that by acquiring a second dual-rail power-supply, fixing the first to $$\pm 5.00V$$ and using the other to measure the output of a NOT gate with an input ranging from $$-5.00V$$ to $$+5.00V$$. The dual-rail power-supply I use can't go below $$1.25V$$ (LM337 and LM317). Here is the result :
+            While building the gates, I noticed there seems to be a small voltage bias : even when using precise $$+5.00V$$ and $$-5.00V$$, the $$0$$ output was about $$-0.7V$$. I examined that by acquiring a second dual-rail power-supply, fixing the first to $$\pm 5.00V$$ and using the other to measure the output of a NOT gate with an input ranging from $$-5.00V$$ to $$+5.00V$$. The dual-rail power-supply I use can't go below $$1.25V$$ (LM337 and LM317). Here is the result :
         </p>
         <div class="center_block">
             <img class="image_small" src="cd4007_activation.PNG" alt="">
@@ -191,7 +191,7 @@
             I then wanted to check the propagation time of the CMOS pair of the CD4007. This is how long it takes for the output to be updated after the input changes. The datasheet indicates a propagation time of typically $$35ns$$ at $$5V$$ and $$20ns$$ at $$10V$$. This translates to a maximum frequency of $$28.6MHz$$ and $$50MHz$$ respectively. This is for one CMOS pair. A more complex gate such as MUL or SUM requires multiple such propagation delays, and as I explained in the ALU Design article, a ripple-carry ALU will take many many propagation delays. We can still estimate that for the 3-trit ALU, we can expect in the order of $$100kHz$$, which would be great ! But realistically, there are other factors related to wire length between the gates.
         </p>
         <p class="text">
-            Using the small handheld oscilloscope I had at the time, and a 555 timer clock,I tried to check how fast the NOT gate I built could work. I was quickly limited by the maximum frequency of the oscilloscope and the messy waveform of the 555 circuit I made in a hurry. But the circuit was still working fine at about $$400kHz$$.
+            Using the small handheld oscilloscope I had at the time, and a 555 timer clock, I tried to check how fast the NOT gate I built could work. I was quickly limited by the maximum frequency of the oscilloscope and the messy waveform of the 555 circuit I made in a hurry. But the circuit was still working fine at about $$400kHz$$.
         </p>
         <div class="center_block">
             <img class="image_small" src="cd4007_freq.jpg" alt="">

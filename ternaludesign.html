@@ -36,10 +36,10 @@
         </p>
 
         <p class="text">
-            Last time, we looked at the basics of ternary logic. Now let's implement a more complex circuit : an Arithmetic Logic Unit. This component adds two ternary words and outputs the sum. In addition, we want to be able to do subtractions. Here, to keep diagrams reasonable, I will describe a 3-trit (tribble) ALU.
+            Last time, we looked at the basics of ternary logic. Now let's implement a more complex circuit : an Arithmetic Logic Unit. This component adds two ternary words and outputs the sum. In addition, we want to be able to do subtractions. Here, to keep diagrams reasonable, I will describe a 3-trit (one tribble) ALU.
         </p>
         <p class="text">
-            The main operation of the ALU is the addition. This operation, as in any numerical base requires a carry system, a way to propagate the carry from the addition from one digit to the next. I will use a ripple-carry system and not a carry-lookahead. That means adding the two trits of one digit of the words requires the carry of the previous pair of digits, therefore we have to wait for the previous sum to be completed. Consequently, as the word length increases, so does the time required for the operation to complete. In a full processor, this reduces the maximum frequency, or requires complex timing. 
+            The main operation of the ALU is the addition. This operation, as in any numerical base requires a carry system, a way to propagate the carry from the addition from one digit to the next. I will use a ripple-carry system and not a carry-lookahead. That means adding the two trits of one digit of the words requires the carry of the previous pair of digits, therefore we have to wait for the previous sum to be completed. Consequently, as the word length increases, so does the time required for the operation to complete in a linear way. In a full processor, this reduces the maximum frequency, or requires complex timing and scheduling. 
         </p>
         <p class="text">
             As with binary, we start by creating a half-adder, which add two trits and outputs the sum as well as the carry of this operation. For instance, $$1 + 1 = 2$$ in ternary is $$(+) + (+) = (+$$$$-)$$, meaning the sum of $$+$$ and $$+$$ is $$-$$ and the carry is $$+$$. In truth table : <br>
@@ -71,7 +71,7 @@
             When building the half-adder with transistors, we can actually spare the CONS gate by using the one inside the SUM gate (see the previous post).
         </p>
         <p class="text">
-            Then we combine two half-adders to create a full-adder to add two trits as well as the previous carry. We also have to combine the carries of the two additions. 
+            Then we combine two half-adders to create a full-adder to add two trits as well as the previous carry. We also have to combine the carries of the two additions with a ANY gate. 
         </p>
         <div class="center_block">
             <img class="image_big" src="ternaludesign_full.png" alt="">
@@ -112,7 +112,7 @@
             There might be a way to bring the cost of each NMUL gate by factoring some of the transistors between one NAND and the OR gate and thus spare one CMOS pair per gate. Another factorization might be possible between the NMUL gate inside the signal controller circuit further reducing the cost. This will be explored in the future. Anyway, factorizing CMOS pairs between gates won’t be practical for the many-boards modular design approach I described earlier and the savings might not be worth it. Therefore, it would be more useful for a single board design.
         </p>
         <p class="text">
-            Finally, here is the ALU with the $$neg$$ signal to control B and do subtractions. I a full processor, this signal will be controlled by the instruction decoder.
+            Finally, here is the ALU with the $$neg$$ signal to control B and do subtractions. In a full processor, this signal will be controlled by the instruction decoder.
         </p>
         <div class="center_block">
             <img class="image_small" src="ternaludesign_alu.png" alt="">
