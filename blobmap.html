@@ -105,7 +105,7 @@
             There were still conflicts if two non-full tiles were next to each other at the border with a third color. An iteration over every cell checking for this situation and replacing all but one of the neighbors with full tiles solved this issue.
         </p>
         <p class="text">
-            As stated earlier, the randomness is fixed for every cell ; nevertheless if the borders between two regions changes at a cell touching a third region, the tiles way change the border of the third region. This is a minor issue even with nations so I wont be addressing it for a while.
+            As stated earlier, the randomness is fixed for every cell ; nevertheless if the borders between two regions changes at a cell touching a third region, the tiles way change the border of the third region. This is a minor issue even with nations so I won't be addressing it for a while.
         </p>
         <p class="text">
             However, this issue is annoying if it changes the coastline of the continent every time the nations gain and lose territory. To solve this, I separated the coastline map from the regions inside the continents. The land color of the coastline map is transparent (actually it is replaced with a shader after drawing to a render texture). The colors of the interior regions are extended one cell in the ocean to make the ocean borders match with the coast.

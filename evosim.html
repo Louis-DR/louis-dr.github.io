@@ -672,7 +672,7 @@
             Other versions
         </p>
         <p class="text">
-            I made a few more modification but they didn't affect the results much or made the simulation unstable so I wont go into details explaining them. 
+            I made a few more modification but they didn't affect the results much or made the simulation unstable so I won't go into details explaining them. 
         </p>
         <P class="text">
             First I changed the food supply system so that the entire supply is not necessarily distributed every year. Basically every creature seeks a certain amount of food. If there is too little food in the environment, then each creature will still get a share according to their fitness and the selectivity function, and the environment will be almost completely depleted. If there is more food than the sum of every creature's wants, then they each get what they need plus an extra, also using the selectivity. Therefore, when resources are plentiful, selectivity has a lower impact and fitter creatures can't just get so much food that they pump out babies like there is no tomorrow.
@@ -681,7 +681,7 @@
             I then made the environment recover proportionally instead of just resetting the food supply to the same amount every year. However that was way too unstable. Either the environment would grow exponentially, which I solved by adding a maximum, but I was then always constant at that maximum. Or the number of creature would exceed the point of equilibrium between consumption and recovery and the environment would quickly die soon followed by the death of the population as the phenomenon was too quick for the population to reach a new equilibrium or even oscillate. I scrapped that whole idea for now. My best guess is that the simulation steps are just too long. In one or two iterations, creature can go from too much energy to dead starving and from one creature to multiple.
         </p>
         <p class="text">
-            Finally, I made every creature age and the older they got, the more likely they were to die. That had almost no impact on the simulation results. This system could however be more useful and interesting for a later simulation with sexual reproduction and a greater variety of gene expression to ensure an exceptionally good roll wont survive centuries still producing babies.
+            Finally, I made every creature age and the older they got, the more likely they were to die. That had almost no impact on the simulation results. This system could however be more useful and interesting for a later simulation with sexual reproduction and a greater variety of gene expression to ensure an exceptionally good roll won't survive centuries still producing babies.
         </p>
         <p class="text">
             I also translated the whole simulation to C++ and saw a significant boost in performance, almost 100 times faster ! I tried multithreading the simulation but ran into weird bugs even with mutex. I will look more into this and might need to call StackOverflow for help.
