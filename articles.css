@@ -38,6 +38,16 @@
     color: gray;
 }
 
+#subtext {
+    display:inline-block;
+    width: 50%;
+    text-align: center;
+    font-family: 'Museo W01_500';
+    font-size: 18px;
+    line-height: 1.7;
+    color: gray;
+}
+
 #page_date {
     text-align: center;
     font-family: 'Museo W01_500';
@@ -208,6 +218,10 @@ table {
         width: 480px;
         height: 270px;
     }
+
+    #subtext {
+        width: 70%;
+    }
 }
 @media only screen and (max-width: 600px) {
     #content {
@@ -243,6 +257,10 @@ table {
     }
 
     video {
+        width: 100%;
+    }
+
+    #subtext {
         width: 100%;
     }
 }
