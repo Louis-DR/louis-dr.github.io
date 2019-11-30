@@ -71,6 +71,10 @@
     line-height: 1.7;
 }
 
+.thinc {
+    width: 80px;
+}
+
 tr {
     font-family: 'Museo W01_500';
 }
