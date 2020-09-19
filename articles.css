@@ -189,6 +189,10 @@ td b {
     margin-left: 10px;
 }
 
+.two-columns {
+    column-count: 2;
+}
+
 table {
     margin: 0 auto;
 }
@@ -229,6 +233,14 @@ table {
     .video {
         width: 480px;
         height: 270px;
+    }
+
+    ul {
+        padding-left: 30px;
+    }
+
+    .two-columns {
+        width:90%;
     }
 
     #subtext {
@@ -282,6 +294,15 @@ table {
 
     .text {
         line-height: 1.6;
+    }
+
+    ul {
+        padding-left: 20px;
+    }
+
+    .two-columns {
+        width:95%;
+        font-size: 16px;
     }
 
     video {
