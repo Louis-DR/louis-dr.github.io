@@ -24,7 +24,7 @@
         <p class="series-header">
             This article is part of my series of projects around Map Generation. <a href="index-mapgen.html">Click here to see the list of projects of this series.</a>
         </p>
-            
+
         <p class="text">
             For the forth time during the development of my 4X game, I decided to reimagine how the map looked. What started out as straight hexagons, then rounded hexagons, then pixels is now tiles of geometrically pleasing shapes. Everything was coded in C++. This is my new, and hopefully final, map engine. It's called the Blobmap Engine.
             <br>
@@ -33,8 +33,8 @@
             I had a clear idea of how the blobmap would look as it was used in many infographics as well as an infographics book on WW2 I recently bought. The whole map consists of simples shapes : horizontal and vertical lines, 45° slopes and arcs of different diameters. Before starting implementing the algorithm, I wanted to make sure it would be suited for fantasy maps. I therefore created a basic tileset in paint and used Tiled to create a blobmap version of Westeros from A Song of Ice and Fire. Here is how it looked. I immediately loved it and it motivated me to keep going.
         </p>
         <div class="center_block">
-            <img class="image_two" src="blobmap_westeros_cyowari.jpg" alt="">
-            <img class="image_two" src="blobmap_westeros_blob.png" alt="">
+            <img class="image_two" src="blobmap_westeros_cyowari.jpg" alt="" loading="lazy">
+            <img class="image_two" src="blobmap_westeros_blob.png" alt="" loading="lazy">
             <p class="caption">
                 left : Map of Westeros by Cyowari  ;  right : Blobmap made with Tiled
             </p>
@@ -49,7 +49,7 @@
             Then to create the tiles, instead of using a tileset, as I wanted to be able to zoom very closely and have full control on the resolution and colors, I decided to go for a vertex array displayed a triangles. For every tile, a function is called and pushes the the vector the triangles to create the tile. Then the whole array is sent in only one draw call to the GPU. This is very efficient and even with a large grid, any GPU can handle this amount of triangles.
         </p>
         <div class="center_block">
-            <img class="image_small" src="blobmap_tiles.png" alt="">
+            <img class="image_small" src="blobmap_tiles.png" alt="" loading="lazy">
             <p class="caption">
                 All the tiles possible
             </p>
@@ -64,7 +64,7 @@
             Each rule gives a probability for every possible tile. A random int is attributed to each pixel for this purpose before the rules are run and those numbers never change. Therefore even if the algorithm is executed again (for instance if the coast changed and we want to update the drawn map) the whole coast won't change.
         </p>
         <div class="center_block">
-            <img class="image_small" src="blobmap_rule.png" alt="">
+            <img class="image_small" src="blobmap_rule.png" alt="" loading="lazy">
             <p class="caption">
                 Rule for the small pattern with 3 neighbors in a corner
             </p>
@@ -76,13 +76,13 @@
             Applying this algorithm to a whole map gives something very pleasing close up even though it looks a bit blocky from afar.
         </p>
         <div class="center_block">
-            <img class="image_big" src="blobmap_ex1.png" alt="">
+            <img class="image_big" src="blobmap_ex1.png" alt="" loading="lazy">
             <p class="caption">
                 Map rendered with Blobmap Engine
             </p>
         </div>
         <div class="center_block">
-            <img class="image_big" src="blobmap_ex2.png" alt="">
+            <img class="image_big" src="blobmap_ex2.png" alt="" loading="lazy">
             <p class="caption">
                 Close up of the map above
             </p>
@@ -97,7 +97,7 @@
             That worked, however artifacts still appeared on the border between three colors. The solution was to first paint the background of every cell with the four colors of its direct neighbors.
         </p>
         <div class="center_block">
-            <img class="image_small" src="blobmap_neighbours.png" alt="">
+            <img class="image_small" src="blobmap_neighbours.png" alt="" loading="lazy">
             <p class="caption">
                 Circle tile with neighbors of four different colors
             </p>
@@ -112,16 +112,16 @@
             However, this issue is annoying if it changes the coastline of the continent every time the nations gain and lose territory. To solve this, I separated the coastline map from the regions inside the continents. The land color of the coastline map is transparent (actually it is replaced with a shader after drawing to a render texture). The colors of the interior regions are extended one cell in the ocean to make the ocean borders match with the coast.
         </p>
         <div class="center_block">
-            <img class="image_big" src="blobmap_ex3.png" alt="">
+            <img class="image_big" src="blobmap_ex3.png" alt="" loading="lazy">
             <p class="caption">
                 Biome map with multiple colors
             </p>
         </div>
-        
+
         <p class="series-header">
             This article is part of my series of projects around Map Generation. <a href="index-mapgen.html">Click here to see the list of projects of this series.</a>
         </p>
-            
+
         <a id="indexlink" href="index.html" style="margin-top: 60px">
             Go back to the list of projects
         </a>

@@ -24,7 +24,7 @@
         <p class="series-header">
             This article is part of my series of projects around Map Generation. <a href="index-mapgen.html">Click here to see the list of projects of this series.</a>
         </p>
-            
+
         <p class="text">
             Once again, this project is part of my 4X game. In the last two articles, I coded the generation of the height map and the simulation of the weather. This time, I am working on the biomes. Biomes are crucial for this game as they will influence the resources, the fertility of the land, the mobility of civilizations and armies, the culture and so on. Again, everything is coded in C++.
         </p>
@@ -56,7 +56,7 @@
             My first try used a bunch of if else statements to describe the boundaries of humidity and temperature between those biomes. However for more flexibility, I decided to encode everything in a temperature-humidity diagram as a bitmap image. When calculating the biome of a land non-mountainous cell, the average temperature and humidity are used as coordinates in this image and the resulting shade of grey represents the biome (shades of gray in increments of 20/255 to make it easier to modify with paint). Then the map is drawn with fitting colors to display the biome map.
         </p>
         <div class="center_block">
-            <img class="image_small" src="biomes_diagram.png" alt="">
+            <img class="image_small" src="biomes_diagram.png" alt="" loading="lazy">
             <p class="caption">
                 x axis : temperature, y axis : humidity, with biome colors
             </p>
@@ -65,18 +65,18 @@
             After a while of tweaking the temperature-humidity diagram and testing with many different seeds, the results are very satisfying in my opinion. Here is a small gallery of examples with different kinds of worlds. As you can see, the east coast is more dry with deserts and shrubland, while the west coast, receiving the humid wind from the ocean will feature tropical biomes and grassland. The Icecaps are only present in the south but that is a mistake when calculating the average as I only averaged half of the year (see the previous article about weather for details about seasons).
         </p>
         <div class="center_block">
-            <img class="image_two" src="biomes_ex1.png" alt="">
-            <img class="image_two" src="biomes_ex2.png" alt="">
-            <img class="image_two" src="biomes_ex3.png" alt="">
-            <img class="image_two" src="biomes_ex4.png" alt="">
-            <img class="image_two" src="biomes_ex5.png" alt="">
-            <img class="image_two" src="biomes_ex6.png" alt="">
+            <img class="image_two" src="biomes_ex1.png" alt="" loading="lazy">
+            <img class="image_two" src="biomes_ex2.png" alt="" loading="lazy">
+            <img class="image_two" src="biomes_ex3.png" alt="" loading="lazy">
+            <img class="image_two" src="biomes_ex4.png" alt="" loading="lazy">
+            <img class="image_two" src="biomes_ex5.png" alt="" loading="lazy">
+            <img class="image_two" src="biomes_ex6.png" alt="" loading="lazy">
         </div>
-        
+
         <p class="series-header">
             This article is part of my series of projects around Map Generation. <a href="index-mapgen.html">Click here to see the list of projects of this series.</a>
         </p>
-            
+
         <a id="indexlink" href="index.html" style="margin-top: 60px">
             Go back to the list of projects
         </a>

@@ -4,6 +4,20 @@
     src:url("fonts/905282/3a1a59f5-1f68-4ebd-84ad-a9048fe78e39.eot?#iefix") format("eot"),url("fonts/905282/52be0694-00c1-4daa-8782-419021c48e95.woff2") format("woff2"),url("fonts/905282/dee84039-06ae-4a61-89c4-709e594804a3.woff") format("woff"),url("fonts/905282/9547becc-44c3-4b00-8568-8d3debb4d299.ttf") format("truetype");
 }
 
+h1,h2,h3,h4,h5,h6 {
+    margin: 0;
+    margin-block-start: 0px;
+    margin-block-end: 0px;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    font-weight: normal;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+
 #content {
     width: 50%;
     margin-left: auto;
