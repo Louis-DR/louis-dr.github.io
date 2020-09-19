@@ -26,19 +26,19 @@
         <div id="page_date">
             08/11/2019
         </div>
-        
+
         <p class="series-header">
             This article is part of my series of projects around Ternary Computing and Processor Design. <a href="index-ternary.html">Click here to see the list of projects of this series.</a>
         </p>
 
         <p class="text">
-            In the previous article, I explained how I designed the PCBs for each gate. After soldering the components, I tested if they worked properly. The inverter, the four basic gates and the MUL gate work but not the more complex SUM gate : when one of the inputs is 0, the output is not correct. To investigate this, I probed the PCB at different pins. 
+            In the previous article, I explained how I designed the PCBs for each gate. After soldering the components, I tested if they worked properly. The inverter, the four basic gates and the MUL gate work but not the more complex SUM gate : when one of the inputs is 0, the output is not correct. To investigate this, I probed the PCB at different pins.
         </p>
         <p class="text">
-            I believe the problem stems from the issue with the neutral output state : the output voltage isn’t really 0 and when used as input for another gate, it is amplified slightly and after a few gates in series, the neutral state is either positive or negative. 
+            I believe the problem stems from the issue with the neutral output state : the output voltage isn’t really 0 and when used as input for another gate, it is amplified slightly and after a few gates in series, the neutral state is either positive or negative.
         </p>
         <p class="text">
-            To visualize this phenomenon, here is the measurements I made in the first article about using CMOS pairs and the CD4007 chip. I measured the output voltage of a single CMOS pair (NOT gate) by sweeping the input voltage on the whole range of the supply voltages. 
+            To visualize this phenomenon, here is the measurements I made in the first article about using CMOS pairs and the CD4007 chip. I measured the output voltage of a single CMOS pair (NOT gate) by sweeping the input voltage on the whole range of the supply voltages.
         </p>
         <div class="center_block">
             <img class="image_small" src="cd4007_activation.PNG" alt="">
@@ -47,13 +47,13 @@
             </p>
         </div>
         <p class="text">
-            Not only there is a bias towards negatove voltage, but also the neutral state (for an input of 0) is on a slope, making it unstable. Note that my power supply can't produce voltages bellow 1.25V on either rail so this is an extrapolation. 
+            Not only there is a bias towards negatove voltage, but also the neutral state (for an input of 0) is on a slope, making it unstable. Note that my power supply can't produce voltages bellow 1.25V on either rail so this is an extrapolation.
         </p>
         <p class="text">
-            For the bias, I first assumed this was due to the resistors used to stabilize the output being only 5% accuracy and creating a bias on one side. However, swapping the resistors didn’t affect this behavior. Therefore, it is a consequence of the differences between NMOS and PMOS transistors. Compensating the negative bias of the CMOS pair with a positive bias of the power supply solved this first issue, but not the second issue : the unstable state. 
+            For the bias, I first assumed this was due to the resistors used to stabilize the output being only 5% accuracy and creating a bias on one side. However, swapping the resistors didn’t affect this behavior. Therefore, it is a consequence of the differences between NMOS and PMOS transistors. Compensating the negative bias of the CMOS pair with a positive bias of the power supply solved this first issue, but not the second issue : the unstable state.
         </p>
         <p class="text">
-            I thought about mutliple solutions, using pull-down resistors, operational amplifiers, etc. After experimenting with diodes, I found the best solution by using a special type of diodes : Zener diodes, that have a controlled reverse current flow threshold voltage called the Zener voltage. With a pull-down resistor and a Zener diode, we can create a voltage shifter with a value depending on the Zener voltage of the diode : 
+            I thought about mutliple solutions, using pull-down resistors, operational amplifiers, etc. After experimenting with diodes, I found the best solution by using a special type of diodes : Zener diodes, that have a controlled reverse current flow threshold voltage called the Zener voltage. With a pull-down resistor and a Zener diode, we can create a voltage shifter with a value depending on the Zener voltage of the diode :
         </p>
         <div class="center_block">
             <img class="image_two" src="terndiodesum_voltageshifter_circuit.png" alt="">
@@ -118,7 +118,7 @@
                 Single diode panel ; left:front side ; right:back side
             </p>
         </div>
-        
+
         <div class="center_block">
             <img class="image_bigger" src="terndiodesum_pcbs.jpg" alt="">
             <p class="caption">
@@ -135,13 +135,13 @@
             <iframe class="video" src="https://www.youtube.com/embed/F1QaXDb3r0A" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
         <p class="text">
-            This was so satisfying. I will now design and order the PCBs of the full SUM gate (because using all those individual gates isn't very elegant or practical) as well as for the MUL gate, and when I recieve them, I should finally be able to assemble the ternary ALU. Let's hope nothing goes wrong. 
+            This was so satisfying. I will now design and order the PCBs of the full SUM gate (because using all those individual gates isn't very elegant or practical) as well as for the MUL gate, and when I recieve them, I should finally be able to assemble the ternary ALU. Let's hope nothing goes wrong.
         </p>
         <p class="section">
             The future of this project
         </p>
         <p class="text">
-            I recently took a Udacity course on High Performance Computer Architecture, the first actual course I took about processor architecture as, until then, I was learning everything on the fly by reading papers and Wikipedia articles. This course is great, free and made by the school I am currently at : Georgia Tech (I'm on the European campus right now and this course was not available here). If you are interested by this topic, I highly recommend that you check out this course.
+            I recently took a Udacity course on High Performance Computer Architecture, the first actual course I took about processor architecture as, until then, I was learning everything on the fly by reading papers and Wikipedia articles. This course is great, free and made by the school I am currently at : Georgia Tech (I'm on the European campus right now and this course was not available here). If you are interested in this topic, I highly recommend that you check out this course.
         </p>
         <p class="text">
             I find it so fascinating and I learnt so much. I can't wait to put everything into practice by building the rest of the ternary computer architecture. I had started last year while working on TelociDesi, but now I will be able to go much deeper in the topic. I will first need to build the other necessary components of a processor : registers, memory, control unit, etc. I then plan to create mutliple architectures, in TelociDesi simulations and physically using the CMOS gates, incremently implementing features such as OISC and RISC instruction sets, compiler design and assembly code, pipelining, branch prediction, instruction parallelism and scheduling, cache, advanced ALU and fast multiplication, floating point operations, multi-processing, compex IO and interfacing with peripherals, and who knows what else ! This is a very long term project, but there is so much to do, and this is almost uncharted teritory ; I don't think such complex ternary computers have existed since the soviet Setun. This is so exciting !

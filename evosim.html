@@ -39,10 +39,10 @@
             The first iteration of this model is simple and features the basic concepts on which the later iterations are built. We simulate a population of Creatures. A creature is the basic entity containing a list of Genes. Each gene is a simple floating point value representing the effect of the gene of the creature's fitness. A positive number means this gene helps the creature and vice-versa.
         </p>
         <p class="text">
-            The simulation works in turns called years. Each year, every creatures are updated. First their probability of dying $$p_d$$ is calculated and a random number is generated to kill the creature. Then an other random number is generated for the creature to reproduce with probability $$p_r$$. 
+            The simulation works in turns called years. Each year, every creatures are updated. First their probability of dying $$p_d$$ is calculated and a random number is generated to kill the creature. Then an other random number is generated for the creature to reproduce with probability $$p_r$$.
         </p>
         <p class="text">
-            Reproduction involves a single creature whose genes are duplicated with random mutations : each gene of the list has a probability $$p_{gd}$$ of being destroyed during the reproduction and one gene can be created per reproduction with probability $$p_{gc}$$. 
+            Reproduction involves a single creature whose genes are duplicated with random mutations : each gene of the list has a probability $$p_{gd}$$ of being destroyed during the reproduction and one gene can be created per reproduction with probability $$p_{gc}$$.
         </p>
         <p class="text">
                 When a creature is spawned, its fitness $$f$$ is calculated as the sum of the effects of its genes plus the base fitness $$f_0$$. The value (effect) of new genes follow a normal distribution with a given mean and standard deviation then multiplied : $$m_g\times\mathcal{N}(\mu_g, \sigma_g^2)$$.
@@ -244,9 +244,9 @@
             ££p_d=1-(1-p_{d0})\times ease(E^{p_{ds}})££
         </p>
         <p class="text">
-            The ease function is a quadratic ease in-out function defined as 
+            The ease function is a quadratic ease in-out function defined as
             ££\begin{array}{cc}
-            ease=\Bigg\{ & 
+            ease=\Bigg\{ &
               \begin{array}{cc}
                 0 & x\leq 0 \\
                 2x^2 & x\leq \frac{1}{2} \\
@@ -363,7 +363,7 @@
             We can also observe that fitness no longer allows the total population to increase way over the carrying capacity as the yearly energy supply is constant, the energy consumption of each creature is constant and the the share of the supply each creature gets only depends on how their fitness compares to the other creatures, and not how high it is in absolute. Each creature in a population of 50 creatures with a fitness of 1 each will get the same amount of energy as a population of 50 creatures with a fitness of 100 each. Therefore the graph of the population is no longer relevant.
         </p>
 
-        
+
         <p class="section">
             Fourth version
         </p>
@@ -488,7 +488,7 @@
             We can see that for every big jump in fitness, that is a major positive gene has dominated the whole population, a straight line in the spectrum indicates the default of the population with all the positive genes acquired ever since. Bellow this line, the many dots represent the creatures who have mutated a new negative gene or lost a positive gene, and above those with a new positive gene. There are more dots bellow the line due to the distribution of the effects of new genes. Also, the more genes there are in the population, the bigger the cloud bellow the line is as there are more genes to be lost. Positive genes are simply too rare and even when they appear, the selectivity factor is small enough that their survival advantage doesn't guarantee them survival.
         </p>
 
-        
+
         <p class="section">
             Fifth version
         </p>
@@ -652,7 +652,7 @@
             Bacteria colony
         </p>
         <p class="text">
-            Just for fun, I wanted to simulate a colony of bacterium. From what I read, a typical inoculation of a petri dish consists of about $$10^{4}$$ organisms and a typical bacterium has about 1000 genes. The yearly supply of food has also been updated to carry around 1000 bacteria. The simulation used 1Gb of RAM and 25% of my Intel Core i78650U running at about 3GHz due to thermal throttle. Each year took about 4 seconds to simulate.
+            Just for fun, I wanted to simulate a colony of bacteria. From what I read, a typical inoculation of a petri dish consists of about $$10^{4}$$ organisms and a typical bacterium has about 1000 genes. The yearly supply of food has also been updated to carry around 1000 bacteria. The simulation used 1Gb of RAM and 25% of my Intel Core i78650U running at about 3GHz due to thermal throttle. Each year took about 4 seconds to simulate.
         </p>
         <div class="center_block">
             <img class="image_bigger" src="evosim_5_col_avgfit.png" alt="">
@@ -664,7 +664,7 @@
             </p>
         </div>
         <p class="text">
-            We can observe two main phases. The first 50 years see a sudden jump in average fitness increasing 2700%. The population size also does some crazy jumps above and bellow the equilibrium. This phase corresponds to all the base genes undergoing modification mutations and having a reroll close to the most positive effects the random distribution can probabilistically give. Then, the next phase sees a slower evolution in the order of 1 fitness point per 1000 years. Here, further evolution requires the creation of new genes through duplication, modification and activation. The existence of the first phase is due to the initial genome given to creatures. A more realistic bacterium would have evolved more effective genes before reaching such a large genome. 
+            We can observe two main phases. The first 50 years see a sudden jump in average fitness increasing 2700%. The population size also does some crazy jumps above and bellow the equilibrium. This phase corresponds to all the base genes undergoing modification mutations and having a reroll close to the most positive effects the random distribution can probabilistically give. Then, the next phase sees a slower evolution in the order of 1 fitness point per 1000 years. Here, further evolution requires the creation of new genes through duplication, modification and activation. The existence of the first phase is due to the initial genome given to creatures. A more realistic bacterium would have evolved more effective genes before reaching such a large genome.
         </p>
 
 
@@ -673,7 +673,7 @@
             Other versions
         </p>
         <p class="text">
-            I made a few more modification but they didn't affect the results much or made the simulation unstable so I won't go into details explaining them. 
+            I made a few more modification but they didn't affect the results much or made the simulation unstable so I won't go into details explaining them.
         </p>
         <P class="text">
             First I changed the food supply system so that the entire supply is not necessarily distributed every year. Basically every creature seeks a certain amount of food. If there is too little food in the environment, then each creature will still get a share according to their fitness and the selectivity function, and the environment will be almost completely depleted. If there is more food than the sum of every creature's wants, then they each get what they need plus an extra, also using the selectivity. Therefore, when resources are plentiful, selectivity has a lower impact and fitter creatures can't just get so much food that they pump out babies like there is no tomorrow.
