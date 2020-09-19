@@ -19,11 +19,25 @@
     margin-bottom: 30px;
 }
 
+#profile_picture {
+    display: block;
+    width: 240px;
+    margin: 0 auto;
+    margin-bottom: 50px;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.1);
+}
+
 .cards {
     justify-content: center;
-    grid-template-columns: repeat(auto-fill, 300px);
     display: grid;
     grid-gap: 30px;
+}
+
+@media only screen and (min-width: 600px) {
+    .cards {
+        grid-template-columns: repeat(auto-fill, 300px);
+    }
 }
 
 .card {
@@ -86,5 +100,27 @@
         font-size: 36px;
         margin-top: 20px;
         margin-bottom: 20px;
+    }
+
+    #profile_picture {
+        width: max(min(60%,240px),140px);
+    }
+
+    .card {
+        width: min(300px, 80vw);
+        height: min(300px, 80vw);
+    }
+
+}
+
+@media only screen and (max-width: 600px) {
+    .card_title {
+        font-size: 20px;
+        padding: 10px;
+    }
+
+    .card_date {
+        font-size: 9px;
+        padding: 10px;
     }
 }
