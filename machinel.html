@@ -68,7 +68,7 @@
             As the original point score forms a bell-shaped distribution around a score of 87, the resulting grouping is also a bell-shaped distribution around 1 and 2. Therefore, the dataset is unbalanced, that is the outputs are not distributed evenly.
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert dark_invert" src="machinel/Hist_WR.svg" alt="">
+            <img class="image_two_big dark_invert dark_invert" src="machinel/Hist_WR.svg" alt="">
             <p class="caption">
                 Distribution of score after grouping
             </p>
@@ -132,7 +132,7 @@
             The quality score is on a scale from 0 to 10 but in practice, all the scores are between 3 and 9 but both the scores 3 and 9 each have less than 20 wines. I therefore reclassified 3 in 4 and 9 in 8. I then shifted the rating to start at 0.
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert dark_invert" src="machinel/Hist_WQ.svg" alt="">
+            <img class="image_two_big dark_invert dark_invert" src="machinel/Hist_WQ.svg" alt="">
             <p class="caption">
                 Distribution of score after grouping
             </p>
@@ -160,7 +160,7 @@
         <p class="text">The first dataset is more intuitive. For instance, French wines have an average score of 88.88 while American wines have an average of 88.16, Italian wines 88.48 and Spanish wines 86.93. <span style="opacity: 0.2">obviously</span></p>
         <p class="text">It is known that, while price and quality doesn’t correlate exactly for wine, it still is a good approximation and I don’t recommend buying wines bellow 10$ at the supermarket. Using this dataset, we can plot a scatter of price to points :</p>
         <div class="center_block">
-            <img class="image_small dark_invert dark_invert" src="machinel/WR_pricepoint.PNG" alt="">
+            <img class="image_two_big dark_invert dark_invert" src="machinel/WR_pricepoint.PNG" alt="">
             <p class="caption">
                 horizontal : price ; vertical : points on 80-100 scale
             </p>
@@ -217,8 +217,8 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/DT_WR_280k_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/DT_WR_280k_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_280k_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_280k_NCM.svg" alt="">
         </div>
         <p class="text">The results are significantly better than the naïve classifiers.</p>
         <p class="text">As we can see, the classifier works really well on all classes and the errors are mostly only one class away from the truth.</p>
@@ -251,21 +251,21 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/DT_WR_80k_CM_NP.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/DT_WR_80k_NCM_NP.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_80k_CM_NP.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_80k_NCM_NP.svg" alt="">
         </div>
         <p class="text">As expected, the tree is smaller, as we encounter less different regions and fewer special cases. However, the accuracy is severely affected. While the confusion matrix looks decent, it is worse than the 258k one. </p>
         <p class="text">This will be a problem when searching the optimal hyperparameters. To demonstrate the methods and the analysis of the method, I will take small samples of the dataset but keeping in mind that working with the whole dataset would produce significantly better results and different optimal hyperparameters. </p>
         <p class="text">I tried pruning the tree with the full 258k dataset and with the reduced 80k dataset. </p>
         <p class="text">First with 258k samples : </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/DT_WR_MaxDepth.svg" alt="">
-            <img class="image_small dark_invert" src="machinel/DT_WR_MaxLeaves.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_MaxDepth.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_MaxLeaves.svg" alt="">
         </div>
         <p class="text">Here no maximum is reached before the previous result and pruning the leaves would result is a significantly lower accuracy. Overfitting isn’t a problem with this dataset. </p>
         <p class="text">We can still prune the depth to 50 without affecting the accuracy much. </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/DT_WR_280k_P_LC.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_280k_P_LC.svg" alt="">
         </div>
         <table>
             <tr>
@@ -294,18 +294,18 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/DT_WR_280k_P_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/DT_WR_280k_P_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_280k_P_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_280k_P_NCM.svg" alt="">
         </div>
         <p class="text">As expected, the performances are slightly degraded. The number of leaves barely decreased so this pruning probably only cut some thin and long branches of the tree. The confusion matrix shows that the pruning affected the minority classes the most. As we can see on the learning curves, more sample would improve the accuracy even more.</p>
         <p class="text">Then with 80k : </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/DT_WR_80k_MaxDepth.svg" alt="">
-            <img class="image_small dark_invert" src="machinel/DT_WR_80k_MaxLeaves.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_80k_MaxDepth.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_80k_MaxLeaves.svg" alt="">
         </div>
         <p class="text">Again, while the accuracy almost plateaus after a certain tree size, it still increases slightly and there is no problem with overfitting. We can still prune this tree to a depth of 10. I then checked if the optimal number of leaves would could be lowered in this case. </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/DT_WR_80k_MaxLeaves_P.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_80k_MaxLeaves_P.svg" alt="">
         </div>
         <p class="text">And indeed it can. We can thus prune the tree to a depth of 10 and maximum 200 leaves. </p>
         <table>
@@ -335,8 +335,8 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/DT_WR_80k_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/DT_WR_80k_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_80k_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_80k_NCM.svg" alt="">
         </div>
         <p class="text">While the testing and cross-validation accuracy scores were not affected much, the balanced accuracy dropped by almost 20% and all class 4 entries were misclassified as class 3 or 2. </p>
 
@@ -346,7 +346,7 @@
         <p class="text">Again, I first ran the decision tree classifier without any restriction on the number of leaves and the depth and with the measure of split quality set to use entropy of information. </p>
 
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/DT_WQ_NP_LC.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WQ_NP_LC.svg" alt="">
         </div>
         <table>
             <tr>
@@ -367,19 +367,19 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/DT_WQ_NP_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/DT_WQ_NP_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WQ_NP_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WQ_NP_NCM.svg" alt="">
         </div>
         <p class="text">The results are good for the center majority classes, but really poor for the extremes. The class 0 is more often classified as 1 or 2, while the score for class 4 is worse than the naïve classifiers. This is reflected by the poor balanced accuracy. </p>
         <p class="text">The accuracy is worse than the naïve classifiers. </p>
         <p class="text">I tried pruning the tree to see if this was due to overfitting. Thus, I modified the hyperparameters for the maximum depth and the maximum number of leaves.</p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/DT_WQ_MaxDepth.svg" alt="">
-            <img class="image_small dark_invert" src="machinel/DT_WQ_MaxLeaves.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WQ_MaxDepth.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WQ_MaxLeaves.svg" alt="">
         </div>
         <p class="text">As we can see, while the testing accuracy keeps improving, the cross-validation accuracy reaches a peak score for a depth of 4 and 10 leaves only</p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/DT_WQ_P_LC.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WQ_P_LC.svg" alt="">
         </div>
         <div class="center_block">
             <img class="image_big dark_invert" src="machinel/DT_WQ_FULL_PRUNNED.svg" alt="">
@@ -411,8 +411,8 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/DT_WQ_P_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/DT_WQ_P_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WQ_P_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WQ_P_NCM.svg" alt="">
         </div>
         <p class="text">Comparing to the classifier before pruning, the cross-validation accuracy increased significantly by 10%, however, the test accuracy and more importantly the balance accuracy fell drastically. </p>
         <p class="text">The confusion matrix shows what happens. The classifier tends to squeeze the values towards the center, and the classes 0 and 4 are almost dropped. This classifier is closer to the naïve classifiers as it drops the minority classes in favor of the majority classes. </p>
@@ -432,8 +432,8 @@
 
         <p class="text">I first tried to run the study on the pruned decision tree obtained with the 80k sample of the dataset in the previous chapter. However, the computation time was again too large and I had to shrink the dataset to a tiny 5k sample. I ran the decision tree on it and pruned it successfully. </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/DT_WR_5k_MaxDepth.svg" alt="">
-            <img class="image_small dark_invert" src="machinel/DT_WR_5k_MaxLeaves.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_5k_MaxDepth.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_5k_MaxLeaves.svg" alt="">
         </div>
         <table>
             <tr>
@@ -462,21 +462,21 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/DT_WR_5k_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/DT_WR_5k_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_5k_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/DT_WR_5k_NCM.svg" alt="">
         </div>
         <p class="text">The two hyper-parameters I chose to study are the learning rate and the number of estimators used, starting with the former while leaving the latter to the default value of 50</p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/BST_WR_5k_LearnRate_log.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/BST_WR_5k_LearnRate_log.svg" alt="">
         </div>
         <p class="text">Here, the default learning rate of 1 is not the optimal value. I chose a learning rate of 0.01 for this step, meaning each estimator contributes less to the total, and more estimators should be required. </p>
         <p class="text">Thus, I fixed the learning rate at that value and varied the number of estimators.</p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/BST_WR_5k_Est.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/BST_WR_5k_Est.svg" alt="">
         </div>
         <p class="text">The testing accuracy curve is unexpected but the cross-validation shows an optimal parameter around 30. As the peak seems rather sharp, I decided to fine tune it even further. </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/BST_WR_5k_Est2.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/BST_WR_5k_Est2.svg" alt="">
         </div>
         <p class="text">Anything from 28 to 35 is a good choice. Thus, I chose the parameters of a learning rate of 0.01 and 35 estimators.</p>
         <table>
@@ -514,8 +514,8 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/BST_WR_5k_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/BST_WR_5k_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/BST_WR_5k_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/BST_WR_5k_NCM.svg" alt="">
         </div>
         <p class="text">The boosting didn’t improve the accuracy scores much and was pretty much unnecessary. </p>
         <p class="text">I then made the very questionable assumption that these optimal parameters can be used the larger 80k sample of the full dataset. </p>
@@ -554,8 +554,8 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/BST_WR_80k_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/BST_WR_80k_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/BST_WR_80k_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/BST_WR_80k_NCM.svg" alt="">
         </div>
         <p class="text">The cross-validation and testing accuracy scores improved slightly while the balanced accuracy stayed almost unaffected. This shows that boosting can improve performance on the larger dataset but a proper optimization of the hyperparameters is required to take full advantage of this algorithm.</p>
 
@@ -564,19 +564,19 @@
         <p class="text">As the pruning of the decision tree was unsuccessful, I initially decided to run the study of the hyperparameters for the Boosting algorithm on both the pruned and not-pruned decision trees, however the performance of the unpruned tree did not improve at all. Indeed, the tree is already almost overfitting. Therefore, the analysis of the hyperparameters is only relevant on the pruned tree from the previous part.  </p>
         <p class="text">Again, I started by tuning the learning rate with the default 50 estimators. </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/BST_WQ_P_LearnRate_Log.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/BST_WQ_P_LearnRate_Log.svg" alt="">
         </div>
         <p class="text">And again, the best learning rate is around 0.01. </p>
         <p class="text">I fixed the learning rate at that value and varied the number of estimators, first exponentially and then between 1 and 100.</p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/BST_WQ_P_Est_log.svg" alt="">
-            <img class="image_small dark_invert" src="machinel/BST_WQ_P_Est.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/BST_WQ_P_Est_log.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/BST_WQ_P_Est.svg" alt="">
         </div>
         <p class="text">This plot isn’t as clear but we can still tell that about 40 estimators is slightly better. This is slightly less than the default value of 50 even though we lowered the learning rate by two orders of magnitude, however the variation with this hyperparameter isn’t striking.  </p>
         <p class="text">I checked that reducing the number of estimators from 50 to 40 didn’t affect the optimal learning rate much and the results are the same. This is a sort of gradient ascent method to finding a local maximum of accuracy in a landscape of hyperparameters. </p>
         <p class="text">Therefore, the optimal hyperparameters are a learning rate of 0.01 and 40 estimators.</p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/BST_WQ_Opti_LR.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/BST_WQ_Opti_LR.svg" alt="">
         </div>
         <table>
             <tr>
@@ -613,8 +613,8 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/BST_WQ_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/BST_WQ_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/BST_WQ_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/BST_WQ_NCM.svg" alt="">
         </div>
         <p class="text">Compared to the original tree before and after pruning, we can observe that the cross-validation accuracy increased again as this is the metric I used to choose the optimal hyperparameters. The testing accuracy recovered slightly but this metric isn’t really relevant. However, the balanced accuracy fell again. This is clearly visible on the confusion matrix. This time, in addition to classes 0 and 4, class 3 has also be dropped and the classifier is pretty much just guessing class 2 66% of the time. </p>
 
@@ -633,12 +633,12 @@
 
         <p class="text">I first tried KNN with low values of K but could still not get the peak so I used a logarithmic scale again. I also chose Euclidean distance and distance weight for this run. </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/KNN_WR_dist_eucl.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/KNN_WR_dist_eucl.svg" alt="">
         </div>
         <p class="text">The optimal number of neighbors is around 200 but a large range of values produce similar results. </p>
         <p class="text">I then removed the distance weight and switched it to uniform. </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/KNN_WR_unif_eucl.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/KNN_WR_unif_eucl.svg" alt="">
         </div>
         <p class="text">Here the peak accuracy is reached around 40 neighbors and proves better than distance weight. </p>
         <p class="text">I also tried different distance metrics but the results were very similar and not interesting to include. </p>
@@ -664,8 +664,8 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/KNN_WR_5k_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/KNN_WR_5k_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/KNN_WR_5k_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/KNN_WR_5k_NCM.svg" alt="">
         </div>
         <p class="text">I then again made the questionable assumption that these optimal parameters can be used the larger 80k sample of the full dataset. </p>
         <table>
@@ -689,13 +689,13 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/KNN_WR_80k_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/KNN_WR_80k_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/KNN_WR_80k_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/KNN_WR_80k_NCM.svg" alt="">
         </div>
         <p class="text">The results are better than with the smaller sample as the point density is greater. </p>
         <p class="text">As I encoded the categories of the dataset as 1s and 0s in a large sparse array, I also experimented with the distance metrics dedicated to Boolean values. They all gave similar results and didn’t show an improvement from the Euclidean distance. Here are the results for the Jaccard distance. </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/KNN_WR_unif_jacc.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/KNN_WR_unif_jacc.svg" alt="">
         </div>
         <table>
             <tr>
@@ -727,20 +727,20 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/KNN_WR_unif_jacc_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/KNN_WR_unif_jacc_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/KNN_WR_unif_jacc_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/KNN_WR_unif_jacc_NCM.svg" alt="">
         </div>
 
         <p class="section">Wine quality</p>
 
         <p class="text">Similarly, I ran KNN with different values of K and I also chose Euclidean distance and distance weight. </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/KNN_WQ_dist_eucl.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/KNN_WQ_dist_eucl.svg" alt="">
         </div>
         <p class="text">To reach a peak accuracy, we need a value of K in the neighborhood of 200, or about 20% of the whole dataset. As the neighbors are weighted by distance, the fact that the optimal K is rather high indicates the points are very close and not we separated, as expected during the pre-analysis. The cross-validation accuracy still is only about 53%. </p>
         <p class="text">I then tested to remove the distance weighting and keep the Euclidean distance. </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/KNN_WQ_unif_eucl.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/KNN_WQ_unif_eucl.svg" alt="">
         </div>
         <p class="text">While the cross-validation results are almost identical, the testing accuracy starts very high for 𝐾 = 1 and drop significantly.  </p>
         <p class="text">This result is very surprising. The cross-validation uses 4 folds for this set while the training-testing uses a 85-15% split ; so when testing, the cross-validation searches neighbors in 75% of the dataset while the regular training-testing (green curve) searches in 85% of the dataset. Thus, the latter has a higher density than the former and a tested point would have more close neighbors with training-testing and thus a better score while the cross-validation would pick points further away and possibly less similar. A weighted with distance criteria would mitigate this effect. However We observe the opposite : the cross-validation is unaffected by the weight but the trainingtesting is. </p>
@@ -765,8 +765,8 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/KNN_WQ_dist_eucl_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/KNN_WQ_dist_eucl_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/KNN_WQ_dist_eucl_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/KNN_WQ_dist_eucl_NCM.svg" alt="">
         </div>
         <p class="text">While the accuracies are decent, the confusion matrix reveals that, again, the extremes are dropped. This still results in a decent balanced accuracy though. </p>
 
@@ -836,11 +836,11 @@
         <p class="text">I won’t include every confusion matrix as it is not very relevant. </p>
         <p class="text">We can observe that the linear kernel is the most accurate in testing and cross-validation tests, and second best in balanced accuracy. The best for balanced accuracy is actually the third-order polynomial. </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/SVM_WR_Linear_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/SVM_WR_Linear_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/SVM_WR_Linear_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/SVM_WR_Linear_NCM.svg" alt="">
             <p class="caption">Linear kernel</p>
-            <img class="image_two dark_invert" src="machinel/SVM_WR_poly3_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/SVM_WR_poly3_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/SVM_WR_poly3_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/SVM_WR_poly3_NCM.svg" alt="">
             <p class="caption">Poly 3 kernel</p>
         </div>
         <p class="text">Looking at the confusion matrices, we can see that the sample of the dataset only included three entries of class 4. Both kernels misclassified one of class 4 in class 2 and one in class 3, but the linear misclassified one more in class 3 while the polynomial got one right, boosting the accuracy for this class to 33% against 0%, thus boosting the balanced accuracy. This is not significant at all and the linear kernel can be considered optimal.  </p>
@@ -914,24 +914,24 @@
         </table>
         <p class="text">Something unexpected happened with the polynomial kernel. The accuracy scores and the confusion matrices are all the same for order zero and two to five, but not compared to the first order which got better results. The linear kernel once again is the best of the bunch. </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/SVM_WQ_Linear_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/SVM_WQ_Linear_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/SVM_WQ_Linear_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/SVM_WQ_Linear_NCM.svg" alt="">
             <p class="caption">Linear kernel</p>
-            <img class="image_two dark_invert" src="machinel/SVM_WQ_poly0_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/SVM_WQ_poly0_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/SVM_WQ_poly0_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/SVM_WQ_poly0_NCM.svg" alt="">
             <p class="caption">Poly 0 & 2-5 kernels</p>
-            <img class="image_two dark_invert" src="machinel/SVM_WQ_poly1_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/SVM_WQ_poly1_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/SVM_WQ_poly1_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/SVM_WQ_poly1_NCM.svg" alt="">
             <p class="caption">Poly 1 kernel</p>
         </div>
         <p class="text">We can see that the polynomial classifier with an order different from 1 is just the naïve single-minded classifier while the first order polynomial and the linear guess class 1 sometimes and class 2 most of the time. </p>
         <p class="text">Again, I searched the optimal value of the penalty coefficient C for the linear kernel only. Even with this smaller dataset, the computation time was high. </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/SVM_WQ_linear_C.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/SVM_WQ_linear_C.svg" alt="">
         </div>
         <p class="text">We can observe the optimal penalty factor is around 3.5. </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/SVM_WQ_LC.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/SVM_WQ_LC.svg" alt="">
         </div>
         <table>
             <tr>
@@ -957,8 +957,8 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/SVM_WQ_LinearC_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/SVM_WQ_LinearC_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/SVM_WQ_LinearC_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/SVM_WQ_LinearC_NCM.svg" alt="">
         </div>
         <p class="text">The accuracy scores are decent compared to the naïve classifiers even though the minority classes are completely dropped.</p>
 
@@ -977,7 +977,7 @@
         <p class="text">First, I wanted to know how much the initial weights and biases of the network affects the accuracy scores so I ran the training with the same parameters five times and the differences in accuracy was less than 2% from run to run. I also increased the maximum number of iterations in order to make sure we reached a local maximum of accuracy at least. </p>
         <p class="text">I then thought about a methodology to search the best network structure. But there are just too many options such as number of layers, number of neurons in each layer, shapes of the structure (increasing number of neurons, decreasing number of neurons, concave, convex, etc). I started with two equal layers with increasing number of neurons.</p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/NN_WQ_NbLayer2.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/NN_WQ_NbLayer2.svg" alt="">
         </div>
         <p class="text">The trend isn’t clear. I then tried varying the number of layers but again the accuracy scores are all over the place. I ended up trying many different structures randomly. The 1212-12 structure led to the best results. </p>
         <p class="text">Then I studied the impact of different activation functions with the 12-12-12 network. </p>
@@ -1020,7 +1020,7 @@
         </table>
         <p class="text">In this case, the relu activation produced the best results especially compared to the famous logistic sigmoid. This was very unexpected to me. Tanh also produced decent results. </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/NN_WQ_LC.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/NN_WQ_LC.svg" alt="">
         </div>
         <table>
             <tr>
@@ -1039,15 +1039,15 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/NN_WQ_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/NN_WQ_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/NN_WQ_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/NN_WQ_NCM.svg" alt="">
         </div>
 
         <p class="section">Wine review</p>
 
         <p class="text">As the computation load with this dataset is huge, I decided to reuse the observations of the other dataset. Therefore, I used the same parameters. </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel/NN_WR_LC.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/NN_WR_LC.svg" alt="">
         </div>
         <table>
             <tr>
@@ -1066,8 +1066,8 @@
             </tr>
         </table>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel/NN_WR_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel/NN_WR_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/NN_WR_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel/NN_WR_NCM.svg" alt="">
         </div>
 
 

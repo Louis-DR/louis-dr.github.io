@@ -2,12 +2,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Import Katex -->
-    <link rel="stylesheet" href="katex/katex.min.css">
-    <script src="katex/katex.min.js"></script>
-    <!-- Import Katex auto-render -->
-    <script src="katex/contrib/auto-render.min.js"></script>
-
     <meta charset="UTF-8">
     <link rel="stylesheet" href="articles.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -137,8 +131,8 @@
             The problem is visualized using Matplotlib’s animations :
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert_brighter" src="machinel4/R2.gif" alt="">
-            <img class="image_two dark_invert_brighter" src="machinel4/R3.gif" alt="">
+            <img class="image_two_big dark_invert_brighter" src="machinel4/R2.gif" alt="">
+            <img class="image_two_big dark_invert_brighter" src="machinel4/R3.gif" alt="">
             <p class="caption">This is an AI controlling the arm</p>
         </div>
 
@@ -152,8 +146,8 @@
             I first ran the algorithm on the small simplified problem with a 3×3 grid with 1.5k states with a discount factor γ of 0.5, 0.9 and 0.99.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image4.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image6.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image4.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image6.svg" alt="">
         </div>
         <p class="text">
             As expected, for such a small problem, value iteration was able to find an optimal policy in a single iteration and the discount value has no noticeable impact on either performance improvement or policy convergence. This can be explained as in this problem, the agent only need to care about the next few rows of object and not the distant future (it actually only needs as many rows as the width of the grid which number of possible positions of the hand and the number of moves required to go from one side to the other plus one, this will be explained in more detailed later).
@@ -162,8 +156,8 @@
             I then ran the algorithm on the more complex problem 3×3 problem with 59k states with a discount factor γ of 0.5, 0.9 and 0.99.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image8.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image10.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image8.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image10.svg" alt="">
         </div>
         <p class="text">
             As we can see, for all γ, the maximum average performance was reached after 2 iterations only, and even just one iteration gets us to near best performance.
@@ -178,7 +172,7 @@
             Finally, I tried running the algorithm on the 3×4 problem with 1.6M states with a discount factor γ of 0.1, 0.5 and 0.9. Unfortunately, I lost the policy change graph.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image12.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image12.svg" alt="">
         </div>
         <p class="text">
             The result is not very interesting, with the same behavior as for the 3×3 size and with the same score (the agent can at best pick up one fruit per turn). A taller grid gives the agent more knowledge of what falling items will arrive but with a width of 3, the furthest the agent can move is 2, thus needs a height of only 3 for perfect planning, anything above that is useless to him, as we can observe.
@@ -193,8 +187,8 @@
             I first ran the algorithm on the problem with 2 arm pieces with angular resolution of 60 and target resolution of 6 with 129k states with a discount factor γ of 0.5, 0.9 and 0.99.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image14.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image16.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image14.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image16.svg" alt="">
         </div>
         <p class="text">
             Here, a smaller discount factor makes the policy converge faster and reach the maximal performance earlier as well.
@@ -206,8 +200,8 @@
             To test this, I ran the same test but with the gradient reward disabled.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image18.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image20.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image18.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image20.svg" alt="">
         </div>
         <p class="text">
             However, we observe that only the run with the lowest value of γ was affected. Therefore, the large rewards of reaching the targets propagates fast enough for high discount factors, but for a small discount factor, gradient rewards help it converge faster.
@@ -216,8 +210,8 @@
             I then increased the dimensions of the problem by increasing the angular resolution of the joints from 60 to 100 and the target resolution from 6 to 10.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image22.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image24.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image22.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image24.svg" alt="">
         </div>
         <p class="text">
             We can once again observe that smaller discount value makes the algorithm converge much faster. However, it seems that a value of γ of 0.1 and 0.5 leads to average performance slightly smaller than for 0.9.
@@ -226,8 +220,8 @@
             I then increased the dimensions of the problem even further by adding a third arm piece but reducing the angular resolution to 50.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image26.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image28.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image26.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image28.svg" alt="">
         </div>
         <p class="text">
             While the smaller discount value initially leads to faster performance growth, both converge to the optimal performance around the same time after 17 iterations but the smaller value stalled for a few iterations on a suboptimal policy while it made changes until it was able find a breakthrough. A stopping iteration condition based on performance alone would have prevented this breakthrough, one based on policy changes or value changes is therefore preferable.
@@ -239,8 +233,8 @@
         <h3>Computation time</h3>
 
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image30.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image32.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image30.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image32.svg" alt="">
         </div>
         <p class="text">
             The relation between computation time and either number of states or state-action combinations seems very roughly linear with both linear axes, hence linear.
@@ -263,8 +257,8 @@
             I first ran the algorithm on the small simplified problem with a 3×3 grid with 1.5k states with a discount factor γ of 0.5, 0.9 and 0.99.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image34.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image36.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image34.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image36.svg" alt="">
         </div>
         <p class="text">
             As with value iteration, the problem is just so simple that the algorithm is able to find an optimal policy very fast. A smaller value of the discount factor seems to lead to the optimal policy in a single iteration, while a larger value like 0.99 requires two iterations.
@@ -276,8 +270,8 @@
             I then ran the algorithm on the more complex problem 3×3 problem with 59k states with a discount factor γ of 0.1, 0.5 and 0.9.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image38.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image40.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image38.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image40.svg" alt="">
         </div>
         <p class="text">
             Here a very small value of the discount factor slows down the improvement of performance. Also, once again, a smaller value of γ also makes the policy converge faster and a larger value makes the algorithm change the policy without noticeable effect on performance.
@@ -292,8 +286,8 @@
             I first ran the algorithm on the problem with 2 arm pieces with angular resolution of 60 and target resolution of 6 with 129k states. As this algorithm is much slower, I had to limit my study to a discount factor of 0.5 only.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image42.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image44.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image42.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image44.svg" alt="">
         </div>
         <p class="text">
             Policy iteration reaches the same maximal score as value iteration, which we can assume (and confirm by looking at the animation of the agent playing) that it is what we would expect as the best possible policy.
@@ -308,8 +302,8 @@
         <h3>Computation time</h3>
 
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image46.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image48.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image46.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image48.svg" alt="">
         </div>
         <p class="text">
             We observe similar behavior to value iteration but this algorithm is slower by about a factor of 10 for Catch The Fruit and 10000 for the Reacher.
@@ -335,8 +329,8 @@
             Thus, I tried a common exploration strategy : ε-greedy exploration, which consist in choosing the Q-best action most but not all of the time, and choosing a random action with a probability of ε. This allows the algorithm to explore more of the state-action space before converging. For this study, I arbitrarily chose a discount factor of 0.5 and a learning rate of 0.5. (Here one tick on the plot is 100 iterations).
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image50.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image52.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image50.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image52.svg" alt="">
         </div>
         <p class="text">
             As we can see, a value of ε of 0, corresponding to the default exploration strategy described above never lets the algorithm explore enough to learn and performs no better than the random policy where ε equals 1.
@@ -345,7 +339,7 @@
             Then, above from 0, the performance increases with lower values of ε. Thus, we have to study this parameter more precisely. We can also note that the policy always changes and more so with higher values of ε, but a maximum performance is reaches for all values after less than 500 iterations. Hence we can study the average performance after 1000 iterations for different values of ε :
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image54.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image54.svg" alt="">
         </div>
         <p class="text">
             As we can see, an ideal value of ε is contained within the 0.05 to 0.2 range (here the optimal score was reached for all values in this range). A value of 0.2 will be used in the following experiments.
@@ -357,9 +351,9 @@
             Then, using this exploration strategy, I studied the effect of the learning rate α.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image56.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image58.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image60.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image56.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image58.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image60.svg" alt="">
         </div>
         <p class="text">
             As we can see, the learning rate has no observable effect on the performance after convergence or the speed of convergence either. An arbitrary value of 0.5 will be used for following experiments.
@@ -368,14 +362,14 @@
             I then studied the effect of the discount factor γ similarly to the experiments for the other algorithms. (Again, one tick on the plot is 100 iterations).
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image62.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image64.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image62.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image64.svg" alt="">
         </div>
         <p class="text">
             A smaller value of gamma seems to lead to a faster convergence and better performance. The policy always changes, as seems to always be the case with Q-learning and ε-greedy exploration, which makes sense as the random exploration would require a very large amount of iterations to converge.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image66.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image66.svg" alt="">
         </div>
         <p class="text">
             As we can see, a very high discount factor leads to poor performance but anything below 0.9 is good. The explanation for this is the same as the one given for the previous algorithms.
@@ -384,8 +378,8 @@
             I also studied other exploration strategies : Optimistic Initialization encourages the algorithm to explore new state-action combinations by initializing all Q values to a non-zero value (here 1) ; what I will call εp-Random (for epsilon-probabilistically random) choses the action randomly proportionally to their Q value but with a basic probability of ε divided by the number of possible actions (here ε is 0.1 meaning for 3 actions, each has a basic probability of 0.033, then the remaining 0.9 is shared proportionally to the Q values) ; what I will call εβp-Random is similar to εp-Random but instead of using proportionality to the Q values, it is to the Qβ values thus allowing to tune how much it will commit to better values of Q or pick less a-priori preferable actions, here I took a β of 3 and ε of 0.1 (note that εp-Random is a special case of εβp-Random with a β of 1). I used the previously determined values : ε of 0.2 for ε-greedy exploration, α of 0.5 and γ of 0.5 for this study.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image68.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image70.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image68.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image70.svg" alt="">
         </div>
         <p class="text">
             As I increased the number of runs the average performance is calculated with, I conclude that those variations stem from the algorithm itself.
@@ -400,8 +394,8 @@
             I then applied those exploration strategies to the more complex 3×3 problem with the obstacles.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image72.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image74.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image72.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image74.svg" alt="">
         </div>
         <p class="text">
             Here, optimistic initialization actually performed better than ε-greedy and converged with fewer changes to the policy, but neither have reached a plateau in the iterations of this experiment. εp-Random is barely better than the random policy in the amount of iterations studied here but still makes many changes to the policy so a longer training time could lead to different results. εβp-Random is slightly better than εp-Random but it also needs more iterations, though it looks like it could converge faster than εp-Random.
@@ -416,8 +410,8 @@
             I only ran the experiment for ε-greedy and optimistic initialization with the same values for the parameters as determined for the other problem as the computation times were much greater and it was practically impossible to study all the parameters and all the strategies. I also only ran the full experiment on the problem with 2 arm pieces, angular resolution of 60 and target resolution of 6.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image76.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image78.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image76.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image78.svg" alt="">
         </div>
         <p class="text">
             Unlike the previous problem, here ε-greedy performs better than optimistic initialization. However, neither come even close to the performance seen with the other two algorithms that, unlike Q-learning, have perfect knowledge of the rewards and transitions. Note that this experiment took too long and the policy didn’t converge so the optimal performance could be reached but with a very long computation time, far longer than the other two algorithms.
@@ -520,15 +514,15 @@
             Problems with more than a few million states and/or tens of millions of state-action combinations requires too much memory with Q-learning than my computer can provide (Python used almost 12Gb before crashing in those cases).
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image80.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image82.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image80.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image82.svg" alt="">
         </div>
         <p class="text">
             Keep in mind that this is for 1000 iterations, which was enough for the Catch The Fruit Simplified problem to converge, but Catch The Fruit 3×3 would have required about 3000 and Reacher 2-60-6 over 10000. While the other two algorithms converged in 1 to 5 iterations.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel4/media/image84.svg" alt="">
-            <img class="image_two dark_invert" src="machinel4/media/image86.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image84.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel4/media/image86.svg" alt="">
         </div>
         <p class="text">
             Nevertheless, 1000 iterations of Q-learning take longer than one iteration of Value Iteration or Policy Iteration for the smallest versions of the problems, while it takes significantly less time for the larger versions of the problems.
@@ -572,12 +566,6 @@
         <a id="indexlink" href="index.html" style="margin-top: 60px">
             Go back to the list of projects
         </a>
-        <script>
-            renderMathInElement(document.body,{delimiters: [
-                {left: "$$", right: "$$", display: false},
-                {left: "££", right: "££", display: true}
-            ]});
-        </script>
     </div>
 </body>
 </html>

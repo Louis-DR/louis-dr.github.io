@@ -123,10 +123,10 @@
         <p class="section">K-means – Wine Quality</p>
 
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_silhouette.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_CalHarI.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_completeness_homogeneity.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_ARI_AMI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_Kmeans_silhouette.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_Kmeans_CalHarI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_Kmeans_completeness_homogeneity.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_Kmeans_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             The different scores give different optimal number of clusters (k) and this will be observed in pretty much all tests. Using the Elbow method, the Silhouette score gives a k of around 20 while the CalHar score decreases sharply from only 2 clusters. Both ARI and AMI also indicate that only 2 clusters correspond best with the ground truth. The completeness score drops sharply which also indicates that the algorithms tends to break similar samples into different clusters. Thus, the performances are rather poor.
@@ -135,10 +135,10 @@
         <p class="section">K-means – Wine Review</p>
 
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_silhouette.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_CalHarI.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_completeness_homogeneity.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_ARI_AMI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_Kmeans_silhouette.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_Kmeans_CalHarI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_Kmeans_completeness_homogeneity.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_Kmeans_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             On the second dataset, the results are more interesting. While the Silhouette score doesn’t feature a sharp bend and keeps decreasing, the CarHar index indicates an optimal number of clusters around 40. This however isn’t corroborated when taking into account the labels of each sample : ARI and AMI both point to around 8-10 clusters and the homogeneity also points to the same result with an elbow around 10 clusters. The completeness decreases more slowly than for the first dataset, indicating that the algorithm tends to do a better (or at least slightly less bad) job of keeping similar samples together.
@@ -147,21 +147,21 @@
         <p class="section">Expectation Maximization – Wine Quality</p>
 
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_silhouette.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_CalHarI.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_completeness_homogeneity.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_ARI_AMI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_silhouette.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_CalHarI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_completeness_homogeneity.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             Using expectation maximization, the results are somewhat different than with K-means. While silhouette still indicates around 20 clusters, it does it more clearly. The CalHar index is slightly different with a maximum for 5 clusters but a score over four times smaller than for the previous algorithm, which shows that the algorithm performed worse. ARI and AMI also point to a similar number of clusters but they, along with completeness and homogeneity, are slightly worse than for K-means. Thus, EM had more difficulties clustering this dataset than K-means, which is unexpected considering the similarities between the two algorithms.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_silProfile_20.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_silProfile_20.svg" alt="">
-            <div class="image_two dark_invert">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_Kmeans_silProfile_20.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_silProfile_20.svg" alt="">
+            <div class="image_two_big dark_invert">
                 <p class="caption">K-means</p>
             </div>
-            <div class="image_two dark_invert">
+            <div class="image_two_big dark_invert">
                 <p class="caption">Expecation Maximization</p>
             </div>
         </div>
@@ -172,10 +172,10 @@
         <p class="section">Expectation Maximization – Wine Review</p>
 
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_silhouette.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_CalHarI.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_completeness_homogeneity.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_ARI_AMI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_ExpMax_silhouette.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_ExpMax_CalHarI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_ExpMax_completeness_homogeneity.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_ExpMax_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             Again, the optimal values of k are different but it doesn’t really matter as the scores are so much worse than for K-means : silhouette is well in the negative, which could indicate that the clusters are thin and oddly shaped in a way that most samples are closer to other clusters than their own, CalHar is about 100 times worse and ARI, AMI, completeness and homogeneity are 10 times worse.
@@ -184,12 +184,12 @@
             However, the expectation maximization of SciKitLearn uses gaussian probability distributions which works for continuous attributes, but less so for binary values of one-hot encoded categorical attributes. This might explain the poor performance of the algorithm on the second dataset. We can envision a clustering algorithm similar to expectation maximization but working with different probability distributions for categorical values.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_silProfile_10.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_silProfile_10.svg" alt="">
-            <div class="image_two dark_invert">
+            <img class="image_two_big dark_invert" src="machinel3/WR_Kmeans_silProfile_10.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_ExpMax_silProfile_10.svg" alt="">
+            <div class="image_two_big dark_invert">
                 <p class="caption">K-means</p>
             </div>
-            <div class="image_two dark_invert">
+            <div class="image_two_big dark_invert">
                 <p class="caption">Expecation Maximization</p>
             </div>
         </div>
@@ -213,8 +213,8 @@
         <p class="section">Principal Component Analysis – Wine Quality</p>
 
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WQ_PCA_explainedVarianceRatio.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_PCA_singluarValues.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_PCA_explainedVarianceRatio.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_PCA_singluarValues.svg" alt="">
         </div>
         <p class="text">
             The explained variance ratio drops rather quickly which indicates that the first few principal components to a good job of explaining most of the variance among the samples.
@@ -235,8 +235,8 @@
         <p class="section">Principal Component Analysis – Wine Review</p>
 
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WR_PCA_explainedVarianceRatio.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_PCA_singularValues.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_PCA_explainedVarianceRatio.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_PCA_singularValues.svg" alt="">
         </div>
         <p class="text">
             The explained variance ratio plot shows that all but a one or two of the PCA axes are useless and explain nothing. This makes sense as out of the around 700 attributes, all but two are binary dimensions corresponding to the on-hot encoded categorical attributes of the original dataset.
@@ -254,7 +254,7 @@
             Running MCA on the dataset excluding the two continuous attributes :
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WR_MCA_explainedVarianceRatio.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_MCA_explainedVarianceRatio.svg" alt="">
         </div>
         <p class="text">
             This time, the explained variance ratio decreases more slowly as more of the components are useful.
@@ -299,10 +299,10 @@
         <p class="section">Random Projection – Wine Quality</p>
 
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WQ_RP_1.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_RP_2.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_RP_3.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_RP_4.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_RP_1.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_RP_2.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_RP_3.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_RP_4.svg" alt="">
         </div>
         <p class="text">
             Assessing the quality of random projections is difficult and not very relevant in itself. However, this is a good way to visualize the shape of the cloud of samples in the dataset. Again, we can observe one blob of samples but on some of the random projections, like on the bottom right one with the two axes, a slight gradient of labels. This confirms the observations from PCA and ICA that clustering won’t perform great on this dataset.
@@ -314,10 +314,10 @@
         <p class="section">Random Projection – Wine Review</p>
 
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WR_RP1.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_RP2.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_RP3.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_RP4.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_RP1.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_RP2.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_RP3.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_RP4.svg" alt="">
         </div>
         <p class="text">
             On this dataset, the results vary a lot. This indicates that the cloud of samples is less clumped than the other dataset.
@@ -409,10 +409,10 @@
             On the dataset Wine Review using the clustering algorithm K-means :
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedPMCA_silhouette.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedPMCA_CalHarI.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedPMCA_completeness_homogeneity.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedPMCA_ARI_AMI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_Kmeans_DimRedPMCA_silhouette.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_Kmeans_DimRedPMCA_CalHarI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_Kmeans_DimRedPMCA_completeness_homogeneity.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_Kmeans_DimRedPMCA_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             The combination of PCA and MCA leads to a steeper decrease of the silhouette plot and a smaller optimal number of clusters both using the silhouette or the CalHar index and with little to no loss in performance when taking into account the labels. However, the CalHar Index is much smaller.
@@ -427,28 +427,28 @@
             On the dataset Wine Quality, for both K-means
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_DimRedICA_silhouette.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_DimRedICA_CalHarI.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_DimRedICA_completeness_homogeneity.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_DimRedICA_ARI_AMI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_Kmeans_DimRedICA_silhouette.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_Kmeans_DimRedICA_CalHarI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_Kmeans_DimRedICA_completeness_homogeneity.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_Kmeans_DimRedICA_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             And Expectation Maximization
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedICA_silhouette.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedICA_CalHarI.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedICA_completeness_homogeneity.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedICA_ARI_AMI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedICA_silhouette.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedICA_CalHarI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedICA_completeness_homogeneity.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedICA_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             ICA leads to a better silhouette and CalHar score with a small loss of performance when considering the labels. However, on the dataset Wine Review with Expectation Maximization :
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_DimRedICA_silhouette.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_DimRedICA_CalHarI.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_DimRedICA_completeness_homogeneity.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_DimRedICA_ARI_AMI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_ExpMax_DimRedICA_silhouette.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_ExpMax_DimRedICA_CalHarI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_ExpMax_DimRedICA_completeness_homogeneity.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_ExpMax_DimRedICA_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             The results are terrible for all metrics. Note the use of logarithmic scale to show the disastrous CalHar Index.
@@ -463,28 +463,28 @@
             On Wine Quality with Expectation Maximization (though the same observation is also apparent with K-means), for a compression layer of 2 neurons
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE2_silhouette.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE2_CalHarI.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE2_completeness_homogeneity.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE2_ARI_AMI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedAE2_silhouette.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedAE2_CalHarI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedAE2_completeness_homogeneity.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedAE2_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             4 neurons
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE4_silhouette.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE4_CalHarI.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE4_completeness_homogeneity.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE4_ARI_AMI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedAE4_silhouette.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedAE4_CalHarI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedAE4_completeness_homogeneity.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedAE4_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             And 8 neurons
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE8_silhouette.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE8_CalHarI.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE8_completeness_homogeneity.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE8_ARI_AMI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedAE8_silhouette.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedAE8_CalHarI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedAE8_completeness_homogeneity.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WQ_ExpMax_DimRedAE8_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             We observe that as the number of neurons, that is the number of dimensions the dataset is reduced to, increases, the silhouette and CalHar scores drop below the scores of the original dataset but the scores taking account of the labels increase and get closer and closer to the scores of the original dataset.
@@ -499,10 +499,10 @@
             On Wine Review with the Deep Autoencoder and the K-means clustering algorithm (the legend is incorrect and should display DAE instead of RP)
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedAEDeep_silhouette.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedAEDeep_CalHarI.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedAEDeep_completeness_homogeneity.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedAEDeep_ARI_AMI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_Kmeans_DimRedAEDeep_silhouette.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_Kmeans_DimRedAEDeep_CalHarI.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_Kmeans_DimRedAEDeep_completeness_homogeneity.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/WR_Kmeans_DimRedAEDeep_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             While the ARI, AMI, completeness and homogeneity scores are almost equal to that of the uncompressed dataset, the CalHar score keeps on increasing, indicating that the optimal number of clusters might be way above 75.
@@ -549,8 +549,8 @@
             <img class="image_small dark_invert" src="machinel3/NN_OG_LC.svg" alt="">
         </div>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel3/NN_OG_CM.svg" alt="">
-            <img class="image_two dark_invert" src="machinel3/NN_OG_NCM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/NN_OG_CM.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel3/NN_OG_NCM.svg" alt="">
         </div>
         <table>
             <tr>

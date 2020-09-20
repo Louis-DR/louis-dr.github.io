@@ -13,6 +13,11 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
     <title>Ternary ALU</title>
+    <style>
+        .gate {
+            width: 60px;
+        }
+    </style>
 </head>
 <body>
     <div id="content">
@@ -26,14 +31,832 @@
         <div id="page_date">
             02/12/2019
         </div>
-        
+
         <p class="series-header">
             This article is part of my series of projects around Ternary Computing and Processor Design. <a href="index-ternary.html">Click here to see the list of projects of this series.</a>
         </p>
 
+
+        <div id="page_title">
+            CMOS Implementation and Analysis of Ternary Arithmetic Logic Unit
+        </div>
+        <div id="page_date">
+            Louis <span style="font-variant: small-caps;">Duret-Robert</span>, Graduate Student in Electrical and Computer Engineering at Gerogia Institue of Technology
+        </div>
+
         <p class="text">
-            This article is still a WIP ! Sorry about that. You can check out my other articles.
-        </p>    
+            <strong><em>Abstract</em> – Ternary logic is an alternative to binary logic used in every modern processor. As a base-3 numerical system can represent numbers using fewer digits than in base 2, ternary logic circuits are theorized to be more compact than equivalent binary circuits. This increase in density could lead to a gain in performance measured in transistor cost, maximal frequency and energy consumption. In this project, the details of balanced ternary algebra are reviewed and a ternary Arithmetic Logic Unit (ALU) is designed and built using CMOS chips to prove the feasibility of large ternary CMOS circuits. Finally, a theoretical analysis of the benefits of balanced ternary logic is presented. The conservative conclusion of this analysis is that balanced ternary can be cheaper and faster than equivalent basic binary logic, however, binary logic has decades of optimization tricks making it way cheaper and faster.</strong>
+        </p>
+        <p class="text">
+            <strong><em>Keywords</em> – ternary computing, processor architecture, ALU design, many-valued logic</strong>
+        </p>
+
+
+        <h2>Introduction</h2>
+
+
+        <h3>Motivation</h3>
+
+        <p class="text">
+            Every modern computer uses binary logic, 1s and 0s, for computations. Theoretically, any numerical base can be used for computation [1]. The numerical base (or radix) defines how many digits will be necessary to represent a certain number, this is the radix economy and is written as $$E(b,N)$$ for base $$b$$ and number $$N$$ and calculated with the following formula.
+            ££ E(b,N) = b \lfloor 1+log_b N \rfloor££
+        </p>
+        <p class="text">
+            The lowest average radix economy is reached for base $$e \approx 2.72$$ [2]. The closest integer base is 3, not 2 ; ternary not binary, and leads on average to the smallest radix economy.
+        </p>
+        <p class="text">
+            Therefore, a computer using ternary logic could be more efficient by requiring less digits and less circuitry for a similarly powerful processor. The most famous ternary computer was the <em>Setun</em> made by the soviets in the 1970s and was more efficient [3]. However, binary processors are easier to develop and binary won. As Moore's law slows down, it might be time to bring ternary computing back to gain performance.
+        </p>
+        <p class="text">
+            Switching to ternary logic requires redefining a whole new algebra, and a more complex one as the number of possible states and thus gates is larger.
+        </p>
+
+
+        <h2>Ternary algebra</h2>
+
+
+        <h3>Ternary values</h3>
+
+        <p class="text">
+            As the binary set of values is written $$\mathbb{B}=\{0,1\}$$, the symbol $$\mathbb{T}$$ will be used for the set of ternary values. There exist multiple ternary sets of values and thus multiple algebras : perhaps the most obvious is unbalanced ternary with $$\mathbb{T}=\{0,1,2\}$$ ; unknown-state ternary with $$\mathbb{T}=\{F,?,T\}$$ similar to an epistemological set of truth values and an extension of the Boolean True-False interpretation of binary logic ; and balanced ternary $$\mathbb{T}=\{-,0,+\}$$ [4].
+        </p>
+        <p class="text">
+            Balanced ternary logic will be used in this report. It allows operations on negative and positive numbers by default with-out having to use the ternary equivalent of two’s complement. Consequently, if we only use the positive numbers, the range of possible values is halved. This choice benefits unsigned operations over signed operations.
+        </p>
+        <p class="text">
+            In practice on an electrical computer, balanced ternary would be represented by positive, negative and zero voltage. Exotic ternary computers could use micro-fluid direction or light polarization. The use of ternary logic for quantum computation will not be discussed in this report.
+        </p>
+        <p class="text">
+            Analogous to the binary 8-bit byte and 4-bit nibble, a 3-trit word can be called a tribble and a 9-trit word a tryte. The word tryte has also been used for a smaller 6-trit word, but does not follow powers of 3. A byte is two nibbles. A tryte is three tribbles.
+        </p>
+
+        <h3>One-input gates</h3>
+
+        <p class="text">
+            In binary, a gate with one input and one output can be represented as a two by one matrix.
+        </p>
+        <table>
+            <tr>
+                <th>Input</th>
+                <th>Output</th>
+            </tr>
+            <tr>
+                <th>0</th>
+                <th>1</th>
+            </tr>
+            <tr>
+                <th>1</th>
+                <th>0</th>
+            </tr>
+        </table>
+        <p class="text">
+            Can be written with the matrix
+            ££
+            \begin{bmatrix}
+            1\\
+            0
+            \end{bmatrix}
+            ££
+        </p>
+        <p class="text">
+            Therefore there are $$2^2=4$$ possible one-input one-output matrices in binary :
+        </p>
+        <table>
+            <tr>
+                <th>Matrix</th>
+                <th>Schematic</th>
+                <th>Description</th>
+                <th>Name</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    0\\
+                    0
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th></th>
+                <th>Clear</th>
+                <th>CLR</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    1\\
+                    1
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th></th>
+                <th>Mark</th>
+                <th>MRK</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    0\\
+                    1
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th></th>
+                <th>Identity, buffer or pass</th>
+                <th>BUF</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    1\\
+                    0
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/BI_NOT.png" class="gate dark_invert"></th>
+                <th>Inverter</th>
+                <th>NOT</th>
+            </tr>
+        </table>
+        <div class="center_block">
+            <p class="caption">
+                Table 1 : binary one-input gates
+            </p>
+        </div>
+        <p class="text">
+            Only the last two are useful.
+        </p>
+        <p class="text">
+            In ternary logic, one-input one-output gates can be represented with a three by one matrix. There are $$3^3=27$$ possible such gates. Here are the meaningful ones [5].
+        </p>
+        <table>
+            <tr>
+                <th>Matrix</th>
+                <th>Schematic</th>
+                <th>Description</th>
+                <th>Name</th>
+                <th>Symbol</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    -\\
+                    0\\
+                    +
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/BUF.png" class="gate dark_invert"></th>
+                <th>Identity, buffer or pass</th>
+                <th>BUF</th>
+                <th>$$A$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    +\\
+                    0\\
+                    -
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/NOT.png" class="gate dark_invert"></th>
+                <th>Inverter</th>
+                <th>NOT</th>
+                <th>$$\overline A$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    +\\
+                    +\\
+                    -
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/PNOT.png" class="gate dark_invert"></th>
+                <th>Positively biased inverter</th>
+                <th>PNOT</th>
+                <th>$$\hat{A}$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    +\\
+                    -\\
+                    -
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/NNOT.png" class="gate dark_invert"></th>
+                <th>Negatively biased inverter</th>
+                <th>NNOT</th>
+                <th>$$\check{A}$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    +\\
+                    0\\
+                    +
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/ABS.png" class="gate dark_invert"></th>
+                <th>Absolute value</th>
+                <th>ABS</th>
+                <th>$$|A|$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    0\\
+                    0\\
+                    +
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/CLU.png" class="gate dark_invert"></th>
+                <th>Clamp up</th>
+                <th>CLU</th>
+                <th>$$\left \lceil{A}\right \rceil$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    -\\
+                    0\\
+                    0
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/CLD.png" class="gate dark_invert"></th>
+                <th>Clamp down</th>
+                <th>CLD</th>
+                <th>$$\left \lfloor{A}\right \rfloor$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    0\\
+                    +\\
+                    +
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/INC.png" class="gate dark_invert"></th>
+                <th>Increment</th>
+                <th>INC</th>
+                <th>$$A^{+}$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    -\\
+                    -\\
+                    0
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/DEC.png" class="gate dark_invert"></th>
+                <th>Decrement</th>
+                <th>DEC</th>
+                <th>$$A^{-}$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    0\\
+                    +\\
+                    -
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/RTU.png" class="gate dark_invert"></th>
+                <th>Rotate up</th>
+                <th>RTU</th>
+                <th>$$A$$<sup>╯</sup></th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    +\\
+                    -\\
+                    0
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/RTD.png" class="gate dark_invert"></th>
+                <th>Rotate down</th>
+                <th>RTD</th>
+                <th>$$A$$<sup><sup>╮</sup></sup></th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    -\\
+                    -\\
+                    +
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/ISP.png" class="gate dark_invert"></th>
+                <th>Is positive</th>
+                <th>ISP</th>
+                <th>$$A^{=+}$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    -\\
+                    +\\
+                    -
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/ISZ.png" class="gate dark_invert"></th>
+                <th>Is zero</th>
+                <th>ISZ</th>
+                <th>$$A^{=0}$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    +\\
+                    -\\
+                    -
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/ISN.png" class="gate dark_invert"></th>
+                <th>Is negative</th>
+                <th>ISN</th>
+                <th>$$A^{=-}$$</th>
+            </tr>
+        </table>
+        <div class="center_block">
+            <p class="caption">
+                Table 2 : ternary one-input gates
+            </p>
+        </div>
+        <p class="text">
+            Most of them are only useful in rare situations when building a processor. We can also note that ISZ is the same gate as NNOT. The ones to remember are the buffer and the three inverter gates.
+        </p>
+
+        <h3>Two-inputs gates</h3>
+
+        <p class="text">
+            As with one-input gates, two-inputs gates can also be represented with a matrix. For a simple binary OR gate :
+        </p>
+        <table>
+            <tr>
+                <th></th>
+                <th>A</th>
+                <th></th>
+                <th></th>
+            </tr>
+            <tr>
+                <th>B</th>
+                <th></th>
+                <th>0</th>
+                <th>1</th>
+            </tr>
+            <tr>
+                <th></th>
+                <th>0</th>
+                <th>0</th>
+                <th>1</th>
+            </tr>
+            <tr>
+                <th></th>
+                <th>1</th>
+                <th>1</th>
+                <th>1</th>
+            </tr>
+        </table>
+        <p class="text">
+            Can be represented with the matrix
+            ££
+            \begin{bmatrix}
+            0 & 1\\
+            1 & 1
+            \end{bmatrix}
+            ££
+        </p>
+        <p class="text">
+            There are $$2^{2^2}=16$$ possible binary two-inputs gates. The three useful ones with their inverted versions are :
+        </p>
+        <table>
+            <tr>
+                <th>Matrix</th>
+                <th>Schematic</th>
+                <th>Description</th>
+                <th>Name</th>
+                <th>Symbol</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    0 & 0\\
+                    0 & 1
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/BI_AND.png" class="gate dark_invert"></th>
+                <th>And</th>
+                <th>AND</th>
+                <th>$$A \times B$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    1 & 1\\
+                    1 & 0
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/BI_NAND.png" class="gate dark_invert"></th>
+                <th>Inverted and</th>
+                <th>NAND</th>
+                <th>$$\overline {A \times B}$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    0 & 1\\
+                    1 & 1
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/BI_OR.png" class="gate dark_invert"></th>
+                <th>Or</th>
+                <th>OR</th>
+                <th>$$A + B$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    1 & 0\\
+                    0 & 0
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/BI_NOR.png" class="gate dark_invert"></th>
+                <th>Inverted or</th>
+                <th>NOR</th>
+                <th>$$\overline {A + B}$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    0 & 1\\
+                    1 & 0
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/BI_XOR.png" class="gate dark_invert"></th>
+                <th>Exclusive or</th>
+                <th>XOR</th>
+                <th>$$A \oplus B$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    1 & 0\\
+                    0 & 1
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/BI_XNOR.png" class="gate dark_invert"></th>
+                <th>Inverted exclusive or</th>
+                <th>XNOR</th>
+                <th>$$\overline {A \oplus B}$$</th>
+            </tr>
+        </table>
+        <div class="center_block">
+            <p class="caption">
+                Table 3 : useful binary two-inputs gates
+            </p>
+        </div>
+        <p class="text">
+            In ternary logic, two-inputs gates are represented with a three by three matrix. Thus there are $$3^{3^3}=19683$$ possible such gates. Only six useful gates and their inverted versions will be de-scribed, however some other gates can be useful such as some asymmetrical gates (as in switching the inputs produces differ-ent results and the matrix is asymmetrical).
+        </p>
+        <table>
+            <tr>
+                <th>Matrix</th>
+                <th>Schematic</th>
+                <th>Description</th>
+                <th>Name</th>
+                <th>Symbol</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    - & - & - \\
+                    - & 0 & 0\\
+                    - & 0 & +
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/AND.png" class="gate dark_invert"></th>
+                <th>And / minimum</th>
+                <th>AND</th>
+                <th>$$A \times B$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    + & + & + \\
+                    + & 0 & 0\\
+                    + & 0 & -
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/NAND.png" class="gate dark_invert"></th>
+                <th>Inverted and / minimum</th>
+                <th>AND</th>
+                <th>$$\overline {A \times B}$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    - & 0 & + \\
+                    0 & 0 & +\\
+                    + & + & +
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/OR.png" class="gate dark_invert"></th>
+                <th>Or / maximum</th>
+                <th>OR</th>
+                <th>$$A + B$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    + & 0 & - \\
+                    0 & 0 & -\\
+                    - & - & -
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/NOR.png" class="gate dark_invert"></th>
+                <th>Inverted or / maximum</th>
+                <th>NOR</th>
+                <th>$$\overline {A + B}$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    - & 0 & 0 \\
+                    0 & 0 & 0\\
+                    0 & 0 & +
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/CONS.png" class="gate dark_invert"></th>
+                <th>Consensus</th>
+                <th>CONS</th>
+                <th>$$A ⊠ B$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    + & 0 & 0 \\
+                    0 & 0 & 0\\
+                    0 & 0 & -
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/NCONS.png" class="gate dark_invert"></th>
+                <th>Inverted consensus</th>
+                <th>NCONS</th>
+                <th>$$\overline {A ⊠ B}$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    - & - & 0 \\
+                    - & 0 & +\\
+                    0 & + & +
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/ANY.png" class="gate dark_invert"></th>
+                <th>Any</th>
+                <th>ANY</th>
+                <th>$$A ⊞ B$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    + & + & 0 \\
+                    + & 0 & -\\
+                    0 & - & -
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/NANY.png" class="gate dark_invert"></th>
+                <th>Inverted any</th>
+                <th>NANY</th>
+                <th>$$\overline {A ⊞ B}$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    + & 0 & - \\
+                    0 & 0 & 0\\
+                    - & 0 & +
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/MUL.png" class="gate dark_invert"></th>
+                <th>Multiplication</th>
+                <th>MUL</th>
+                <th>$$A \otimes B$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    - & 0 & + \\
+                    0 & 0 & 0\\
+                    + & 0 & -
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/NMUL.png" class="gate dark_invert"></th>
+                <th>Inverted multiplication</th>
+                <th>NMUL</th>
+                <th>$$\overline {A \otimes B}$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    + & - & 0 \\
+                    - & 0 & +\\
+                    0 & + & -
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/SUM.png" class="gate dark_invert"></th>
+                <th>Addition</th>
+                <th>SUM</th>
+                <th>$$A \oplus B$$</th>
+            </tr>
+            <tr>
+                <th>
+                    $$
+                    \begin{bmatrix}
+                    - & + & 0 \\
+                    + & 0 & -\\
+                    0 & - & +
+                    \end{bmatrix}
+                    $$
+                </th>
+                <th><img src="ternlogic/NSUM.png" class="gate dark_invert"></th>
+                <th>Inverted addition</th>
+                <th>NSUM</th>
+                <th>$$\overline {A \oplus B}$$</th>
+            </tr>
+        </table>
+        <div class="center_block">
+            <p class="caption">
+                Table 4 : useful ternary two-inputs gates
+            </p>
+        </div>
+        <p class="text">
+            AND and OR ternary gates are sometimes called MIN and MAX for obvious reasons. The MUL gate is also sometimes called XOR.
+        </p>
+        <p class="text">
+            The gate symbols used here are similar to the US binary gate symbols with modifications for the more complex operations. In addition, as with the US symbols, a dot on the output signifies an inverted output. The small triangle indicates that it's a ternary gate, to differentiate between equivalent binary and ternary gates. The symbols are based on the binary AND and OR gates : if we only look at the 2×2 submatrix for zero and positive inputs of the ternary gates, some look like binary AND and other like binary OR, so this is the base used for their symbols, then alterations are added.
+        </p>
+
+        <h3>Formulae</h3>
+
+        <p class="text">
+            Some gates are easy to implement with few transistors and resistors, while others require combining other simpler gates. This increases the cost but also the transmission time of the signal through the gate and thus the length of the transient before reaching the static phase with the correct output of the circuit. This can be a bottleneck for the frequency of a logic circuit such as a processor. Therefore, finding the best implementation of a gate is critical.
+        </p>
+        <p class="text">
+            To find the formulas of logic gates from simple ones, I Python script is used to test every possible combinations of basic logic gates with simple operation prototypes. For instance, every combination with the pattern $$A \bigstar B$$ with $$\bigstar$$ a two-inputs gate. The script searches all the combinations for the simplest solutions with the smallest transistor and resistor cost.
+        </p>
+        <p class="text">
+            As will be explained when looking at the CMOS implementation of those gates, the simple one-input gates are BUF, NOT, NNOT, PNOT as well as CLU and CLD if we allow the use of diodes. The simple two-inputs gates are NAND, NOR, NCONS and NANY.
+        </p>
+        <p class="text">
+            As with binary algebra, many formulae help implementing the more complex gates. Some of the formulae are only useful be-cause they correspond to the CMOS implementations covered later.
+        </p>
+        <table>
+            <tr>
+                <td>$$\overline{\overline{A}}=A$$</td>
+                <td>$$|A| = \overline { \overline{A} \times A}$$</td>
+            </tr>
+            <tr>
+                <td>$$A^{=-}=\check{A}$$</td>
+                <td>$$\left \lceil{A}\right \rceil = A + (0)$$</td>
+            </tr>
+            <tr>
+                <td>$$A^{=+}=\overline{\hat{A}}$$</td>
+                <td>$$\left \lfloor{A}\right \rfloor = A \times (0)$$</td>
+            </tr>
+            <tr>
+                <td>$$A$$<sup>╯<sup>╯</sup></sup>$$=A$$<sup><sup>╮</sup></sup></td>
+                <td>$$\overline{A \times B}=\overline{A} \times \overline{B}$$</td>
+            </tr>
+            <tr>
+                <td>$$A$$<sup><sup>╮<sup>╮</sup></sup></sup>$$=A$$<sup>╯</sup></td>
+                <td>$$\overline{A + B}=\overline{A} + \overline{B}$$</td>
+            </tr>
+            <tr>
+                <td>$$A^+ = A⊞(+)$$</td>
+                <td>$$A⊠B=\overline{A}⊠\overline{B}$$</td>
+            </tr>
+            <tr>
+                <td>$$A^- = A⊞(-)$$</td>
+                <td>$$A⊞B=\overline{A}⊞\overline{B}$$</td>
+            </tr>
+            <tr>
+                <td>$$A$$<sup>╯</sup>$$ = A \oplus (+)$$</td>
+                <td>$$A \otimes B=\overline{A} \otimes \overline{B}$$</td>
+            </tr>
+            <tr>
+                <td>$$A$$<sup><sup>╮</sup></sup>$$ = A \oplus (-)$$</td>
+                <td>$$A \oplus B=\overline{A} \oplus \overline{B}$$</td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td>
+                    $$A$$<sup>╯<sup><sup>╮</sup></sup></sup> $$=A$$<sup><sup>╮╯</sup></sup>$$=A$$<sup><sup>╮<sup>╮<sup>╮</sup></sup></sup></sup>$$=A$$<sup>╯<sup>╯<sup>╯</sup></sup></sup>$$=A$$
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    $$A \otimes B = (A + \overline{B}) \times (\overline{A} + B) $$
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    $$A \otimes B = \overline{ \overline{A \times B} \times A + B } $$
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    $$\overline{A \otimes B} = \overline{ \overline{A + B} + A \times B } $$
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    $$A \oplus B = \left( A⊞B ⊞ \overline {A⊠B} \right) ⊞ \overline {A⊠B}$$
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    $$A \oplus B = \overline{ \overline{ A⊞B ⊞ \overline {A⊠B} } ⊞ A⊠B }$$
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    $$(A \times B) ⊠ (A+B) = A⊠B$$
+                </td>
+            </tr>
+        </table>
+
+
+
 
         <p class="series-header">
             This article is part of my series of projects around Ternary Computing and Processor Design. <a href="index-ternary.html">Click here to see the list of projects of this series.</a>

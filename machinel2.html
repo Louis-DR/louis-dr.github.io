@@ -128,7 +128,7 @@
             The fitness of a bit-string in the four peaks problem is the maximum between the number of leading 1s and the number of trailing 0s. A bonus is given if the number of leading 1s and the number of trailing 0s are both above a threshold defined as a fraction of the size of the problem. This means there are two obvious local optima by increasing the number of leading 1s or the number of trailing 0s with the maxima being when the state is either full of 1s or full of 0s. These optima have a large basin of attraction. But the bonus creates two global optima that should be hard to reach by hill climbing. The higher the bonus threashold is, the narrower its basin of attraction is and the harder the global optima will be to reach. Here I chose the bonus threashold as 25% of the size of the state.
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel2/FourPeaks_T=0.25_size.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/FourPeaks_T=0.25_size.svg" alt="">
         </div>
         <p class="text">
             For small sizes of the problem (length of the bit-string), all algorithms but MIMIC reach pretty much all the time the best score (twice the size of the problem with the bonus). That is because the basin of attraction of the smaller local optima are about the same size as that of the global optima.
@@ -140,7 +140,7 @@
             Now, for a bit-string of length 50, I compared the fitness over computation time.
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel2/FourPeaks_T=0.25_time.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/FourPeaks_T=0.25_time.svg" alt="">
         </div>
         <p class="text">
             SA reaches the plateau of 50 corresponding to the local optimum about ten times faster than GA reaches its higher plateau. MIMIC and GA perform about as poorly and worse than the others for short time limits (about 0.35 seconds for the chose parameters). While GA jumps in fitness after that, MIMIC stays underperforming. There is no clear structure and relation between the bits so MIMIC doesn’t have an advantage.
@@ -155,13 +155,13 @@
             The One Max optimization problem is very simple : the fitness is the number of 1s in the bit-string. This means there is only one optimum and the basin of attraction is the entire state space. RHC and SA should perform great and faster than GA and MIMIC.
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel2/Onemax_size.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/Onemax_size.svg" alt="">
         </div>
         <p class="text">
             Regardless of problem size, all algorithms reach the maximum fitness. This is to be expected for such a simple problem. The time comparison is where the algorithms can be ranked.
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel2/Onemax_time.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/Onemax_time.svg" alt="">
         </div>
         <p class="text">
             As predicted, SA and RHC perform spectacularly better, reaching the optima over ten times faster than GA or MIMIC. SA is slower than RHC as it does more calculations. MIMIC is also slightly faster than GA but not enough for a real appreciation of the algorithm better suiting the structure of the problem itself.
@@ -338,7 +338,7 @@
             Now the results. I started with the 4-Pairiodic for different problem sizes (the length of the state).
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel2/Pairiodic4_size.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/Pairiodic4_size.svg" alt="">
         </div>
         <p class="text">
             As we can see, the problem size doesn’t change the order of the algorithms and all the algorithms perform about as well. GA and MIMIC still perform slightly better than RHC and SA.
@@ -347,7 +347,7 @@
             I will assume the same conclusion for the other Pairiodic problems and only study computation time. I picked a size of 100 and studied the fitness over computation time but limited to 30 seconds for practical reasons.
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel2/Pairiodic4_time.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/Pairiodic4_time.svg" alt="">
         </div>
         <p class="text">
             SA and RHC are once again very fast, but given enough time, MIMIC and then GA outperform both by a small margin. Even if MIMIC is slightly faster than GA, the latter performs slightly better.
@@ -356,7 +356,7 @@
             Then for 4-Pairiodic with a size of 150.
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel2/Pairiodic6_time.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/Pairiodic6_time.svg" alt="">
         </div>
         <p class="text">
             Here MIMIC outperforms GA significantly but a longer computation time might give the first place to GA after all. The result is actually similar to 4-Pairiodic but with RHC and SA performing relatively worse.
@@ -365,7 +365,7 @@
             And for 8-Pairiodic for a size of 180.
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel2/Pairiodic8_time.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/Pairiodic8_time.svg" alt="">
         </div>
         <p class="text">
             Now MIMIC isn’t as efficient and GA is slightly better at any computation time.
@@ -377,7 +377,7 @@
             I then tested this hypothesis by extending the study to a 10-Pairiodic problem with a size of 160.
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel2/Pairiodic10_time.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/Pairiodic10_time.svg" alt="">
         </div>
         <p class="text">
             However, MIMIC gained again in performance and is equivalent to GA until it plateaus where GA performs better.
@@ -401,14 +401,14 @@
             To illustrate this phenomenon, here is the fitness over computation time for OneMax where I modified the fitness function to add a delay to simulate a more computation expensive problem.
         </p>
         <div class="center_block">
-            <img class="image_two dark_invert" src="machinel2/Onemax_time.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/Onemax_time.svg" alt="">
             <p class="caption">Original One Max</p>
-            <img class="image_two dark_invert" src="machinel2/Onemax_delay0.00001_time.svg" alt="">
-            <img class="image_two dark_invert" src="machinel2/Onemax_delay0.001_time.svg" alt="">
-            <div class="image_two">
+            <img class="image_two_big dark_invert" src="machinel2/Onemax_delay0.00001_time.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/Onemax_delay0.001_time.svg" alt="">
+            <div class="image_two_big">
                 <p class="caption">0.00001 second delay per function call</p>
             </div>
-            <div class="image_two">
+            <div class="image_two_big">
                 <p class="caption">0.01 second delay per function call</p>
             </div>
         </div>
@@ -471,7 +471,7 @@
             Here are the results of the neural network using the Adam solver and the one-layer 100-nodes structure.
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel2/NN_back.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/NN_back.svg" alt="">
         </div>
         <table>
             <tr>
@@ -528,7 +528,7 @@
             A step size around 0.75 lead to better results and I chose this value.
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel2/NN_SA.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/NN_SA.svg" alt="">
         </div>
         <p class="text">
             Looking at the learning curves, we can see the model isn’t overfitting and additional training samples wouldn’t improve accuracy by much.
@@ -556,7 +556,7 @@
             As RHC is faster, I allowed it to do 10 restarts to find the optima. This makes it about as computation expensive as SA for this problem. I chose the same step size of 0.75 after checking that there were no significant gains to be made with a different value.
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel2/NN_RHC.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/NN_RHC.svg" alt="">
         </div>
         <table>
             <tr>
@@ -581,7 +581,7 @@
             The parameters I used for the genetic algorithm are the default values of a population size of 200 and a mutation rate of 0.1. Again, I checked if a different step size improved performance and settled for the same 0.75.
         </p>
         <div class="center_block">
-            <img class="image_small dark_invert" src="machinel2/NN_GA.svg" alt="">
+            <img class="image_two_big dark_invert" src="machinel2/NN_GA.svg" alt="">
         </div>
         <p class="text">
             The learning curves obtained are horrible. The accuracies vary widely and are consistently worse than any of the previous algorithms.
