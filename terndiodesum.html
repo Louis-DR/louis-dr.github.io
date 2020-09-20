@@ -41,7 +41,7 @@
             To visualize this phenomenon, here is the measurements I made in the first article about using CMOS pairs and the CD4007 chip. I measured the output voltage of a single CMOS pair (NOT gate) by sweeping the input voltage on the whole range of the supply voltages.
         </p>
         <div class="center_block">
-            <img class="image_small" src="cd4007_activation.PNG" alt="">
+            <img class="image_small dark_invert" src="cd4007_activation.PNG" alt="">
             <p class="caption">
                 horizontal : input voltage ; vertical : output voltage
             </p>
@@ -56,8 +56,8 @@
             I thought about mutliple solutions, using pull-down resistors, operational amplifiers, etc. After experimenting with diodes, I found the best solution by using a special type of diodes : Zener diodes, that have a controlled reverse current flow threshold voltage called the Zener voltage. With a pull-down resistor and a Zener diode, we can create a voltage shifter with a value depending on the Zener voltage of the diode :
         </p>
         <div class="center_block">
-            <img class="image_two" src="terndiodesum_voltageshifter_circuit.png" alt="">
-            <img class="image_two" src="terndiodesum_voltageshifter_plot.png" alt="">
+            <img class="image_two dark_invert" src="terndiodesum_voltageshifter_circuit.png" alt="">
+            <img class="image_two dark_invert" src="terndiodesum_voltageshifter_plot.png" alt="">
             <p class="caption">
                 Zener diode voltage shifter
             </p>
@@ -66,8 +66,8 @@
             We can use this circuit on the output of each gate (which isn’t unreasonable as the Zener diode is a very simple semiconductor device) to create a flat neutral level. I simulated this circuit with two diodes for both directions using the online circuit simulator CircuitLab.
         </p>
         <div class="center_block">
-            <img class="image_two" src="terndiodesum_2voltageshifter_circuit.png" alt="">
-            <img class="image_two" src="terndiodesum_2voltageshifter_plot.png" alt="">
+            <img class="image_two dark_invert" src="terndiodesum_2voltageshifter_circuit.png" alt="">
+            <img class="image_two dark_invert" src="terndiodesum_2voltageshifter_plot.png" alt="">
             <p class="caption">
                 Symetrical voltage shifter
             </p>
@@ -79,8 +79,8 @@
             That is why I wanted Zener diodes with the smallest value possible. The Amazon Zener diode kit I had bought only went down to 3.3V. I use Farnell to buy electronic components and need them delievered quickly, and the smallest value of Zener diode they had in THT component (easier to assemble by hand) was 2.4V. The only place I could find a lower value was on eBay : 2.0V from China. Buing on eBay is cheaper but it takes a very long time to arrive. I tried with the 3.3V and 2.4V anyway and built the voltage shifters on the output of a NOT gate to do the same measurements as above.
         </p>
         <div class="center_block">
-            <img class="image_two" src="terndiodesum_dual33V.png" alt="">
-            <img class="image_two" src="terndiodesum_dual24V.png" alt="">
+            <img class="image_two dark_invert" src="terndiodesum_dual33V.png" alt="">
+            <img class="image_two dark_invert" src="terndiodesum_dual24V.png" alt="">
             <p class="caption">
                 horizontal : input voltage ; vertical : output voltages <br>
                 Zener diodes voltage : left : 3.3V ; right : 2.4V
@@ -90,8 +90,8 @@
             As we can see, the smaller the Zener voltage of the diode, the narrower the neutral state is and the less the other two states are affected. But the effect was still too large. I realised a single zener diode would still work as we can move it by tweaking the supply voltage bias. I also tried to increase the supply voltage (as the CD4007 can work up to 15V). For this I had to order a higher voltage center-tapped transformer.
         </p>
         <div class="center_block">
-            <img class="image_two" src="terndiodesum_24_5-6.png" alt="">
-            <img class="image_two" src="terndiodesum_24_9-10.png" alt="">
+            <img class="image_two dark_invert" src="terndiodesum_24_5-6.png" alt="">
+            <img class="image_two dark_invert" src="terndiodesum_24_9-10.png" alt="">
             <p class="caption">
                 horizontal : input voltage ; vertical : output voltage <br>
                 Single 2.4V Zener diode <br>

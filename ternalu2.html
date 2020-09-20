@@ -26,7 +26,7 @@
         <div id="page_date">
             30/09/2019
         </div>
-        
+
         <p class="series-header">
             This article is part of my series of projects around Ternary Computing and Processor Design. <a href="index-ternary.html">Click here to see the list of projects of this series.</a>
         </p>
@@ -52,7 +52,7 @@
             As you can see, some PCBs combine multiple gates, either because I had extra space or because some gates include other gates, which is the case of the NSUM gate which requires a NCONS gate.
         </p>
         <div class="center_block">
-            <img class="image_big" src="ternalu2_nsumncons.png" alt="">
+            <img class="image_big dark_invert" src="ternalu2_nsumncons.png" alt="">
             <p class="caption">
                 NSUM with NCONS secondary output
             </p>
@@ -72,7 +72,7 @@
             And this is huge. If we invert both inputs of a SUM gate, the output is unchanged. But why invert the inputs ? Adding NOT gates will increase the cost ! Well, yes, obviously. The trick is to use inverted gates before the input, and since those inverted gates are usually cheaper, we can save chips. This is simpler to understand with diagrams :
         </p>
         <div class="center_block">
-            <img class="image_small" src="ternalu2_nhalf.png" alt="">
+            <img class="image_small dark_invert" src="ternalu2_nhalf.png" alt="">
             <p class="caption">
                 N-half-adder
             </p>
@@ -84,7 +84,7 @@
             Using this N-half-adder, we can create a N-full-adder :
         </p>
         <div class="center_block">
-            <img class="image_big" src="ternalu2_nfull.png" alt="">
+            <img class="image_big dark_invert" src="ternalu2_nfull.png" alt="">
             <p class="caption">
                 N-full-adder
             </p>
@@ -96,7 +96,7 @@
             Finally, we can build our full ALU again. As expected, the first and last digits are also different.
         </p>
         <div class="center_block">
-            <img class="image_smaller" src="ternalu2_chain.png" alt="">
+            <img class="image_smaller dark_invert" src="ternalu2_chain.png" alt="">
             <p class="caption">
                 New adder chain
             </p>
@@ -114,19 +114,19 @@
             That was a lot of new circuitry ! I could have done a mistake, so I checked the whole behavior of the circuit, once on paper and once with TelociDesi, the piece of software I developed last year to simulate whole ternary circuits. I can confirm everything works perfectly. Here are the circuits on TelociDesi :
         </p>
         <div class="center_block">
-            <img class="image_smaller" src="ternalu2_telo_nhalf.png" alt="">
+            <img class="image_smaller dark_invert" src="ternalu2_telo_nhalf.png" alt="">
             <p class="caption">
                 N-half-adder
             </p>
         </div>
         <div class="center_block">
-            <img class="image_small" src="ternalu2_telo_nfull.png" alt="">
+            <img class="image_small dark_invert" src="ternalu2_telo_nfull.png" alt="">
             <p class="caption">
                 N-full-adder
             </p>
         </div>
         <div class="center_block">
-            <img class="image_smaller" src="ternalu2_telo_alu.png" alt="">
+            <img class="image_smaller dark_invert" src="ternalu2_telo_alu.png" alt="">
             <p class="caption">
                 3-trit ALU
             </p>

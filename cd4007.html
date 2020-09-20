@@ -35,7 +35,7 @@
         <p class="series-header">
             This article is part of my series of projects around Ternary Computing and Processor Design. <a href="index-ternary.html">Click here to see the list of projects of this series.</a>
         </p>
-        
+
         <p class="text">
             I'm back working on the Ternary Computer ! If you haven't read the previous articles I made on the topic, go take a look at them. I now started studying at Georgia Tech and I managed to get the project accepted as a Special Problem, basically a small research project. So, articles about Ternary Computing are on their way.
         </p>
@@ -54,7 +54,7 @@
 
         <p class="section">NOT gates</p>
         <div class="center_block">
-            <img class="image_smaller" src="cd4007_not.png" alt="">
+            <img class="image_smaller dark_invert" src="cd4007_not.png" alt="">
             <p class="caption">
                 NOT, PNOT and NNOT gates
             </p>
@@ -71,9 +71,9 @@
 
         <p class="section">NAND gate</p>
         <p class="text">
-            The NAND gate (inverted AND) is built with the PMOS in parallel and NMOS in series and we get the matrix 
+            The NAND gate (inverted AND) is built with the PMOS in parallel and NMOS in series and we get the matrix
             $$
-            \begin{bmatrix} 
+            \begin{bmatrix}
             + & 0 & - \\
             0 & 0 & -\\
             - & - & -
@@ -81,7 +81,7 @@
             $$
         </p>
         <div class="center_block">
-            <img class="image_smaller" src="cd4007_nand.png" alt="">
+            <img class="image_smaller dark_invert" src="cd4007_nand.png" alt="">
             <p class="caption">
                 NAND
             </p>
@@ -95,12 +95,12 @@
             <iframe class="video" src="https://www.youtube.com/embed/9RRwFpId0Ok" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
 
-        
+
         <p class="section">NOR gate</p>
         <p class="text">
-            The NOR gate (inverted OR) is built with the PMOS in parallel and NMOS in series and we get the matrix 
+            The NOR gate (inverted OR) is built with the PMOS in parallel and NMOS in series and we get the matrix
             $$
-            \begin{bmatrix} 
+            \begin{bmatrix}
             + & + & + \\
             + & 0 & 0\\
             + & 0 & -
@@ -108,7 +108,7 @@
             $$
         </p>
         <div class="center_block">
-            <img class="image_smaller" src="cd4007_nor.png" alt="">
+            <img class="image_smaller dark_invert" src="cd4007_nor.png" alt="">
             <p class="caption">
                 NOR
             </p>
@@ -119,13 +119,13 @@
         <div class="center_block">
             <iframe class="video" src="https://www.youtube.com/embed/GbxpVYtTrCo" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
-        
-        
+
+
         <p class="section">NCONS gate</p>
         <p class="text">
-            The NCONS gate (inverted CONS) is built with the NMOS and PMOS transistors in parallel and we get the matrix 
+            The NCONS gate (inverted CONS) is built with the NMOS and PMOS transistors in parallel and we get the matrix
             $$
-            \begin{bmatrix} 
+            \begin{bmatrix}
             + & 0 & 0 \\
             0 & 0 & 0\\
             0 & 0 & -
@@ -133,7 +133,7 @@
             $$
         </p>
         <div class="center_block">
-            <img class="image_smaller" src="cd4007_ncons.png" alt="">
+            <img class="image_smaller dark_invert" src="cd4007_ncons.png" alt="">
             <p class="caption">
                 NCONS
             </p>
@@ -147,12 +147,12 @@
             <iframe class="video" src="https://www.youtube.com/embed/oq1tudVIWzQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
 
-        
+
         <p class="section">NANY gate</p>
         <p class="text">
-            The NANY gate (inverted ANY) is built with the NMOS and PMOS transistors in series and we get the matrix 
+            The NANY gate (inverted ANY) is built with the NMOS and PMOS transistors in series and we get the matrix
             $$
-            \begin{bmatrix} 
+            \begin{bmatrix}
             + & + & 0 \\
             + & 0 & -\\
             0 & - & -
@@ -160,7 +160,7 @@
             $$
         </p>
         <div class="center_block">
-            <img class="image_smaller" src="cd4007_nany.png" alt="">
+            <img class="image_smaller dark_invert" src="cd4007_nany.png" alt="">
             <p class="caption">
                 NANY
             </p>
@@ -180,7 +180,7 @@
             While building the gates, I noticed there seems to be a small voltage bias : even when using precise $$+5.00V$$ and $$-5.00V$$, the $$0$$ output was about $$-0.7V$$. I examined that by acquiring a second dual-rail power-supply, fixing the first to $$\pm 5.00V$$ and using the other to measure the output of a NOT gate with an input ranging from $$-5.00V$$ to $$+5.00V$$. The dual-rail power-supply I use can't go below $$1.25V$$ (LM337 and LM317). Here is the result :
         </p>
         <div class="center_block">
-            <img class="image_small" src="cd4007_activation.PNG" alt="">
+            <img class="image_small dark_invert" src="cd4007_activation.PNG" alt="">
             <p class="caption">
                 horizontal : input voltage ; vertical : output voltage
             </p>

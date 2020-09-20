@@ -66,6 +66,11 @@ h1,h2,h3,h4,h5,h6 {
     max-height:100%;
 }
 
+.card_background {
+    background-blend-mode: screen;
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
 .card:hover {
     transform: scale(1.05);
 }
@@ -136,5 +141,28 @@ h1,h2,h3,h4,h5,h6 {
     .card_date {
         font-size: 9px;
         padding: 10px;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    html, body {
+        background-color: #000000;
+        color: #ffffff;
+    }
+
+    .card {
+        box-shadow: 0 4px 8px 0 rgba(255,255,255, 0.1), 0 6px 20px 0 rgba(255,255,255, 0.1);
+    }
+
+    #profile_picture {
+        box-shadow: 0 4px 8px 0 rgba(255,255,255, 0.1), 0 6px 20px 0 rgba(255,255,255, 0.1);
+    }
+
+    .dark_invert {
+        filter: invert(0.9) hue-rotate(180deg);
+    }
+
+    .dark_darken {
+        filter: brightness(0.8);
     }
 }

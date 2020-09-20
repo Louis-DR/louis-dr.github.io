@@ -35,47 +35,47 @@
             This project is the third assignment of CS-7641 Machine Learning at the Georgia Institute of Technology. The assignment is to study two clustering algorithms on the datasets used in the previous assignments. Then apply four dimensionality reduction algorithms and report any obsverations. Then study the performance of the clustering algorithms on the data after dimensionality reduction. Finaly, run the neural network classifier of the first assignment to the data after dimensionality reduction and study its performance.
         </p>
 
-        
+
         <p class="chapter">Methodology</p>
 
 
         <p class="section">Tools</p>
 
         <p class="text">
-            Everything was done in Python using Visual Studio Code and the Jupyter extension. The libraries I used are Pandas for data mining, SciKitLearn for machine learning, Keras for the autoencoder, MCA, Numpy and MatPlotLib. 
+            Everything was done in Python using Visual Studio Code and the Jupyter extension. The libraries I used are Pandas for data mining, SciKitLearn for machine learning, Keras for the autoencoder, MCA, Numpy and MatPlotLib.
         </p>
 
         <p class="section">Algorithms</p>
 
         <p class="text">
-            In the first part, I will apply two clustering algorithms : Kmeans and Expectation Maximization (EM) to two datasets and report my observations. 
+            In the first part, I will apply two clustering algorithms : Kmeans and Expectation Maximization (EM) to two datasets and report my observations.
         </p>
         <p class="text">
-            Then, on each dataset, I will apply four dimensionality reduction algorithms : Principal Component Analysis (PCA), Independent Component Analysis (ICA), Random Projections (RP) and an Autoencoder (AE), and report my observations. 
+            Then, on each dataset, I will apply four dimensionality reduction algorithms : Principal Component Analysis (PCA), Independent Component Analysis (ICA), Random Projections (RP) and an Autoencoder (AE), and report my observations.
         </p>
         <p class="text">
-            I will then apply the clustering algorithms after the dimensionality reduction. 
+            I will then apply the clustering algorithms after the dimensionality reduction.
         </p>
         <p class="text">
-            Finally, on one of the datasets, I will train the neural network from assignment 1 on the projected data and with the clustering information. 
+            Finally, on one of the datasets, I will train the neural network from assignment 1 on the projected data and with the clustering information.
         </p>
 
         <p class="section">Metrics</p>
 
         <p class="text">
-            For the study of clustering algorithms, there exists many different metrics. I chose six metrics that I think can give us insight on the performance of the algorithms on the datasets. 
+            For the study of clustering algorithms, there exists many different metrics. I chose six metrics that I think can give us insight on the performance of the algorithms on the datasets.
         </p>
         <p class="text">
             First, I use the Silhouette score (Sil) and Calinsky-Harabasz Index (CalHar). Both scores indicate how dense and well separated the clusters but CalHar is unbounded and can give different results.
         </p>
         <p class="text">
-            Then, as we have knowledge of the labels associated with each sample, we can computer additional scores to assess if the clusters correspond to what we could have expected. 
+            Then, as we have knowledge of the labels associated with each sample, we can computer additional scores to assess if the clusters correspond to what we could have expected.
         </p>
         <p class="text">
-            The completeness (Com) indicates if samples with the same labels are clustered together, while homogeneity (Hom) looks at the clusters and assesses if they contain only samples with the same labels. It makes sense that, in general, as we increase the number of clusters, completeness decreases and homogeneity increases. This is, as always, a matter of compromises. However, a sharp bend can indicate a better value of the number of clusters. 
+            The completeness (Com) indicates if samples with the same labels are clustered together, while homogeneity (Hom) looks at the clusters and assesses if they contain only samples with the same labels. It makes sense that, in general, as we increase the number of clusters, completeness decreases and homogeneity increases. This is, as always, a matter of compromises. However, a sharp bend can indicate a better value of the number of clusters.
         </p>
         <p class="text">
-            Adjusted Rand Index (ARI) assesses the similarity of a cluster to a particular class regardless of permutation while Adjusted Mutual Information (AMI) assesses the agreement of the two assignments. Both are adjusted against chance, which is allthe-more important when working with unbalanced datasets. 
+            Adjusted Rand Index (ARI) assesses the similarity of a cluster to a particular class regardless of permutation while Adjusted Mutual Information (AMI) assesses the agreement of the two assignments. Both are adjusted against chance, which is allthe-more important when working with unbalanced datasets.
         </p>
         <p class="text">
             All tests are run five times to account for variations due to the random starting state and the randomness of the processes of the algorithms. Then the plots feature the average result as the solid line and the min-max envelope in a lighter color.
@@ -94,7 +94,7 @@
         <p class="section">Wine Quality</p>
 
         <p class="text">
-            The first dataset is Wine Quality. It is made available by Paulo Cortez from the University of Minho in Portugal on the UCI Machine Learning Repository. This dataset is used in the paper <i>P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis - Modeling wine preferences by data mining from physicochemical properties. In Decision Support Systems, Elsevier, 47(4):547-553, 2009</i>. While the dataset contains data for red and white wines, I restricted my analysis to the white wines because the target classes are less unbalanced. 
+            The first dataset is Wine Quality. It is made available by Paulo Cortez from the University of Minho in Portugal on the UCI Machine Learning Repository. This dataset is used in the paper <i>P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis - Modeling wine preferences by data mining from physicochemical properties. In Decision Support Systems, Elsevier, 47(4):547-553, 2009</i>. While the dataset contains data for red and white wines, I restricted my analysis to the white wines because the target classes are less unbalanced.
         </p>
         <p class="text">
             It contains 4898 wines with 11 physiochemical proprieties as continuous attributes and a sensory quality score between 1 and 5 which serves as the label.
@@ -103,13 +103,13 @@
         <p class="section">Wine Review</p>
 
         <p class="text">
-            The second dataset is also about wine, but Wine Reviews scraped from WineEnthusiast in June 2017 by zackthoutt and available on Kaggle. It consists of over 280k wines with their review by the website.  
+            The second dataset is also about wine, but Wine Reviews scraped from WineEnthusiast in June 2017 by zackthoutt and available on Kaggle. It consists of over 280k wines with their review by the website.
         </p>
         <p class="text">
-            After preprocessing, each sample is defined by 2 continuous attributes, 3 categorical attributes and a label between 1 and 5 again. The categorical attributes are one-hot encoded into over 600 binary dimensions. 
+            After preprocessing, each sample is defined by 2 continuous attributes, 3 categorical attributes and a label between 1 and 5 again. The categorical attributes are one-hot encoded into over 600 binary dimensions.
         </p>
         <p class="text">
-            For practical reasons, I only use 10k samples out of this dataset for the tests as the computation become too long after that and there are a lot of tests to run. 
+            For practical reasons, I only use 10k samples out of this dataset for the tests as the computation become too long after that and there are a lot of tests to run.
         </p>
 
 
@@ -117,51 +117,51 @@
 
 
         <p class="text">
-            First, let’s compare the performances and behaviors of the two clustering algorithms on each dataset. The study is carried out on a range of numbers of clusters between 2 and 75. 
+            First, let’s compare the performances and behaviors of the two clustering algorithms on each dataset. The study is carried out on a range of numbers of clusters between 2 and 75.
         </p>
 
         <p class="section">K-means – Wine Quality</p>
-        
+
         <div class="center_block">
-            <img class="image_two" src="machinel3/WQ_Kmeans_silhouette.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_Kmeans_CalHarI.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_Kmeans_completeness_homogeneity.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_Kmeans_ARI_AMI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_silhouette.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_CalHarI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_completeness_homogeneity.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
-            The different scores give different optimal number of clusters (k) and this will be observed in pretty much all tests. Using the Elbow method, the Silhouette score gives a k of around 20 while the CalHar score decreases sharply from only 2 clusters. Both ARI and AMI also indicate that only 2 clusters correspond best with the ground truth. The completeness score drops sharply which also indicates that the algorithms tends to break similar samples into different clusters. Thus, the performances are rather poor. 
+            The different scores give different optimal number of clusters (k) and this will be observed in pretty much all tests. Using the Elbow method, the Silhouette score gives a k of around 20 while the CalHar score decreases sharply from only 2 clusters. Both ARI and AMI also indicate that only 2 clusters correspond best with the ground truth. The completeness score drops sharply which also indicates that the algorithms tends to break similar samples into different clusters. Thus, the performances are rather poor.
         </p>
 
         <p class="section">K-means – Wine Review</p>
 
         <div class="center_block">
-            <img class="image_two" src="machinel3/WR_Kmeans_silhouette.svg" alt="">
-            <img class="image_two" src="machinel3/WR_Kmeans_CalHarI.svg" alt="">
-            <img class="image_two" src="machinel3/WR_Kmeans_completeness_homogeneity.svg" alt="">
-            <img class="image_two" src="machinel3/WR_Kmeans_ARI_AMI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_silhouette.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_CalHarI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_completeness_homogeneity.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
-            On the second dataset, the results are more interesting. While the Silhouette score doesn’t feature a sharp bend and keeps decreasing, the CarHar index indicates an optimal number of clusters around 40. This however isn’t corroborated when taking into account the labels of each sample : ARI and AMI both point to around 8-10 clusters and the homogeneity also points to the same result with an elbow around 10 clusters. The completeness decreases more slowly than for the first dataset, indicating that the algorithm tends to do a better (or at least slightly less bad) job of keeping similar samples together. 
+            On the second dataset, the results are more interesting. While the Silhouette score doesn’t feature a sharp bend and keeps decreasing, the CarHar index indicates an optimal number of clusters around 40. This however isn’t corroborated when taking into account the labels of each sample : ARI and AMI both point to around 8-10 clusters and the homogeneity also points to the same result with an elbow around 10 clusters. The completeness decreases more slowly than for the first dataset, indicating that the algorithm tends to do a better (or at least slightly less bad) job of keeping similar samples together.
         </p>
 
         <p class="section">Expectation Maximization – Wine Quality</p>
 
         <div class="center_block">
-            <img class="image_two" src="machinel3/WQ_ExpMax_silhouette.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_CalHarI.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_completeness_homogeneity.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_ARI_AMI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_silhouette.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_CalHarI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_completeness_homogeneity.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             Using expectation maximization, the results are somewhat different than with K-means. While silhouette still indicates around 20 clusters, it does it more clearly. The CalHar index is slightly different with a maximum for 5 clusters but a score over four times smaller than for the previous algorithm, which shows that the algorithm performed worse. ARI and AMI also point to a similar number of clusters but they, along with completeness and homogeneity, are slightly worse than for K-means. Thus, EM had more difficulties clustering this dataset than K-means, which is unexpected considering the similarities between the two algorithms.
         </p>
         <div class="center_block">
-            <img class="image_two" src="machinel3/WQ_Kmeans_silProfile_20.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_silProfile_20.svg" alt="">
-            <div class="image_two">
+            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_silProfile_20.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_silProfile_20.svg" alt="">
+            <div class="image_two dark_invert">
                 <p class="caption">K-means</p>
             </div>
-            <div class="image_two">
+            <div class="image_two dark_invert">
                 <p class="caption">Expecation Maximization</p>
             </div>
         </div>
@@ -172,10 +172,10 @@
         <p class="section">Expectation Maximization – Wine Review</p>
 
         <div class="center_block">
-            <img class="image_two" src="machinel3/WR_ExpMax_silhouette.svg" alt="">
-            <img class="image_two" src="machinel3/WR_ExpMax_CalHarI.svg" alt="">
-            <img class="image_two" src="machinel3/WR_ExpMax_completeness_homogeneity.svg" alt="">
-            <img class="image_two" src="machinel3/WR_ExpMax_ARI_AMI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_silhouette.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_CalHarI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_completeness_homogeneity.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             Again, the optimal values of k are different but it doesn’t really matter as the scores are so much worse than for K-means : silhouette is well in the negative, which could indicate that the clusters are thin and oddly shaped in a way that most samples are closer to other clusters than their own, CalHar is about 100 times worse and ARI, AMI, completeness and homogeneity are 10 times worse.
@@ -184,12 +184,12 @@
             However, the expectation maximization of SciKitLearn uses gaussian probability distributions which works for continuous attributes, but less so for binary values of one-hot encoded categorical attributes. This might explain the poor performance of the algorithm on the second dataset. We can envision a clustering algorithm similar to expectation maximization but working with different probability distributions for categorical values.
         </p>
         <div class="center_block">
-            <img class="image_two" src="machinel3/WR_Kmeans_silProfile_10.svg" alt="">
-            <img class="image_two" src="machinel3/WR_ExpMax_silProfile_10.svg" alt="">
-            <div class="image_two">
+            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_silProfile_10.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_silProfile_10.svg" alt="">
+            <div class="image_two dark_invert">
                 <p class="caption">K-means</p>
             </div>
-            <div class="image_two">
+            <div class="image_two dark_invert">
                 <p class="caption">Expecation Maximization</p>
             </div>
         </div>
@@ -213,17 +213,17 @@
         <p class="section">Principal Component Analysis – Wine Quality</p>
 
         <div class="center_block">
-            <img class="image_two" src="machinel3/WQ_PCA_explainedVarianceRatio.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_PCA_singluarValues.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_PCA_explainedVarianceRatio.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_PCA_singluarValues.svg" alt="">
         </div>
         <p class="text">
             The explained variance ratio drops rather quickly which indicates that the first few principal components to a good job of explaining most of the variance among the samples.
         </p>
         <div class="center_block">
-            <img class="image_small" src="machinel3/WQ_PCA.svg" alt="">
+            <img class="image_small dark_invert" src="machinel3/WQ_PCA.svg" alt="">
         </div>
         <p class="text">
-            Plotting the cloud of samples along axis PCA1 and PCA2 with their labels, we can observe that all the samples are still clumped together but there is still a higher concentration of better ranked wines on one side. 
+            Plotting the cloud of samples along axis PCA1 and PCA2 with their labels, we can observe that all the samples are still clumped together but there is still a higher concentration of better ranked wines on one side.
         </p>
         <p class="text">
             This visualization gives us an idea of the distribution of samples with the original attributes. We can’t expect the clustering algorithm to perform very well when separating the samples is very difficult. Wines rated 1 to 3 are thus very similar in this dataset, but wines rated 4 and 5 should be clustered better.
@@ -235,14 +235,14 @@
         <p class="section">Principal Component Analysis – Wine Review</p>
 
         <div class="center_block">
-            <img class="image_two" src="machinel3/WR_PCA_explainedVarianceRatio.svg" alt="">
-            <img class="image_two" src="machinel3/WR_PCA_singularValues.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_PCA_explainedVarianceRatio.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_PCA_singularValues.svg" alt="">
         </div>
         <p class="text">
             The explained variance ratio plot shows that all but a one or two of the PCA axes are useless and explain nothing. This makes sense as out of the around 700 attributes, all but two are binary dimensions corresponding to the on-hot encoded categorical attributes of the original dataset.
         </p>
         <div class="center_block">
-            <img class="image_small" src="machinel3/WR_PCA.svg" alt="">
+            <img class="image_small dark_invert" src="machinel3/WR_PCA.svg" alt="">
         </div>
         <p class="text">
             On this dataset as well, most samples are very similar and hard to differentiate. However, we can see a gradient of the labels along both PCA1 and PCA2 axes. We can expect the clustering algorithms to work rather well on those PCA axes.
@@ -254,10 +254,10 @@
             Running MCA on the dataset excluding the two continuous attributes :
         </p>
         <div class="center_block">
-            <img class="image_two" src="machinel3/WR_MCA_explainedVarianceRatio.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_MCA_explainedVarianceRatio.svg" alt="">
         </div>
         <p class="text">
-            This time, the explained variance ratio decreases more slowly as more of the components are useful. 
+            This time, the explained variance ratio decreases more slowly as more of the components are useful.
         </p>
         <p class="text">
             To combine the results from the two algorithms, I decided to keep 3 components from the PCA and 20 components from the MCA.
@@ -266,7 +266,7 @@
         <p class="section">Independant Component Analysis – Wine Quality</p>
 
         <div class="center_block">
-            <img class="image_small" src="machinel3/WQ_ICA.svg" alt="">
+            <img class="image_small dark_invert" src="machinel3/WQ_ICA.svg" alt="">
         </div>
         <p class="text">
             The cloud plot of the two main ICA components and from the PCA look very similar with a small gradient of labels that can result in acceptable clustering performance.
@@ -284,7 +284,7 @@
         <p class="section">Independant Component Analysis – Wine Review</p>
 
         <div class="center_block">
-            <img class="image_small" src="machinel3/WR_ICA.svg" alt="">
+            <img class="image_small dark_invert" src="machinel3/WR_ICA.svg" alt="">
         </div>
         <p class="text">
             On this dataset, ICA seems to perform very poorly. Again, this can be explained by the nature of the attributes being categorical. ICA doesn’t seem adapted for categorical values at all.
@@ -299,28 +299,28 @@
         <p class="section">Random Projection – Wine Quality</p>
 
         <div class="center_block">
-            <img class="image_two" src="machinel3/WQ_RP_1.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_RP_2.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_RP_3.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_RP_4.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_RP_1.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_RP_2.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_RP_3.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_RP_4.svg" alt="">
         </div>
         <p class="text">
             Assessing the quality of random projections is difficult and not very relevant in itself. However, this is a good way to visualize the shape of the cloud of samples in the dataset. Again, we can observe one blob of samples but on some of the random projections, like on the bottom right one with the two axes, a slight gradient of labels. This confirms the observations from PCA and ICA that clustering won’t perform great on this dataset.
         </p>
         <p class="text">
-            To know the minimum number of random projections we would need to keep a good explanation of the dataset, we can use the Johnson-Lindenstrauss lower bound. However, as the datasets I use have relatively few samples, this formula gives us a ridiculously high number of projections, in the thousands. There exist other paper and theories trying to estimate how many projections to keep, however, I decided to again keep as many random projections as PCA axes to compare the performance at equal compression ratio. 
+            To know the minimum number of random projections we would need to keep a good explanation of the dataset, we can use the Johnson-Lindenstrauss lower bound. However, as the datasets I use have relatively few samples, this formula gives us a ridiculously high number of projections, in the thousands. There exist other paper and theories trying to estimate how many projections to keep, however, I decided to again keep as many random projections as PCA axes to compare the performance at equal compression ratio.
         </p>
 
         <p class="section">Random Projection – Wine Review</p>
 
         <div class="center_block">
-            <img class="image_two" src="machinel3/WR_RP1.svg" alt="">
-            <img class="image_two" src="machinel3/WR_RP2.svg" alt="">
-            <img class="image_two" src="machinel3/WR_RP3.svg" alt="">
-            <img class="image_two" src="machinel3/WR_RP4.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_RP1.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_RP2.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_RP3.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_RP4.svg" alt="">
         </div>
         <p class="text">
-            On this dataset, the results vary a lot. This indicates that the cloud of samples is less clumped than the other dataset. 
+            On this dataset, the results vary a lot. This indicates that the cloud of samples is less clumped than the other dataset.
         </p>
         <p class="text">
             However, this could just be due to the categorical attributes once again.
@@ -338,7 +338,7 @@
             I first tried with a shallow autoencoder, with a single hidden layer being the reduction layer and ReLu activation as that was lead to the best performance in the first assignment. As this dataset only has 11 attributes, I figured that would be enough. Plotting the average loss for different number of neurons on the hidden compression layer :
         </p>
         <div class="center_block">
-            <img class="image_small" src="machinel3/WQ_AE_shallow_dimensions.svg" alt="">
+            <img class="image_small dark_invert" src="machinel3/WQ_AE_shallow_dimensions.svg" alt="">
         </div>
         <p class="text">
             As expected, the loss decreases but remains small for any number of neurons. I interpret this as meaning that a single dimension can explain the samples very well. This is mirrored by the results of the PCA we obtained previously. Indeed, the autoencoder can be expected to actually learn the PCA components.
@@ -353,7 +353,7 @@
             As this dataset is much larger, I first decided to try the same approach with a single hidden layer but with more neurons. I also changed the activation to sigmoid, expecting it to perform better for categorical values.
         </p>
         <div class="center_block">
-            <img class="image_small" src="machinel3/WR_AE.svg" alt="">
+            <img class="image_small dark_invert" src="machinel3/WR_AE.svg" alt="">
         </div>
         <p class="text">
             As we can see, the results are terrible. Regardless of the number of layers, it is not able to reconstruct the samples.
@@ -365,7 +365,7 @@
             Thus, I chose arbitrarily a network of 450, 150 and 30 neurons from the input to the compressed layer (and then symmetrical for the decoder).
         </p>
         <div class="center_block">
-            <img class="image_small" src="machinel3/WR_AE_450-150-30_sigmoid.svg" alt="">
+            <img class="image_small dark_invert" src="machinel3/WR_AE_450-150-30_sigmoid.svg" alt="">
         </div>
         <p class="text">
             Looking at the loss over the number of epochs, we can see that the network learns rather quickly in the number of iterations, but still results in a high loss.
@@ -409,10 +409,10 @@
             On the dataset Wine Review using the clustering algorithm K-means :
         </p>
         <div class="center_block">
-            <img class="image_two" src="machinel3/WR_Kmeans_DimRedPMCA_silhouette.svg" alt="">
-            <img class="image_two" src="machinel3/WR_Kmeans_DimRedPMCA_CalHarI.svg" alt="">
-            <img class="image_two" src="machinel3/WR_Kmeans_DimRedPMCA_completeness_homogeneity.svg" alt="">
-            <img class="image_two" src="machinel3/WR_Kmeans_DimRedPMCA_ARI_AMI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedPMCA_silhouette.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedPMCA_CalHarI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedPMCA_completeness_homogeneity.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedPMCA_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             The combination of PCA and MCA leads to a steeper decrease of the silhouette plot and a smaller optimal number of clusters both using the silhouette or the CalHar index and with little to no loss in performance when taking into account the labels. However, the CalHar Index is much smaller.
@@ -427,28 +427,28 @@
             On the dataset Wine Quality, for both K-means
         </p>
         <div class="center_block">
-            <img class="image_two" src="machinel3/WQ_Kmeans_DimRedICA_silhouette.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_Kmeans_DimRedICA_CalHarI.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_Kmeans_DimRedICA_completeness_homogeneity.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_Kmeans_DimRedICA_ARI_AMI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_DimRedICA_silhouette.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_DimRedICA_CalHarI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_DimRedICA_completeness_homogeneity.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_Kmeans_DimRedICA_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             And Expectation Maximization
         </p>
         <div class="center_block">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedICA_silhouette.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedICA_CalHarI.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedICA_completeness_homogeneity.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedICA_ARI_AMI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedICA_silhouette.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedICA_CalHarI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedICA_completeness_homogeneity.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedICA_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             ICA leads to a better silhouette and CalHar score with a small loss of performance when considering the labels. However, on the dataset Wine Review with Expectation Maximization :
         </p>
         <div class="center_block">
-            <img class="image_two" src="machinel3/WR_ExpMax_DimRedICA_silhouette.svg" alt="">
-            <img class="image_two" src="machinel3/WR_ExpMax_DimRedICA_CalHarI.svg" alt="">
-            <img class="image_two" src="machinel3/WR_ExpMax_DimRedICA_completeness_homogeneity.svg" alt="">
-            <img class="image_two" src="machinel3/WR_ExpMax_DimRedICA_ARI_AMI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_DimRedICA_silhouette.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_DimRedICA_CalHarI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_DimRedICA_completeness_homogeneity.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_ExpMax_DimRedICA_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             The results are terrible for all metrics. Note the use of logarithmic scale to show the disastrous CalHar Index.
@@ -458,33 +458,33 @@
         </p>
 
         <p class="section">Shallow Autoencoder</p>
-        
+
         <p class="text">
             On Wine Quality with Expectation Maximization (though the same observation is also apparent with K-means), for a compression layer of 2 neurons
         </p>
         <div class="center_block">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedAE2_silhouette.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedAE2_CalHarI.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedAE2_completeness_homogeneity.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedAE2_ARI_AMI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE2_silhouette.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE2_CalHarI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE2_completeness_homogeneity.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE2_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             4 neurons
         </p>
         <div class="center_block">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedAE4_silhouette.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedAE4_CalHarI.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedAE4_completeness_homogeneity.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedAE4_ARI_AMI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE4_silhouette.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE4_CalHarI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE4_completeness_homogeneity.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE4_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             And 8 neurons
         </p>
         <div class="center_block">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedAE8_silhouette.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedAE8_CalHarI.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedAE8_completeness_homogeneity.svg" alt="">
-            <img class="image_two" src="machinel3/WQ_ExpMax_DimRedAE8_ARI_AMI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE8_silhouette.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE8_CalHarI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE8_completeness_homogeneity.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WQ_ExpMax_DimRedAE8_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             We observe that as the number of neurons, that is the number of dimensions the dataset is reduced to, increases, the silhouette and CalHar scores drop below the scores of the original dataset but the scores taking account of the labels increase and get closer and closer to the scores of the original dataset.
@@ -499,10 +499,10 @@
             On Wine Review with the Deep Autoencoder and the K-means clustering algorithm (the legend is incorrect and should display DAE instead of RP)
         </p>
         <div class="center_block">
-            <img class="image_two" src="machinel3/WR_Kmeans_DimRedAEDeep_silhouette.svg" alt="">
-            <img class="image_two" src="machinel3/WR_Kmeans_DimRedAEDeep_CalHarI.svg" alt="">
-            <img class="image_two" src="machinel3/WR_Kmeans_DimRedAEDeep_completeness_homogeneity.svg" alt="">
-            <img class="image_two" src="machinel3/WR_Kmeans_DimRedAEDeep_ARI_AMI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedAEDeep_silhouette.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedAEDeep_CalHarI.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedAEDeep_completeness_homogeneity.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/WR_Kmeans_DimRedAEDeep_ARI_AMI.svg" alt="">
         </div>
         <p class="text">
             While the ARI, AMI, completeness and homogeneity scores are almost equal to that of the uncompressed dataset, the CalHar score keeps on increasing, indicating that the optimal number of clusters might be way above 75.
@@ -543,14 +543,14 @@
             We measure the performance using cross-validation with 5 folds, the confusion matrices and the balanced accuracy as this dataset is heavily unbalanced.
         </p>
         <p class="text">
-            There are the performances we got with the original neural network 
+            There are the performances we got with the original neural network
         </p>
         <div class="center_block">
-            <img class="image_small" src="machinel3/NN_OG_LC.svg" alt="">
+            <img class="image_small dark_invert" src="machinel3/NN_OG_LC.svg" alt="">
         </div>
         <div class="center_block">
-            <img class="image_two" src="machinel3/NN_OG_CM.svg" alt="">
-            <img class="image_two" src="machinel3/NN_OG_NCM.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/NN_OG_CM.svg" alt="">
+            <img class="image_two dark_invert" src="machinel3/NN_OG_NCM.svg" alt="">
         </div>
         <table>
             <tr>
@@ -612,7 +612,7 @@
             </tr>
         </table>
         <p class="text">
-            The feature transformation with dimension reduction leads to worse testing and balanced accuracy but similar cross-validation accuracy. Adding the clustering information doesn’t appear to have a significant advantage either. 
+            The feature transformation with dimension reduction leads to worse testing and balanced accuracy but similar cross-validation accuracy. Adding the clustering information doesn’t appear to have a significant advantage either.
         </p>
         <p class="text">
             The feature transformation with the full 11 components PCA led to similar results to the unaltered data with maybe a slight boost of balanced accuracy.
@@ -715,7 +715,7 @@
             </tr>
         </table>
         <p class="text">
-            The same observation is made, and the drop in accuracy is even more severe. However, with 11 random projections, the accuracies are almost as good, if not better than with the unaltered data. 
+            The same observation is made, and the drop in accuracy is even more severe. However, with 11 random projections, the accuracies are almost as good, if not better than with the unaltered data.
         </p>
         <p class="text">
             Therefore, I then tested with even more random projections, more than the original number of dimensions. Indeed, by using almost 10 times as many random projections as there are dimensions in the original dataset, we can gain almost 1% accuracy across the board. However, this isn’t as surprising, more dimensions mean more input, thus more weights, thus a potentially more powerful neural network. The gain isn’t spectacular anyway but the observation is still interesting.
@@ -802,7 +802,7 @@
 
         <br><br>
         <div class="iconlabel">
-            <img src="github.svg" alt="">
+            <img class="dark_invert" src="github.svg" alt="">
             <a class="link" href="https://github.com/Louis-DR/Unsupervised-Learning-and-Dimensionality-Reduction">
                 See the project on GitHub
             </a>
