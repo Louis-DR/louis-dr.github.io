@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="articles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <title>Modular Markdown</title>
+</head>
+<body>
+    <div id="content">
+        <a id="indexlink" href="index.html" style="margin-bottom: 30px">
+            Go back to the list of projects
+        </a>
+        <img class="banner_img" src="mmd.png" alt="">
+        <div id="page_title">
+            Modular Markdown user and developer guide
+        </div>
+        <div id="page_date">
+            23/10/2020
+        </div>
+
+
+        <h2 class="chapter">Project Presentation</h2>
+
+
+        <h3 class="section">Motivation</h3>
+
+        <p class="text">
+            I recently finished a computer architecture engineering internship during which I developed a technical solution to a problem. When trying to explain what my work consisted in to friends, I kept coming back to the pen and paper to draw basic diagrams and schematics.
+        </p>
+        <p class="text">
+            The scientific literature in educational technology supports that supplementing text-based instructions with diagrams improves considerably the transfer of knowledge. They are a crucial content format for educational content authoring systems.
+        </p>
+        <p class="text">
+            To draw complex diagrams and schematics, there are many options. First, there are the general-purpose diagram creation tools (Lucid Charts, Microsoft Office Visio, Adobe Illustrator). They allow users to draw with basic shapes and simple templates for specific uses. However, the tools have to be generic enough and thus there is a trade-off between ease of use for a broad range of uses, and how much effort and time is necessary to draw more complex and specialized diagrams. Additionally, the only way to embed the resulting schematics in a document is usually to export it as a static image. The result is then not responsive to the document format (low portability) and tedious to edit (having to modify the original diagram, then export the new version).
+        </p>
+        <p class="text">
+            For more specific usages, there exists dedicated software for each domain. As they are specialized in a certain diagram or schematic type, the tools are optimized for easier and faster production. However, such tools are hard to find and the few that exist are either old outdated software from defunct websites. Dedicated markup languages also exit but are almost entirely XML-based heavyweight languages with very low readability and user-friendliness. They are also often old projects that have been abandoned (see the MIT list in part 2). Consequently, they are tedious to implement in any existing modern platform or content-authoring tool.
+        </p>
+        <p class="text">
+            Each branch of knowledge uses specialized diagrams and schematics to convey information. This content format is critical in STEM fields where there is a whole zoo of diagrams.
+        </p>
+
+        <div class="center_block">
+            <img class="image_two_big dark_invert_brighter" src="mmd-pipeline.jpg" alt="">
+            <img class="image_two_big dark_invert_brighter" src="mmd-timedist.png" alt="">
+            <img class="image_two_big dark_invert_brighter" src="mmd-chemical.png" alt="">
+            <img class="image_two_big dark_invert_brighter" src="mmd-phase.png" alt="">
+            <p class="caption">Examples of the diversity in diagram templates (from left to right and top to bottom) : Pipelined datapath diagram ;  Time-distance diagram ; Process flow diagram ; Phase diagram.</p>
+        </div>
+
+        <p class="text">
+            A full list of the types of diagrams used in each field of study is nigh impossible to establish, let alone developing a tool specialized for each one. Thus, a more feasible approach to this problem is to develop a general-purpose framework with modular capabilities.
+        </p>
+
+        <h3 class="section">Modular Markdown</h3>
+
+        <p class="text">
+            This project consists in extending the lightweight and popular markup language Markdown to allow it to support modules (add-ons). A particular syntax allows the user to call a module and feed it a specialized syntax optimized for one diagram format. Then the module parses this syntax and renders the diagram in a frame that Markdown can render like a regular image.
+        </p>
+
+        <p class="text">
+            Such a tool is invaluable for many different uses :
+        </p>
+        <ul>
+            <li>Fast educational content creation in specialized domains </li>
+            <li>Rich answers for specialized domains for platforms like StackExchange and other technical and educational forums </li>
+            <li>Direct message systems for student-student and student-teacher interaction (Zoom, Teams and Slack already support Markdown) </li>
+            <li>Automated problem generation with rich diagrams </li>
+            <li>Fast note taking for students </li>
+            <li>Non-educational uses : technical documentations</li>
+        </ul>
+
+        <p class="text">
+            The goal of the modularity of the language is to allow developers to create custom parsers adapted for a specific diagram or schematic template, thus using the most optimal syntax instead of a heavyweight user-unfriendly general-purpose canvas-drawing library. The following guide will explain how the basic syntax works for users, how to implement the base parser in a website, and how to develop new modules.
+        </p>
+
+        <h3 class="section">Universal Interactive Extensible Markup Language</h3>
+
+        <p class="text">
+            This project is the first step towards the development of a more ambitious markup language based on the following principles :
+        </p>
+        <p class="text">
+            <strong>Universal</strong> : the ability to author content in different formats including page-based documents, slide-based presentations, infinitely scrolling web pages and more, for different platforms including smartphones, tablets, computers, large displays and even prints.
+        </p>
+        <p class="text">
+            <strong>Interactive</strong> : the ability to make the content interactive through the use of UI elements, quizzes and forms, branches and conditions for non-linear navigation, dynamic variables, animations, interactive data visualization, database interaction, and more.
+        </p>
+        <p class="text">
+            <strong>Extensible</strong> : the ability to extend the functionality of the language using styling and formatting directives, API interfaces, and custom interactive visual element modules for diagrams and schematics.
+        </p>
+        <p class="text">
+            This language is part of my even larger project for a free higher-education teaching platform, <em>Scientia Potentia Est</em>.
+        </p>
+
+
+        <h2 class="chapter">Basic Syntax</h2>
+
+
+        <p class="text">
+            The syntax is based on Markdown with a few modifications.
+        </p>
+
+        <table class="syntax">
+            <tr>
+                <th>Syntax element</th>
+                <th>MMD syntax</th>
+                <th>HTML generated</th>
+                <th>Result</th>
+            </tr>
+
+<tr>
+<td>Headers</td>
+<td>
+<div class="ov">
+<pre class="code">
+# Header 1
+## Header 2
+### Header 3
+#### Header 4
+##### Header 5
+###### Header 6
+</pre></div>
+</td>
+<td>
+<div class="ov">
+<pre class="code">
+&lth1>Header 1&lt/h1>
+&lth2>Header 2&lt/h2>
+&lth3>Header 3&lt/h3>
+&lth4>Header 4&lt/h4>
+&lth5>Header 5&lt/h5>
+&lth6>Header 6&lt/h6>
+</pre></div>
+</td>
+<td>
+<h1>Header 1</h1>
+<h2>Header 2</h2>
+<h3>Header 3</h3>
+<h4>Header 4</h4>
+<h5>Header 5</h5>
+<h6>Header 6</h6>
+</td>
+</tr>
+
+<tr>
+<td>Inline emphasis</td>
+<td>
+<div class="ov">
+<pre class="code">
+Italics like *that* or like _that_
+
+Bold like **that** or like __that__
+
+Underline like ~that~
+
+Strikethrough like ~~that~~
+
+Highlight like ==that==
+
+Superscript like ^that^
+
+Subscript like ^^that^^
+
+*==Mix== __~them~ to^ge^th^^er^^ !__ ~~Cool !~~*</pre></div>
+</td>
+<td>
+<div class="ov">
+<pre class="code">
+Italics like &ltem>that&lt/em> or like &ltem>that&lt/em>
+
+Bold like &ltstrong>that&lt/strong> or like &ltstrong>that&lt/strong>
+
+Underline like &ltu>that&lt/u>
+
+Strikethrough like &lts>that&lt/s>
+
+Highlight like &ltmark>that&lt/mark>
+
+Superscript like &ltsup>that&lt/sup>
+
+Subscript like &ltsub>that&lt/em>
+
+&ltem>&ltmark>Mix&lt/mark> &ltstrong>&ltu>them&lt/u> to&ltsup>ge&lt/sup>th&ltsub>er&lt/sub> !&lt/strong> &lts>Cool !&lt/s>&lt/em>
+</pre></div>
+</td>
+<td>
+<pre>
+Italics like <em>that</em> or like <em>that</em>
+
+Bold like <strong>that</strong> or like <strong>that</strong>
+
+Underline like <u>that</u>
+
+Strikethrough like <s>that</s>
+
+Highlight like <mark>that</mark>
+
+Superscript like <sup>that</sup>
+
+Subscript like <sub>that</em>
+
+<em><mark>Mix</mark> <strong><u>them</u> to<sup>ge</sup>th<sub>er</sub> !</strong> <s>Cool !</s></em>
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>Block emphasis</td>
+<td>
+<div class="ov">
+<pre class="code">
+> Level 1 block
+
+>> Level 2 block
+
+>>> Level 3 block
+
+>>>> Level 4 block
+
+>>>>> Level 5 block
+
+>>>>>> Level 6 block
+</pre></div>
+</td>
+<td>
+<div class="ov">
+<pre class="code">
+</pre></div>
+</td>
+<td>
+</td>
+</tr>
+
+<tr>
+<td>Horizontal rule</td>
+<td>
+<div class="ov">
+<pre class="code">
+---
+</pre></div>
+</td>
+<td>
+<div class="ov">
+<pre class="code">
+&lthr>
+</pre></div>
+</td>
+<td>
+<hr>
+</td>
+</tr>
+
+<tr>
+<td>Dashes</td>
+<td>
+<div class="ov">
+<pre class="code">
+This is -- a n-dash
+
+This is --- a m-dash
+</pre></div>
+</td>
+<td>
+<div class="ov">
+<pre class="code">
+This is – a n-dash
+
+This is — a m-dash
+</pre></div>
+</td>
+<td>
+<pre>
+This is – a n-dash
+
+This is — a m-dash
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>Lists</td>
+<td>
+<div class="ov">
+<pre class="code">
+1. Ordered list
+2. With multiple elements
+
+* Unordered list
+* With bullet marker
+  * And multilevel
+  * Really deep
+    1. Nested ordered list
+    2. Mix the two
+* It just works
+</pre></div>
+</td>
+<td>
+<div class="ov">
+<pre class="code">
+</pre></div>
+</td>
+<td>
+</td>
+</tr>
+
+<tr>
+<td>Images</td>
+<td>
+<div class="ov">
+<pre class="code">
+![](image.png)
+![Replacement text](image.png =300x200)
+![Replacement text][imageref]
+[imageref]: image.png
+</pre></div>
+</td>
+<td>
+<div class="ov">
+<pre class="code">
+</pre></div>
+</td>
+<td>
+</td>
+</tr>
+
+<tr>
+<td>Links</td>
+<td>
+<div class="ov">
+<pre class="code">
+[Google](google.com)
+[Google][linkref]
+[linkref]: google.com
+</pre></div>
+</td>
+<td>
+<div class="ov">
+<pre class="code">
+</pre></div>
+</td>
+<td>
+</td>
+</tr>
+
+<tr>
+<td>Code</td>
+<td>
+<div class="ov">
+<pre class="code">
+Inline `code`.
+
+``` python
+def blockcode():
+    return "it works"
+```
+</pre></div>
+</td>
+<td>
+<div class="ov">
+<pre class="code">
+</pre></div>
+</td>
+<td>
+</td>
+</tr>
+
+<tr>
+<td>Table</td>
+<td>
+<div class="ov">
+<pre class="code">
+| Tables        | Are           | Cool  |
+| ------------- |:-------------:| -----:|
+| col 3 is      | right-aligned | $1600 |
+| col 2 is      | centered      |   $12 |
+| zebra stripes | are neat      |    $1 |
+</pre></div>
+</td>
+<td>
+<div class="ov">
+<pre class="code">
+</pre></div>
+</td>
+<td>
+</td>
+</tr>
+
+<tr>
+<td>Diagram module</td>
+<td>
+<div class="ov">
+<pre class="code">
+::: piechart
+%radius: 80
+%stroke-width: 1
+%stroke-color: black
+Cat: 50
+Dog: 40
+Rabbit: 20
+Horse: 10
+Other: 5
+:::
+</pre></div>
+</td>
+<td>
+<div class="ov">
+<pre class="code">
+</pre></div>
+</td>
+<td>
+</td>
+</tr>
+
+        </table>
+
+
+        <h2 class="chapter">Integration guide</h2>
+
+
+<code><pre>
+&lthtml>
+    &lthead>
+        &ltlink rel="stylesheet" href="mmd.css">
+    &lt/head>
+    &ltbody>
+        &ltdiv id="content">
+            &lttextarea id="mmd">&lt/textarea>
+            &ltdiv id="formatted">&lt/div>
+        &lt/div>
+        &ltscript src="chart.js">&lt/script>
+        &ltscript src="plot.js">&lt/script>
+        &ltscript src="mmd.js">&lt/script>
+        &ltscript>
+            let modules = {
+                "chart":parseChart,
+                "plot":parsePlot
+            }
+            let html = parse($('#mmd').value, modules);
+            $('#formatted').innerHTML = html;
+        &lt/script>
+    &lt/body>
+&lt/html>
+</pre></code>
+
+
+        <h2 class="chapter">Module development guide</h2>
+
+
+        <h3 class="section">Basic syntax</h3>
+
+<code><pre>
+function parseMyModule(raw) {
+    let out = "";
+    // parse the raw code
+    // build the SVG elements
+    // return the inner SVG code
+    return out;
+}
+</pre></code>
+
+<code><pre>
+&lthtml>
+    &lthead>
+        &ltlink rel="stylesheet" href="mmd.css">
+    &lt/head>
+    &ltbody>
+        &ltdiv id="content">
+            &lttextarea id="mmd">&lt/textarea>
+            &ltdiv id="formatted">&lt/div>
+        &lt/div>
+        &ltscript src="my-module.js">&lt/script>
+        &ltscript src="mmd.js">&lt/script>
+        &ltscript>
+            let modules = {
+                "mymodule":parseMyModule
+            }
+            let html = parse($('#mmd').value, modules);
+            $('#formatted').innerHTML = html;
+        &lt/script>
+    &lt/body>
+&lt/html>
+</pre></code>
+
+        <h3 class="section">Simple Data Serialization Language (SDSL)</h3>
+
+
+<code><pre>
+function parseMyModule(raw) {
+    let out = "";
+    let data = parseSDSL(raw);
+    // interpret the data dictionary object
+    // build the SVG elements
+    // return the inner SVG code
+    return out;
+}
+</pre></code>
+
+<code><pre>
+&lthtml>
+    &lthead>
+        &ltlink rel="stylesheet" href="mmd.css">
+    &lt/head>
+    &ltbody>
+        &ltdiv id="content">
+            &lttextarea id="mmd">&lt/textarea>
+            &ltdiv id="formatted">&lt/div>
+        &lt/div>
+        &ltscript src="sdsl.js">&lt/script>
+        &ltscript src="my-module.js">&lt/script>
+        &ltscript src="mmd.js">&lt/script>
+        &ltscript>
+            let modules = {
+                "mymodule":parseMyModule
+            }
+            let html = parse($('#mmd').value, modules);
+            $('#formatted').innerHTML = html;
+        &lt/script>
+    &lt/body>
+&lt/html>
+</pre></code>
+
+        <p class="text">
+            You can use the following modules as code templates to build your data-based diagram module :
+        </p>
+        <ul>
+            <li><strong>Plot Module</strong> : visualize data series using line, scatter, bar, bubble, area plots and many more. (ADD LINK TO SOURCE CODE)</li>
+        </ul>
+
+        <h3 class="section">Simple Graph Modelling Language (SGML)</h3>
+
+<code><pre>
+function parseMyModule(raw) {
+    let out = "";
+    let data = parseSGML(raw);
+    // interpret the graph dictionary object
+    // build the SVG elements
+    // return the inner SVG code
+    return out;
+}
+</pre></code>
+
+<code><pre>
+&lthtml>
+    &lthead>
+        &ltlink rel="stylesheet" href="mmd.css">
+    &lt/head>
+    &ltbody>
+        &ltdiv id="content">
+            &lttextarea id="mmd">&lt/textarea>
+            &ltdiv id="formatted">&lt/div>
+        &lt/div>
+        &ltscript src="sgml.js">&lt/script>
+        &ltscript src="my-module.js">&lt/script>
+        &ltscript src="mmd.js">&lt/script>
+        &ltscript>
+            let modules = {
+                "mymodule":parseMyModule
+            }
+            let html = parse($('#mmd').value, modules);
+            $('#formatted').innerHTML = html;
+        &lt/script>
+    &lt/body>
+&lt/html>
+</pre></code>
+
+        <p class="text">
+            You can use the following modules as code templates to build your graph-based diagram module :
+        </p>
+        <ul>
+            <li><strong>Tree Module</strong> : visualize a one-way hierarchy of concepts. (ADD LINK TO SOURCE CODE)</li>
+            <li><strong>Flowchart Module</strong> : visualize a sequence of events and conditions. (ADD LINK TO SOURCE CODE)</li>
+        </ul>
+
+        <a id="indexlink" href="index.html" style="margin-top: 60px">
+            Go back to the list of projects
+        </a>
+    </div>
+    <style>
+code pre {
+    padding: 6px;
+    background-color: #EEE;
+    border-radius: 6px;
+    white-space: pre-wrap;
+}
+.syntax table {
+    font-family: 'Museo W01_500';
+}
+.syntax tr {
+}
+.syntax td {
+    text-align: left;
+    padding: 8px;
+    max-width: 25%;
+}
+.ov {
+    overflow-x: auto;
+    max-width: 200px;
+    background-color: #EEE;
+    border-radius: 6px;
+}
+.syntax .code {
+    padding: 6px;
+    margin: 0;
+}
+.syntax h1 {
+    font-size: 2em;
+    margin-top: 0.67em;
+    margin-bottom: 0.67em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}
+.syntax h2 {
+    font-size: 1.5em;
+    margin-top: 0.83em;
+    margin-bottom: 0.83em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}
+.syntax h3 {
+    display: block;
+    font-size: 1.17em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+    font-style: normal;
+}
+.syntax h4 {
+    display: block;
+    margin-top: 1.33em;
+    margin-bottom: 1.33em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}
+.syntax h5 {
+    display: block;
+    font-size: .83em;
+    margin-top: 1.67em;
+    margin-bottom: 1.67em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}
+.syntax h6 {
+    display: block;
+    font-size: .67em;
+    margin-top: 2.33em;
+    margin-bottom: 2.33em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}
+</style>
+</body>
+</html>

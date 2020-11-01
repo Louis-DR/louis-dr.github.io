@@ -13,7 +13,7 @@
         <a id="indexlink" href="index.html" style="margin-bottom: 30px">
             Go back to the list of projects
         </a>
-        <img class="banner_img" src="armintern.png" alt="">
+        <img class="banner_img dark_invert_lite" src="armintern.png" alt="">
         <div id="page_title">
             ARM internship : speculation throttling
         </div>
@@ -22,7 +22,19 @@
         </div>
 
         <p class="text">
-            This article is still a WIP ! Sorry about that. You can check out my other articles.
+            Arm is one of the leaders in processor architecture intellectual properties (IPs). Arm IPs are present in almost every phone and in many other devices including IoT devices, personal devices, computers, servers, embedded controllers, etc.
+        </p>
+
+        <p class="text">
+            Over the last six months, I've had the opportunity to work as an intern at Arm France in the Sophia Antipolis site. It is one of the main Arm hubs and with Austin one of the sites where the Arm processor cores are designed. I've worked in the instruction-side team on branch prediction. My internship was centered around the idea of Speculation Throttling (ST) to reduce the power consumption of the core due to incorrect speculative execution.
+        </p>
+
+        <p class="text">
+            Due to the importance of the design secrets of Arm IPs, my work during this internship was confidential. Therefore, I cannot show any results or design details in this article. I will only describe the concept of Speculation Throttling as it can be found in the scientific literature.
+        </p>
+
+        <p class="text">
+            Branch prediction accuracy of modern processors is very high, but not perfect. When a branch misprediction occurs, we have to discard every instruction we have started fetching and executing, therefore wasting the power we have invested in them. This is called a flush. The idea behind ST is to prevent this loss of power by slowing down or stopping the prediction of additional instructions when we think those additional instructions are likely to get flushed anyway. However, we can't slow down all the time else we risk starving the core and hurting performance. The goal of this internship was to design the circuit responsible for ST and determine the optimal parameters to find the best trade-off between power savings and performance losses.
         </p>
 
         <a id="indexlink" href="index.html" style="margin-top: 60px">

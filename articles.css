@@ -84,6 +84,14 @@ h1,h2,h3,h4,h5,h6 {
     width: 80px;
 }
 
+ul,ol {
+    font-family: 'Museo W01_500';
+}
+
+li {
+    line-height: 1.5;
+}
+
 tr {
     font-family: 'Museo W01_500';
 }
@@ -349,6 +357,10 @@ table {
 
     .dark_invert {
         filter: invert(1) hue-rotate(180deg);
+    }
+
+    .dark_invert_lite {
+        filter: invert(0.9) hue-rotate(180deg);
     }
 
     .dark_invert_brighter {
