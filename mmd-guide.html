@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="articles.css">
+    <link rel="stylesheet" href="mmd.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
@@ -102,6 +103,9 @@
         <p class="text">
             The syntax is based on Markdown with a few modifications.
         </p>
+
+</div>
+<div id="syntax-content">
 
         <table class="syntax">
             <tr>
@@ -228,9 +232,26 @@ Subscript like <sub>that</em>
 <td>
 <div class="ov">
 <pre class="code">
+&ltdiv class="mmd-blockem-1">Level 1 block&lt/div>
+&ltbr>
+&ltdiv class="mmd-blockem-2">Level 2 block&lt/div>
+&ltbr>
+&ltdiv class="mmd-blockem-3">Level 3 block&lt/div>
+&ltbr>
+&ltdiv class="mmd-blockem-4">Level 4 block&lt/div>
+&ltbr>
+&ltdiv class="mmd-blockem-5">Level 5 block&lt/div>
+&ltbr>
+&ltdiv class="mmd-blockem-6">Level 6 block&lt/div>
 </pre></div>
 </td>
 <td>
+<div class="mmd-blockem-1">Level 1 block</div><br>
+<div class="mmd-blockem-2">Level 2 block</div><br>
+<div class="mmd-blockem-3">Level 3 block</div><br>
+<div class="mmd-blockem-4">Level 4 block</div><br>
+<div class="mmd-blockem-5">Level 5 block</div><br>
+<div class="mmd-blockem-6">Level 6 block</div>
 </td>
 </tr>
 
@@ -267,7 +288,7 @@ This is --- a m-dash
 <div class="ov">
 <pre class="code">
 This is – a n-dash
-
+&ltbr>
 This is — a m-dash
 </pre></div>
 </td>
@@ -300,9 +321,47 @@ This is — a m-dash
 <td>
 <div class="ov">
 <pre class="code">
+&ltol>
+  &ltli>Ordered list&lt/li>
+  &ltli>With multiple elements&lt/li>
+&lt/ol>
+&ltul>
+  &ltli>Unordered list&lt/li>
+  &ltli>With bullet marker
+    &ltul>
+      &ltli>And multilevel&lt/li>
+      &ltli>Really deep
+        &ltol>
+          &ltli>Nested ordered list&lt/li>
+          &ltli>Mix the two&lt/li>
+        &lt/ol>
+      &lt/li>
+    &lt/ul>
+  &lt/li>
+  &ltli>It just works&lt/li>
+&lt/ul>
 </pre></div>
 </td>
 <td>
+<ol>
+    <li>Ordered list</li>
+    <li>With multiple elements</li>
+</ol>
+<ul>
+    <li>Unordered list</li>
+    <li>With bullet marker
+        <ul>
+            <li>And multilevel</li>
+            <li>Really deep
+                <ol>
+                    <li>Nested ordered list</li>
+                    <li>Mix the two</li>
+                </ol>
+            </li>
+        </ul>
+    </li>
+    <li>It just works</li>
+</ul>
 </td>
 </tr>
 
@@ -312,17 +371,30 @@ This is — a m-dash
 <div class="ov">
 <pre class="code">
 ![](image.png)
+
 ![Replacement text](image.png =300x200)
+
 ![Replacement text][imageref]
+
 [imageref]: image.png
 </pre></div>
 </td>
 <td>
 <div class="ov">
 <pre class="code">
+&ltimg src="image.png" alt="">
+&ltbr>
+&ltimg src="image.png" alt="Replacement text" width="150" height="200">
+&ltbr>
+&ltimg src="image.png" alt="Replacement text">
 </pre></div>
 </td>
 <td>
+<img src="mmd-image.png" alt="">
+<br>
+<img src="mmd-image.png" alt="Replacement text" width="150" height="200">
+<br>
+<img src="mmd-image.png" alt="Replacement text">
 </td>
 </tr>
 
@@ -332,16 +404,24 @@ This is — a m-dash
 <div class="ov">
 <pre class="code">
 [Google](google.com)
+
 [Google][linkref]
+
 [linkref]: google.com
 </pre></div>
 </td>
 <td>
 <div class="ov">
 <pre class="code">
+&lta href="google.com">Google&lt/a>
+&ltbr>
+&lta href="google.com">Google&lt/a>
 </pre></div>
 </td>
 <td>
+<a href="google.com">Google</a>
+<br>
+<a href="google.com">Google</a>
 </td>
 </tr>
 
@@ -361,9 +441,20 @@ def blockcode():
 <td>
 <div class="ov">
 <pre class="code">
+Inline &ltcode class="mmd-inline-code">code&lt/code>.
+&ltbr>
+&ltpre class="mmd-code">&ltcode class="mmd-code-language-python">
+def blockcode():
+    return "it works"
+&lt/code>&lt/pre>
 </pre></div>
 </td>
 <td>
+Inline <code class="mmd-inline-code">code</code>.
+<br>
+<pre class="mmd-code"><code class="language-python">def blockcode():
+    return "it works"
+</code></pre>
 </td>
 </tr>
 
@@ -382,9 +473,61 @@ def blockcode():
 <td>
 <div class="ov">
 <pre class="code">
+&lttable>
+  &ltthead>
+    &lttr>
+      &ltth>Tables&lt/th>
+      &ltth style="text-align:center">Are&lt/th>
+      &ltth style="text-align:right">Cool&lt/th>
+    &lt/tr>
+  &lt/thead>
+  &lttbody>
+    &lttr>
+      &lttd>col 3 is&lt/td>
+      &lttd style="text-align:center">right-aligned&lt/td>
+      &lttd style="text-align:right">$1600&lt/td>
+    &lt/tr>
+    &lttr>
+      &lttd>col 2 is&lt/td>
+      &lttd style="text-align:center">centered&lt/td>
+      &lttd style="text-align:right">$12&lt/td>
+    &lt/tr>
+    &lttr>
+      &lttd>zebra stripes&lt/td>
+      &lttd style="text-align:center">are neat&lt/td>
+      &lttd style="text-align:right">$1&lt/td>
+    &lt/tr>
+  &lt/tbody>
+&lt/table>
 </pre></div>
 </td>
 <td>
+<table>
+  <thead>
+    <tr>
+      <th>Tables</th>
+      <th style="text-align:center">Are</th>
+      <th style="text-align:right">Cool</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>col 3 is</td>
+      <td style="text-align:center">right-aligned</td>
+      <td style="text-align:right">$1600</td>
+    </tr>
+    <tr>
+      <td>col 2 is</td>
+      <td style="text-align:center">centered</td>
+      <td style="text-align:right">$12</td>
+    </tr>
+    <tr>
+      <td>zebra stripes</td>
+      <td style="text-align:center">are neat</td>
+      <td style="text-align:right">$1</td>
+    </tr>
+  </tbody>
+</table>
 </td>
 </tr>
 
@@ -416,9 +559,21 @@ Other: 5
 
         </table>
 
+    </div>
+
+
+
+
+    <div id="content">
 
         <h2 class="chapter">Integration guide</h2>
 
+        <p class="text">
+            To add Modular Markdown to your website or an other web-based service, you only need the <code class="mmd-inline-code">mmd.js</code> and <code class="mmd-inline-code">mmd.css</code> files. Then, you can parse MMD code by feeding it to the <code class="mmd-inline-code">parseMMD()</code> function which returns the preformatted rendered HTML raw text.
+        </p>
+        <p class="text">
+            The optional argument is a dictionary of modules with the key being the string identifier used at the top of the diagram module syntax ("piechart" in the example above), and the value is the JavaScript function of the module (see the guide for module developers).
+        </p>
 
 <code><pre>
 &lthtml>
@@ -438,7 +593,7 @@ Other: 5
                 "chart":parseChart,
                 "plot":parsePlot
             }
-            let html = parse($('#mmd').value, modules);
+            let html = parseMMD($('#mmd').value, modules);
             $('#formatted').innerHTML = html;
         &lt/script>
     &lt/body>
@@ -451,6 +606,10 @@ Other: 5
 
         <h3 class="section">Basic syntax</h3>
 
+        <p class="text">
+            A diagram module is implemented with a main parsing function that takes the raw syntax code (everything inside the <code class="mmd-inline-code">:::</code> block except the module identifier) as an input and outputs the inside of the SVG element.
+        </p>
+
 <code><pre>
 function parseMyModule(raw) {
     let out = "";
@@ -460,6 +619,10 @@ function parseMyModule(raw) {
     return out;
 }
 </pre></code>
+
+        <p class="text">
+            The module can then be used as explained in the integration guide above.
+        </p>
 
 <code><pre>
 &lthtml>
@@ -483,6 +646,10 @@ function parseMyModule(raw) {
     &lt/body>
 &lt/html>
 </pre></code>
+
+        <p class="text">
+            In order to make the development of modules faster and easier, I provide two pre-parsing functions that parses the raw syntax into a JavaScript object. The first language (SDSL) parses a syntax similar to YAML and is useful for modules aimed at data-based diagrams. The second language (SGML) parses a heavily customizable syntax useful for modules aimed at graph-based diagrams (data with a node-relationship structure).
+        </p>
 
         <h3 class="section">Simple Data Serialization Language (SDSL)</h3>
 
@@ -578,86 +745,5 @@ function parseMyModule(raw) {
             Go back to the list of projects
         </a>
     </div>
-    <style>
-code pre {
-    padding: 6px;
-    background-color: #EEE;
-    border-radius: 6px;
-    white-space: pre-wrap;
-}
-.syntax table {
-    font-family: 'Museo W01_500';
-}
-.syntax tr {
-}
-.syntax td {
-    text-align: left;
-    padding: 8px;
-    max-width: 25%;
-}
-.ov {
-    overflow-x: auto;
-    max-width: 200px;
-    background-color: #EEE;
-    border-radius: 6px;
-}
-.syntax .code {
-    padding: 6px;
-    margin: 0;
-}
-.syntax h1 {
-    font-size: 2em;
-    margin-top: 0.67em;
-    margin-bottom: 0.67em;
-    margin-left: 0;
-    margin-right: 0;
-    font-weight: bold;
-}
-.syntax h2 {
-    font-size: 1.5em;
-    margin-top: 0.83em;
-    margin-bottom: 0.83em;
-    margin-left: 0;
-    margin-right: 0;
-    font-weight: bold;
-    font-variant: normal;
-}
-.syntax h3 {
-    display: block;
-    font-size: 1.17em;
-    margin-top: 1em;
-    margin-bottom: 1em;
-    margin-left: 0;
-    margin-right: 0;
-    font-weight: bold;
-    font-style: normal;
-}
-.syntax h4 {
-    display: block;
-    margin-top: 1.33em;
-    margin-bottom: 1.33em;
-    margin-left: 0;
-    margin-right: 0;
-    font-weight: bold;
-}
-.syntax h5 {
-    display: block;
-    font-size: .83em;
-    margin-top: 1.67em;
-    margin-bottom: 1.67em;
-    margin-left: 0;
-    margin-right: 0;
-    font-weight: bold;
-}
-.syntax h6 {
-    display: block;
-    font-size: .67em;
-    margin-top: 2.33em;
-    margin-bottom: 2.33em;
-    margin-left: 0;
-    margin-right: 0;
-    font-weight: bold;
-}
-</style>
 </body>
 </html>

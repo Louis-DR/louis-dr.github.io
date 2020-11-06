@@ -1,0 +1,209 @@
+.mmd-blockem-1 {
+    background-color: lightgray;
+    border-radius: 4px;
+    padding: 5px 10px;
+}
+.mmd-blockem-2 {
+    background-color: hsl(190, 40%, 80%);
+    border-radius: 4px;
+    padding: 5px 10px;
+}
+.mmd-blockem-2 h1,
+.mmd-blockem-2 h2,
+.mmd-blockem-2 h3,
+.mmd-blockem-2 h4,
+.mmd-blockem-2 h5,
+.mmd-blockem-2 h6,
+.mmd-blockem-2 strong {
+    color: hsl(190, 40%, 25%);
+}
+.mmd-blockem-2 mark {
+    background-color: hsl(190, 100%, 60%);
+}
+.mmd-blockem-3 {
+    background-color: hsl(120, 40%, 80%);
+    border-radius: 4px;
+    padding: 5px 10px;
+}
+.mmd-blockem-3 h1,
+.mmd-blockem-3 h2,
+.mmd-blockem-3 h3,
+.mmd-blockem-3 h4,
+.mmd-blockem-3 h5,
+.mmd-blockem-3 h6,
+.mmd-blockem-3 strong {
+    color: hsl(120, 40%, 25%);
+}
+.mmd-blockem-3 mark {
+    background-color: hsl(120, 100%, 60%);
+}
+.mmd-blockem-4 {
+    background-color: hsl(40, 40%, 80%);
+    border-radius: 4px;
+    padding: 5px 10px;
+}
+.mmd-blockem-4 h1,
+.mmd-blockem-4 h2,
+.mmd-blockem-4 h3,
+.mmd-blockem-4 h4,
+.mmd-blockem-4 h5,
+.mmd-blockem-4 h6,
+.mmd-blockem-4 strong {
+    color: hsl(40, 40%, 25%);
+}
+.mmd-blockem-4 mark {
+    background-color: hsl(40, 100%, 60%);
+}
+.mmd-blockem-5 {
+    background-color: hsl(0, 40%, 80%);
+    border-radius: 4px;
+    padding: 5px 10px;
+}
+.mmd-blockem-5 h1,
+.mmd-blockem-5 h2,
+.mmd-blockem-5 h3,
+.mmd-blockem-5 h4,
+.mmd-blockem-5 h5,
+.mmd-blockem-5 h6,
+.mmd-blockem-5 strong {
+    color: hsl(0, 40%, 25%);
+}
+.mmd-blockem-5 mark {
+    background-color: hsl(0, 100%, 60%);
+}
+.mmd-blockem-6 {
+    background-color: hsl(310, 40%, 80%);
+    border-radius: 4px;
+    padding: 5px 10px;
+}
+.mmd-blockem-6 h1,
+.mmd-blockem-6 h2,
+.mmd-blockem-6 h3,
+.mmd-blockem-6 h4,
+.mmd-blockem-6 h5,
+.mmd-blockem-6 h6,
+.mmd-blockem-6 strong {
+    color: hsl(310, 40%, 25%);
+}
+.mmd-blockem-6 mark {
+    background-color: hsl(310, 100%, 60%);
+}
+.mmd-br {
+    content: " ";
+    display: block;
+    margin-bottom: .5em;
+}
+.mmd-inline-code {
+    background-color: #EEE;
+    border-radius: 4px;
+    padding: 0 5px;
+}
+.mmd-code {
+    background-color: #EEE;
+    border-radius: 4px;
+    padding: 5px 10px;
+}
+
+
+
+code pre {
+    padding: 6px;
+    background-color: #EEE;
+    border-radius: 6px;
+    white-space: pre-wrap;
+}
+.syntax table {
+    font-family: 'Museo W01_500';
+}
+.syntax tr {
+}
+.syntax td {
+    text-align: left;
+    padding: 8px;
+}
+.ov {
+    overflow-x: auto;
+    max-width: 30vw;
+    background-color: #EEE;
+    border-radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+    .ov {
+        background-color: #222;
+    }
+}
+.syntax .code {
+    padding: 6px;
+    margin: 0;
+}
+.syntax h1 {
+    font-size: 2em;
+    margin-top: 0.67em;
+    margin-bottom: 0.67em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}
+.syntax h2 {
+    font-size: 1.5em;
+    margin-top: 0.83em;
+    margin-bottom: 0.83em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+    font-variant: normal;
+}
+.syntax h3 {
+    display: block;
+    font-size: 1.17em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+    font-style: normal;
+}
+.syntax h4 {
+    display: block;
+    margin-top: 1.33em;
+    margin-bottom: 1.33em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}
+.syntax h5 {
+    display: block;
+    font-size: .83em;
+    margin-top: 1.67em;
+    margin-bottom: 1.67em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}
+.syntax h6 {
+    display: block;
+    font-size: .67em;
+    margin-top: 2.33em;
+    margin-bottom: 2.33em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}
+
+
+#syntax-content {
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 100px;
+}
+@media only screen and (max-width: 900px) {
+    #syntax-content {
+        width: 95%;
+    }
+}
+@media only screen and (max-width: 600px) {
+    #syntax-content {
+        width: 98%;
+    }
+}
