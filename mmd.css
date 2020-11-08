@@ -127,11 +127,6 @@ code pre {
     background-color: #EEE;
     border-radius: 6px;
 }
-@media (prefers-color-scheme: dark) {
-    .ov {
-        background-color: #222;
-    }
-}
 .syntax .code {
     padding: 6px;
     margin: 0;
@@ -205,5 +200,16 @@ code pre {
 @media only screen and (max-width: 600px) {
     #syntax-content {
         width: 98%;
+    }
+}
+
+
+@media (prefers-color-scheme: dark) {
+    code pre,
+    pre code,
+    .mmd-inline-code,
+    .mmd-code,
+    .ov {
+        background-color: #222;
     }
 }
