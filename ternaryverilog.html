@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="articles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <title>TernaryVerilog</title>
+</head>
+<body>
+    <div id="content">
+        <a id="indexlink" href="index.html" style="margin-bottom: 30px">
+            Go back to the list of projects
+        </a>
+        <img class="banner_img light_invert" src="ternaryverilog.png" alt="">
+        <div id="page_title">
+            TernaryVerilog : a custom hardware description language
+        </div>
+        <div id="page_date">
+            22/08/2020
+        </div>
+
+        <p class="series-header">
+            This article is part of my series of projects around Ternary Computing and Processor Design. <a href="index-ternary.html">Click here to see the list of projects of this series.</a>
+        </p>
+
+        <p class="text">
+            After my internship at Arm, I improve my circuit architecture design skills. Of course, my never-ending interest for ternary logic had to be included is this project. However, current Hardware Description Languages (HDL) mostly support binary logic. Moreover, the tools are very impractical both for development and simulation/debugging. Therefore, I obviously had to develop my own HDL ! (if I don't stop soon, I'll start developing my own operating system...). Anyway, I present to you TernaryVerilog (initially called THDL for Ternary HDL, but as the language is based on SystemVerilog, the new name is more fitting).
+        </p>
+        <p class="text">
+            I plan on upgrade this article into a guide for this language, but in the mean time, I will broadly explain how it works and how the synthesizer is implemented.
+        </p>
+        <p class="text">
+            The main feature of this language is of course the support for ternary signals and logic gates, in addition to binary logic. Other notable features are : words (1D array of bits or trits), arrays (1D array of words or structures), structures (composite data type of binary or ternary signal, words, arrays and other structures), modules (description of a circuit with inputs, outputs and internal signals, registers, and the description of the combinatorial and synchronous logic), instances (of a module, describing how it connects to the rest of the circuit), registers (signals that can hold the value when triggered by the positive or negative edge of a signal).
+        </p>
+        <p class="text">
+            Signals have to be declared in the module or in the root file. A value can be assigned either in combinatorial logic or synchronous blocks (for registers). Of course, the left hand side of an assignment can be any object : a singular signal, a word, an array, a struct, or of course an element in an array/word or a subarray/subword using square brackets (it supports indexing outside the size of the object and negative indexing for wrapping), an element in a structure using a point, or any combination of those. The right hand side of the assignment is a logic expression using different symbols for the basic binary gates (&, |, ^, ~) and the basic ternary gates (which there a many of ! I had to use symbols that are not on the keyboard : +, ×, ⊞, ⊠, ⨁, ⨂, ¬, ⁻, ⁰, ⁺). Some gates are duoary (the name I use for two inputs) or unary (one input). A duoary operator can also be used as a unary operator for collapsing of a word (a × before a word will collapse in the and-ing together of all the signals of the word). Of course, a multiplexer can be implemented with the ternary operator which supports a binary condition with two values (c?a:b) or a ternary condition with three values (c?a:b:c). Furthermore, signals can also be concatenated using curly brackets (multiple signals concatenated into a word), or vectorized using a comma (one signal duplicated to make a word). Finally, hardcoded values can be used in the expression, either binary or ternary, and in many formats : binary (0 and 1), balanced ternary (0, 1 and i for -1), unbalanced ternary (0,1 and 2), decimal (0 to 9), hexadecimal (0 to f), octal (0 to 7), heptavintinal (0 to z by skipping certain letters as described by Douglas W. Jones), nonal (0 to 8).
+        </p>
+        <p class="text">
+            The synthesizer is coded in Python because performance is not an issue (yet ?) and I wanted to be able to develop this faster. It works using the standard compiler design : tokenization, syntax analysis, semantic analysis. It takes in a .thdl file (could be changed to .tv for TernaryVerilog) and outputs a file in .tcir format (for ternary circuit) that can be read by the simulator I am still developing.
+        </p>
+        <p class="text">
+            Other features planned that I will implement when I have time include : pre-processor instructions to include files and generate code segments, parameters that are defined in an external file provided to the synthesizer program, synthesizer options for the full circuits with all the signals or only reg2reg circuit, optimization and rewriting rules, a linter and syntax highlighter, etc.
+        </p>
+
+        <p class="series-header">
+            This article is part of my series of projects around Ternary Computing and Processor Design. <a href="index-ternary.html">Click here to see the list of projects of this series.</a>
+        </p>
+
+        <a id="indexlink" href="index.html" style="margin-top: 60px">
+            Go back to the list of projects
+        </a>
+    </div>
+</body>
+</html>

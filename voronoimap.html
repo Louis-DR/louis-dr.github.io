@@ -29,6 +29,22 @@
             This article is still a WIP ! Sorry about that. You can check out my other articles.
         </p>
 
+        <p class="text">
+            Welp... Here I am, restarting my map engine for the sixth time now ! After altered hexagons, pixelated rounded hexagons, pixels, blobmap, and interpolation map, I am now using Voronoi polygons !
+        </p>
+        <p class="text">
+            In short, this algorithm works by generating random points, computing the Voronoi diagram, moving the points to the geometric centers of their Voronoi polygon, repeating the last two steps a certain number of time (this is called Lloyd's relaxation) and finally after the last point relaxation, moving the corners of the Voronoi polygons to the center of the three points it corresponds to (I call this corner relaxation).
+        </p>
+        <p class="text">
+            The additional difficulty is that my implementation also supports wrapping ! (horizontal, vertical, or both). I implemented this feature by cloning the points at one side to the other, and repeat this at each iteration. There are some additional tweaks especially at the edges and the corners of the map that took me a while to implement and debug but the result is very satisfying.
+        </p>
+        <p class="text">
+            Finally, each edge is made to look more natural by subdividing it recursively a certain number of times and moving the point randomly. This is actually harder than it sounds because we have to make sure the random displacements don't overlap.
+        </p>
+        <p class="text">
+            As the number of cells is high for a high-definition map, the number of polygons is huge. I can't ask OpenGL to draw every triangle for each frame. The map is divided into chunks containing a few thousand cells (a few tens of thousands of triangles) that are rendered only once at a high resolution. Then the chunks within the viewport are rendered as textures.
+        </p>
+
         <p class="series-header">
             This article is part of my series of projects around Map Generation. <a href="index-mapgen.html">Click here to see the list of projects of this series.</a>
         </p>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="articles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <title>TelociDesi2</title>
+</head>
+<body>
+    <div id="content">
+        <a id="indexlink" href="index.html" style="margin-bottom: 30px">
+            Go back to the list of projects
+        </a>
+        <img class="banner_img dark_invert" src="telocidesi2.png" alt="">
+        <div id="page_title">
+            TelociDesi 2 : circuit simulation, signal analysis and debugging
+        </div>
+        <div id="page_date">
+            04/10/2020
+        </div>
+
+        <p class="series-header">
+            This article is part of my series of projects around Ternary Computing and Processor Design. <a href="index-ternary.html">Click here to see the list of projects of this series.</a>
+        </p>
+
+        <p class="text">
+            This project is the first part in the development of a development environment for TernaryVerilog. The goal is to include and unify the tools I am developing for coding and synthesizing TernaryVerilog, exploring and debugging the circuits, launching simulations and benchmarks, visualize signal traces, verify the functions of modules, study the impact of design parameters, calculate the maximum frequency of a circuit and identify the critical path, and much more.
+        </p>
+        <p class="text">
+            In order to make the UI flexible, portable and easier to develop, I decided to use Electron for this project. Electron allows the use of web technologies (HTML, CSS and JS) for standalone programs. It actually consists of a lighter version of the Chromium web renderer and a node server. The front-end uses script languages and markup languages and will communicate via ZeroMQ (a cross-platform cross-language wrapper for sockets) to the Python TernaryVerilog synthesizer and the C++ circuit simulator.
+        </p>
+        <div class="center_block">
+            <img class="image_big dark_invert_brighter" src="telocidesi2_screenshot.png" alt="">
+            <p class="caption">
+                Screenshot of the WIP software
+            </p>
+        </div>
+        <p class="text">
+            The development of this program will take a very long time of course, but this first step consisted mostly in building the UI and planning for the implementation of the key features. As I develop new tools, I will try to connect them to TelociDesi.
+        </p>
+        <p class="text">
+            The name TelociDesi stands for Ternary Logic Circuit Designer and Simulator. It was used for a project I did a while ago which was basically a clone of Simulink customized for ternary logic circuits.
+        </p>
+
+        <p class="series-header">
+            This article is part of my series of projects around Ternary Computing and Processor Design. <a href="index-ternary.html">Click here to see the list of projects of this series.</a>
+        </p>
+
+        <a id="indexlink" href="index.html" style="margin-top: 60px">
+            Go back to the list of projects
+        </a>
+    </div>
+</body>
+</html>
