@@ -25,7 +25,6 @@
             <div id="formatted-title">... And see the result there !</div>
         </div>
         <div id="container">
-            <!-- <div id="mmd-container"> -->
 <textarea id="mmd">
 # Modular Markdown Sandbox
 
@@ -234,10 +233,10 @@ Dogs:
 
 Of course this is heavily a Work In Progress and there are still plenty of bugs and missing features. The important part of the project is the framework
 </textarea>
-            <!-- </div> -->
-            <!-- <div id="formatted-container"> -->
-                <div id="formatted"></div>
-            <!-- </div> -->
+            <div id="formatted"></div>
+        </div>
+        <div id="footer">
+            NOTE THAT THIS SANDBOX ONLY WORKS IN CHROME FOR NOW ; You can read the syntax guide at <a href="mmd-guide.html">here</a> and give feedback <a href="https://forms.gle/63oQuieoX2Cjgp4D7">here</a>
         </div>
     </div>
     <script src="mmd/syaml.js"></script>
@@ -256,6 +255,15 @@ Of course this is heavily a Work In Progress and there are still plenty of bugs 
             margin: 0;
         }
         #indexlink {
+            text-align: center;
+            font-family: 'Museo W01_500';
+            font-size: 12px;
+            color: gray;
+            text-decoration: none;
+            margin: 10px auto;
+            display: block;
+        }
+        #footer {
             text-align: center;
             font-family: 'Museo W01_500';
             font-size: 12px;
@@ -301,7 +309,7 @@ Of course this is heavily a Work In Progress and there are still plenty of bugs 
             padding: 10px;
             font-size: 1em;
             font-size: 20px;
-            max-height: 90vh;
+            max-height: 88vh;
         }
         #formatted {
             width: 50%;
@@ -309,7 +317,7 @@ Of course this is heavily a Work In Progress and there are still plenty of bugs 
             padding: 10px;
             color: black;
             font-size: 22px;
-            max-height: 90vh;
+            max-height: 88vh;
         }
         @media (prefers-color-scheme: dark) {
             code pre,
