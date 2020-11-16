@@ -1,5 +1,6 @@
 let $ = document.querySelector.bind(document);
-$('#mmd').innerHTML = localStorage.mmd;
+if (localStorage.getItem("mmd") != null)
+    $('#mmd').innerHTML = localStorage.mmd;
 
 
 function run() {
