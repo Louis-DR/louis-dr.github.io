@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="mmd.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+
+    <!-- Import Katex -->
+    <link rel="stylesheet" href="katex/katex.min.css">
+    <script src="katex/katex.min.js"></script>
+    <!-- Import Katex auto-render -->
+    <script src="katex/contrib/auto-render.min.js"></script>
+
+    <title>Modular Markdown</title>
+</head>
+<body>
+    <div id="content">
+        <a id="indexlink" href="index.html">
+            Go back to the list of projects
+        </a>
+        <div id="mmd-titles">
+            <div id="mmd-title">Type some Modular Markdown here...</div>
+            <div id="formatted-title">... And see the result there !</div>
+        </div>
+        <div id="container">
+            <!-- <div id="mmd-container"> -->
+<textarea id="mmd">
+# Modular Markdown Sandbox
+
+##Project presentation
+
+The goal of this project is to develop a new document markup language aimed at content authoring for education, technical documentations as well as note taking for students and non-students.
+
+One of the main lacunes of existing languages is in the department of diagrams. With most languages, the user has to design any diagram, schematic or plot in another software (*Visio*, *GraphViz*, *PyPlot*) then export it as a static image and include it in the document. If a change has to be made, the user has to go back to the diagram software, make the change, re-export the image, update it on the server. This is impractical. Additionaly, some specialized schematics templates are difficult to recreate and necessitate dedicated software, often outdated, incompatible, impractical and low-quality.
+
+The motivation behind this project is to create a framework in which this problem doesn't appear. This is achieved by integrating a diagram markup language inside the document markup language. However, as there exist countless diagram and schematic templates, this system is modular, allowing develpers to create their own diagram markup language and include it in this framework as a simple module.
+
+This new language is based on the widely used and lightweight Markdown with attention given to the following features :
+
+- **Extended syntax** : new syntax elements like ==highlights== !
+- **Modularity** : support for diagram modules with custom syntax and SVG rendering.
+- **Lightweight** : only a few kilobytes for the main script, making it cheap to implement in any web service.
+- **Readable** : even without the rendering engine, the markup language itself is human-readable, which makes editing easier.
+
+## Syntax
+
+### Basic document syntax
+
+The document syntax is based on Markdown and allow for :
+
+#### Headers
+
+Using `#` at the start of a line. The number of # (between 1 and 6) determines the level of the header.
+
+#### Inline emphasis
+
+The basic inline emphasis like *italics* (or _italics_), **bold** (or __bold__) and ~~striketrhoug~~. But also new inline formatting syntaxes : ~underline~, ==highlight==, ^superscript^ and ^^subscript^^.
+
+And of course you can *==mix== __~them~ to^ge^th^^er^^ !__ ~~Un~~cool !*.
+
+####Block emphasis
+
+You can emphasize a whole block of text using block emphasis. The number of `>` determines the level of the block.
+
+> Level 1 block
+
+>> Level 2 block
+
+>>> Level 3 block
+
+>>>> Level 4 block
+
+>>>>> Level 5 block
+
+>>>>>> Level 6 block
+
+You can of course have multiple lines of text and different formatting inside the block :
+
+>> This is a level 2 block
+> ### This is a level 3 header inside the block
+> And a paragraph with *inline emphasis*.
+>
+> And all of this just works.
+
+#### Code
+
+You can include code either inline like this `this is code`. Or in a block like this :
+
+```
+this is a
+block of code
+with monospace font
+```
+
+#### Lists
+
+You can add lists (only one level for now, support for nesting will be added later)
+
+- This is an unordered list
+- with bullet points
+
+1. This is an ordered list
+1. With numbers
+1. And auto-numbering
+
+#### Images
+
+You can add images either directly or using references :
+
+![](mmd-image.png)
+
+![Replacement text](image.png)
+
+![Replacement text][imageref]
+
+[imageref]: mmd-image.png
+
+#### Links
+
+Similarily, you can add links directly or using references :
+
+[Google](google.com)
+
+[Google][linkref]
+
+[linkref]: google.com
+
+#### Tables
+
+...are not implemented yet unfortunately. But I will add them later of course. This was not the central feature of this project.
+
+### Modules
+
+Two simple modules are already developed and serve as examples for developers of how to implement a module, and how to use tools I provided such as serialized data syntax and graph model syntax parsers.
+
+A diagram is created as a block delimitted by `:::`. The type of diagram is selected with a single word at the top :
+
+```
+::: module_type
+
+syntax for the module in here
+
+:::
+```
+
+#### Pie chart
+
+The pie chart module is exactly what it sounds like. It creates a pie chart with the list of elements you give it, and normalizes the data to create the proportional slices.
+
+Each line of data starts with the label (alphanumerical characters), then a colon `:` followed by the value. An additional parameter can be provided after the value to change the color of the entry (in CSS formats : hexadecimal, rgb, hsl or color names).
+
+```
+Label : value optional_color
+```
+
+::: chart
+Cat:    50
+Dog:    40
+Rabbit: 20
+Horse:  10
+Other:  5 gray
+:::
+
+You can also tweak the style of the chart with styling directives starting with a `%`. They are self explenatory :
+
+```
+%directive_name : value
+```
+
+::: chart
+%stroke_width: 2
+%stroke_color: black
+%radius: 90
+%angle: 90
+%direction: CCW
+
+Cat:    50
+Dog:    40
+Rabbit: 20
+Horse:  10
+Other:  5 gray
+:::
+
+Of course more styling directives are coming, this is a proof of concept.
+
+::: chart
+%angle: 223
+
+Sky: 75 #6D9EEB
+Shadow: 6 #7F6000
+Pyramid: 19 #FFD966
+:::
+
+#### Plot
+
+The plotting module is a lot more capable. It allows for the visualization of data using scatter plots, line plots and bubble plots (with more coming of course).
+
+The syntax to create a series is the following. First a series label (not displayed in this version) followed by a colon. Then an indented block to describe its attributes. Some attributes are for data (x and y for coordinates of points, s for scale of the size of the markers, color for the color of the markers), while others are for styling. If a certain data is not provided, a default value is used.
+
+Here are a few examples :
+
+::: plot
+Cats:
+    y: [1,1,2,3,5,8,13,21]
+    line-width: 4
+    line-opacity: 0.5
+:::
+
+
+::: plot
+Dogs:
+    x: [1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 8]
+    y: [3, 4.5, 7, 8.5, 9, 8.5, 7.5, 5, 3, 1]
+    color: SteelBlue
+    marker-opacity: 0
+    line-width: 4
+:::
+
+::: plot
+Cats:
+    y: [1,1,2,3,5,8,13,21]
+    s: [1,1,2,3,5,8,13,21]
+    marker-stroke-color: black
+    marker-stroke-width: 3
+    marker-stroke-opacity: 0.5
+    line-width: 4
+    line-opacity: 0.5
+Dogs:
+    x: [1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 8]
+    y: [3, 4.5, 7, 8.5, 9, 8.5, 7.5, 5, 3, 1]
+    marker-opacity: 0.5
+:::
+
+Of course this is heavily a Work In Progress and there are still plenty of bugs and missing features. The important part of the project is the framework</textarea>
+            <!-- </div> -->
+            <!-- <div id="formatted-container"> -->
+                <div id="formatted"></div>
+            <!-- </div> -->
+        </div>
+    </div>
+    <script src="mmd/syaml.js"></script>
+    <script src="mmd/chart.js"></script>
+    <script src="mmd/plot.js"></script>
+    <script src="mmd/mmd.js"></script>
+    <script src="mmd/main.js"></script>
+    <style>
+        @font-face{
+            font-family:"Museo W01_500";
+            src:url("fonts/905282/3a1a59f5-1f68-4ebd-84ad-a9048fe78e39.eot?#iefix");
+            src:url("fonts/905282/3a1a59f5-1f68-4ebd-84ad-a9048fe78e39.eot?#iefix") format("eot"),url("fonts/905282/52be0694-00c1-4daa-8782-419021c48e95.woff2") format("woff2"),url("fonts/905282/dee84039-06ae-4a61-89c4-709e594804a3.woff") format("woff"),url("fonts/905282/9547becc-44c3-4b00-8568-8d3debb4d299.ttf") format("truetype");
+        }
+        body {
+            height: 100vh;
+            margin: 0;
+        }
+        #indexlink {
+            text-align: center;
+            font-family: 'Museo W01_500';
+            font-size: 12px;
+            color: gray;
+            text-decoration: none;
+            margin: 10px auto;
+            display: block;
+        }
+        #content {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            background-color: white;
+        }
+        #mmd-titles {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            text-align: center;
+            font-family: 'Museo W01_500';
+            font-size: 20px;
+            color: black;
+        }
+        #mmd-title {
+            width: 50%;
+        }
+        #formatted-title {
+            width: 50%;
+        }
+        #container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            flex-grow: 1;
+        }
+        #mmd {
+            border: none;
+            width: 50%;
+            resize: none;
+            overflow: auto;
+            padding: 10px;
+            font-size: 1em;
+            font-size: 20px;
+            max-height: 90vh;
+        }
+        #formatted {
+            width: 50%;
+            overflow: auto;
+            padding: 10px;
+            color: black;
+            font-size: 22px;
+            max-height: 90vh;
+        }
+        @media (prefers-color-scheme: dark) {
+            code pre,
+            pre code,
+            .mmd-inline-code,
+            .mmd-code,
+            .ov {
+                background-color: #EEE;
+            }
+        }
+    </style>
+</body>
+</html>
