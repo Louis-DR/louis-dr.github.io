@@ -29,7 +29,7 @@
             After my internship at Arm, I improve my circuit architecture design skills. Of course, my never-ending interest for ternary logic had to be included is this project. However, current Hardware Description Languages (HDL) mostly support binary logic. Moreover, the tools are very impractical both for development and simulation/debugging. Therefore, I obviously had to develop my own HDL ! (if I don't stop soon, I'll start developing my own operating system...). Anyway, I present to you TernaryVerilog (initially called THDL for Ternary HDL, but as the language is based on SystemVerilog, the new name is more fitting).
         </p>
         <p class="text">
-            I plan on upgrade this article into a guide for this language, but in the mean time, I will broadly explain how it works and how the synthesizer is implemented.
+            I plan on upgrading this article into a guide for this language, but in the mean time, I will broadly explain how it works and how the synthesizer is implemented.
         </p>
         <p class="text">
             The main feature of this language is of course the support for ternary signals and logic gates, in addition to binary logic. Other notable features are : words (1D array of bits or trits), arrays (1D array of words or structures), structures (composite data type of binary or ternary signal, words, arrays and other structures), modules (description of a circuit with inputs, outputs and internal signals, registers, and the description of the combinatorial and synchronous logic), instances (of a module, describing how it connects to the rest of the circuit), registers (signals that can hold the value when triggered by the positive or negative edge of a signal).

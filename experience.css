@@ -85,3 +85,30 @@
         background: black;
     }
 }
+
+@media only screen and (max-width: 700px) {
+    #exp-container {
+        width: 100%;
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    .exp-entry-date {
+        font-size: 14px;
+    }
+    .exp-entry-title {
+        font-size: 18px;
+    }
+    .exp-entry-subtitle {
+        font-size: 15px;
+    }
+    .exp-entry-text {
+        display: none;
+    }
+    .exp-entry-subtitle {
+        margin-bottom: 10px;
+    }
+    #content {
+        width: 95%;
+    }
+}
