@@ -255,6 +255,12 @@ h1,h2,h3,h4,h5,h6 {
     }
 }
 
+.light_visible {
+    display: block;
+}
+.dark_visible {
+    display: none;
+}
 .light_darkbg {
     background-color: #E6E6E6;
 }
@@ -262,6 +268,12 @@ h1,h2,h3,h4,h5,h6 {
     filter: invert(1.0) hue-rotate(180deg);
 }
 @media (prefers-color-scheme: dark) {
+    .light_visible {
+        display: none;
+    }
+    .dark_visible {
+        display: block;
+    }
     .light_darkbg {
         background-color: #191919;
     }

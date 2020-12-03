@@ -856,6 +856,296 @@
         </table>
 
 
+        <h2>Basic CMOS implementations</h2>
+
+
+        <h3>CMOS chip selection</h3>
+
+        <p class="text">
+            In order to assess the feasibility of ternary processors, implementations of the basic ternary logic gates will be first be described. Current processors use Complementary Metal Oxide Semiconductor (CMOS) logic with both PMOS and MNOS. Without access to expensive micro-fabrication, CMOS circuits will be built using the CD4007 chip. This chip contains three CMOS pairs but only one is usable as they are not independent. This chip comes in a DIP14 package, very useful for tests on breadboard and for custom PCB with DIP sockets to change the chip if it breaks down.
+        </p>
+
+        <p class="text">
+            This chip works with voltages up to 15V so an adjustable dual-rail power supply is used to test different configurations.
+        </p>
+
+        <h2>Fundamental gates</h2>
+
+        <p class="text">
+            The ternary inverter actually comes in three versions, the neutral NOT and the positive and negatively biased NNOT and PNOT, but they don't require more circuitry : just a single CMOS pair. The other basic gates have two inputs, thus two CMOS pairs. For the two-input gates, the two corresponding transistors of the two CMOS pairs can either be setup in parallel or in series. Two configurations for the NMOS and the PMOS, so four configurations in total for the two pairs. Those are the four basic gates : NAND, NOR, NCONS, NANY [6] [7].
+        </p>
+
+        <p class="text">
+            Note that the non-inverted two-inputs gates requires an additional regular inverter on the output of the simpler inverted versions.
+        </p>
+
+        <div class="center_block">
+            <img class="image_tiny dark_invert" src="ternaryalu/NOTs_diode.png" alt="">
+            <img class="image_tiny dark_invert" src="ternaryalu/NAND_diode.png" alt="">
+            <img class="image_tiny dark_invert" src="ternaryalu/NOR_diode.png" alt="">
+            <br>
+            <img class="image_tiny dark_invert" src="ternaryalu/NCONS_diode.png" alt="">
+            <img class="image_tiny dark_invert" src="ternaryalu/NANY_diode.png" alt="">
+            <p class="caption">
+                Figure 1 : Zener-CMOS implementation of ternary inverters, ternary NAND, ternary NOR, ternary NCONS and ternary NANY
+            </p>
+        </div>
+
+        <p class="text">
+            The CD4007 CMOS pair has a small negative voltage bias so the power supply is set to $$-5V$$ $$+5.7V$$. Two $$1kΩ$$ resistors are used between the PMOS and NMOS to stabilize the output. Additionally, a voltage shifter using a small $$2.2V$$ Zener diode and a $$100kΩ$$ pull-down resistor to ground are used to create a flat and neutral zero state. Without the voltage shifter, the neutral state corresponding to a 0 is on a slope, making it unstable when using the output to drive another gate, as can be seen on figure 2.
+        </p>
+
+        <div class="center_block">
+            <img class="image_small dark_invert" src="ternaryalu/CMOS characteristics.svg" alt="">
+            <p class="caption">
+                Figure 2 : CMOS ternary inverter input/output characteristics
+            </p>
+        </div>
+
+        <h3>Multiplication gate</h3>
+
+        <p class="text">
+            The more complex multiplication gate requires the combination of the fundamental gates described above, following the formula listed previously.
+        </p>
+
+        <div class="center_block">
+            $$A \otimes B = \overline{ \overline{A \times B} \times A + B } $$
+        </div>
+
+        <div class="center_block">
+            <img class="image_small dark_invert" src="ternaryalu/ternlogic_mul.png" alt="">
+            <p class="caption">
+                Figure 3 : multiplication gate equivalent circuit
+            </p>
+        </div>
+
+        <p class="text">
+            This equivalent circuit uses 7 CMOS pairs when implementing each gate separately. Some transistors can be factorized to reduce the cost of this gate ; however, this requires transistor-level control of the circuit which is not possible using the CD4007 chip. Therefore, this will not be explored in this paper.
+        </p>
+
+        <p class="text">
+            The inverted multiplication gate can be built using the same number of transistors, which can be useful in certain circuits.
+        </p>
+
+        <h3>Addition gate</h3>
+
+        <p class="text">
+            The addition gate is a critical component for ALU circuits so a working cheap implementation is a major issue. As with the multiplication gate, the sum gate can be implemented using the fundamental gates.
+        </p>
+
+        <div class="center_block">
+            $$A \oplus B = \left( A⊞B ⊞ \overline {A⊠B} \right) ⊞ \overline {A⊠B}$$
+        </div>
+
+        <div class="center_block">
+            <img class="image_normal dark_invert" src="ternaryalu/ternlogic_sum.png" alt="">
+            <p class="caption">
+                Figure 4 : sum gate equivalent circuit
+            </p>
+        </div>
+
+        <p class="text">
+            This equivalent circuit uses 11 CMOS pairs. However, the inverted version of the sum gate is cheaper as it uses one less inverter, thus one less CMOS pair. Again, some transistors can be factorized to reduce the cost of this gate.
+        </p>
+
+
+        <h2>Ternary ALU design</h2>
+
+
+        <h3>Basic design</h3>
+
+        <p class="text">
+            The main operation of the Arithmetic Logic Unit is the addition. This operation, as in any numerical base requires a carry system, a way to propagate the carry from the addition from one digit to the next. For the sake of simplicity, a ripple-carry system will be used in this design and not a carry-lookahead. That means adding the two trits of one digit of the words requires the carry of the previous pair of digits, therefore we have to wait for the previous sum to be completed. Consequently, as the word length increases, so does the time required for the operation to complete in a linear way. In a full processor, this reduces the maximum frequency, or requires complex timing and scheduling.
+        </p>
+
+        <p class="text">
+            As with binary, we start by creating a half-adder, which add two trits and outputs the sum as well as the carry of this operation. The matrices of the sum and carry of two trits are given in figure 5. We recognize the sum of A and B to be the SUM gate and the carry is the CONS gate.
+        </p>
+
+        <div class="center_block">
+            $$
+            \begin{bmatrix}
+            + & - & 0 \\
+            - & 0 & +\\
+            0 & + & -
+            \end{bmatrix}
+            \begin{bmatrix}
+            - & 0 & 0 \\
+            0 & 0 & 0\\
+            0 & 0 & +
+            \end{bmatrix}
+            $$
+            <p class="caption">
+                <br>
+                Figure 5 : sum of two trits (left) and carry of two trits (right)
+            </p>
+        </div>
+
+        <p class="text">
+            Thus, a ternary half-adder can easily be built.
+        </p>
+
+        <div class="center_block">
+            <img class="image_two dark_invert" src="ternaryalu/ternaludesign_half.png" alt="">
+            <p class="caption">
+                Figure 6 : ternary half-adder
+            </p>
+        </div>
+
+        <p class="text">
+            Then two half-adders are combined to create a full-adder to add two trits as well as the previous carry. The carries of the two additions also have to be combined with an ANY gate.
+        </p>
+
+        <div class="center_block">
+            <img class="image_normal dark_invert" src="ternaryalu/ternaludesign_full.png" alt="">
+            <p class="caption">
+                Figure 7 : ternary full-adder
+            </p>
+        </div>
+
+        <p class="text">
+            This is the heart of the ALU. The first and last additions of the chain of digits are special as they respectively don’t have a previous carry and don’t have to output a carry. Therefore, the first digit only requires one half-adder, and the last one requires two SUM gates.
+        </p>
+
+        <div class="center_block">
+            <img class="image_smaller dark_invert" src="ternaryalu/ternaludesign_chain.png" alt="">
+            <p class="caption">
+                Figure 8 : ternary ALU chain
+            </p>
+        </div>
+
+        <p class="text">
+            Some ALU also include a flag signal for the overflow (when the operation results in a number outside the range of the architecture). It can be achieved by replacing the circuitry of the last digit with a usual full-adder. This of course increases the cost.
+        </p>
+
+        <h3>Subtraction</h3>
+
+        <p class="text">
+            As explained earlier, balanced ternary logic allows easy operations using positive and negative numbers. To negate a ternary number, the only process is to inverter every trit. This, an ALU that does only addition can do subtraction by negating one of the inputs.
+        </p>
+
+        <div class="center_block">
+            <img class="image_smaller dark_invert" src="ternaryalu/ternaludesign_alu.png" alt="">
+            <p class="caption">
+                Figure 9 : ALU with negating circuit
+            </p>
+        </div>
+
+        <p class="text">
+            A simple circuit to negate a ternary word uses multiplication gates. Each trit of the word is fed in a multiplication gate and a common signal is used to control the sign of the output word.
+        </p>
+
+        <div class="center_block">
+            <img class="image_smaller dark_invert" src="ternaryalu/ternaludesign_neg.png" alt="">
+            <p class="caption">
+                Figure 10 : negating circuit
+            </p>
+        </div>
+
+        <h3>Optimization</h3>
+
+        <p class="text">
+            The number of CMOS pairs used for the ALU circuit can be reduced. Only the addition circuit will be considered here.
+        </p>
+
+        <p class="text">
+            First, the fundamental gate of the ALU is the SUM gate. The SUM gate costs 11 CMOS pairs. Then to build a half-adder, a SUM gate and a CONS gate are needed for a total of 14 CMOS pairs. Then the full-adder requires two half-adders and an ANY gate, 31 CMOS pairs. The first digit of the ALU is a single half adder (because there is no incoming carry trit), 14 CMOS pairs, and the last digits is two SUM gates (no output carry trit, even though it is often the case that the last carry bit in a binary ALU is stored in a flag for branching instructions and the ability to do calculations with multiple words), 22 CMOS pairs ; the rest are full-adders. For a n-trit ALU ($$n≥2$$), the total cost of the ALU (not including the sign controller required for subtraction) is $$31n-26$$ CMOS pairs. For a 3-trit ALU, that amounts to 67 CMOS pairs.
+        </p>
+
+        <p class="text">
+            We can spare one CONS gate per half-adder by using the NCONS gate in the SUM gate and adding a NOT gate. That saves 2 CMOS pairs per half-adder. The new total cost is $$27n-20$$ CMOS pairs, 61 CMOS pairs for a 3-trit ALU.
+        </p>
+
+        <div class="center_block">
+            <img class="image_normal dark_invert" src="ternaryalu/ternalu2_nsumncons.png" alt="">
+            <p class="caption">
+                Figure 11 : ternary full-adder
+            </p>
+        </div>
+
+        <p class="text">
+            Another economy comes from the formulae listed previously. If we invert both inputs of a SUM gate, the output is unchanged.
+        </p>
+
+        <div class="center_block">
+            $$A⊠B=\overline{A}⊠\overline{B}$$
+            <br>
+            $$A⊞B=\overline{A}⊞\overline{B}$$
+            <br>
+            $$A \otimes B=\overline{A} \otimes \overline{B}$$
+            <br>
+            $$A \oplus B=\overline{A} \oplus \overline{B}$$
+        </div>
+
+        <p class="text">
+            The trick is to use inverted gates before the input, and since those inverted gates are usually cheaper, we can save transistors. This is simpler to understand with diagrams.
+        </p>
+
+        <div class="center_block">
+            <img class="image_small dark_invert" src="ternaryalu/ternalu2_nhalf.png" alt="">
+            <p class="caption">
+                Figure 12 : N-half-adder
+            </p>
+        </div>
+
+        <p class="text">
+            Here is an alternative half-adder. Two symbols are used and here is why. The circle on the output still means that the out-put is inverted compared to the default gate (here the half-adder). The round cup on the input is supposed to indicate an inverter should be present on the input ; that is, to get the behaviour of the default gate, we have to invert this input. Here, the two symbols, taken with the labels, are the same : to get the behaviour of the default half-adder, we can either invert both output or both inputs. This is a direct consequence of the formulae listed above.
+        </p>
+
+        <p class="text">
+            Using this N-half-adder, we can create a N-full-adder.
+        </p>
+
+        <div class="center_block">
+            <img class="image_big dark_invert" src="ternaryalu/ternalu2_nfull.png" alt="">
+            <p class="caption">
+                Figure 13 : N-full-adder
+            </p>
+        </div>
+
+        <p class="text">
+            Again, both N-half-adders on this diagram correspond to the same internal circuitry described above. However, on the bottom one, we feed the original A and B signals, so we get the inverted sum and inverted carry of A and B. While on the top one, we feed in the inverted incoming carry and the inverted sum from the first N-half-adder, so we get the un-inverted final sum and the un-inverted carry. So, one carry is inverted and the other is not. To combine the two carries, we have to invert one and thus add a NOT gate. Then, to get the inverted total carry, a NANY is used, which is more expensive than the ANY gate.
+        </p>
+
+        <p class="text">
+            Finally, the full ALU can be built again. As expected, the first and last digits are also different.
+        </p>
+
+        <div class="center_block">
+            <img class="image_smaller dark_invert" src="ternaryalu/ternalu2_chain.png" alt="">
+            <p class="caption">
+                Figure 14 : new adder chain
+            </p>
+        </div>
+
+        <p class="text">
+            With those modifications, the N-half-adder costs 10 CMOS pairs, the N-full-adder 24 CMOS pairs, the first digit 11 CMOS pairs and the last digit 21 CMOS pairs. The total and final cost after optimization is $$24n-16$$ CMOS pairs, 56 for the 3-trit ALU.
+        </p>
+
+        <p class="text">
+            Beside an economy of transistors, the optimizations also reduce the number of CMOS pairs the signal has to propagate through, and thus increases the maximum frequency of the processor. Calculating the critical path that will be explained later, a n-trit ternary ALU has a propagation delay of $$9n-7$$ CMOS propagation delays.
+        </p>
+
+        <p class="text">
+            Further economy could be possible at the transistor level instead of pairs of transistors using the CD4007 chips as a reference.
+        </p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         <p class="series-header">

@@ -179,7 +179,10 @@ td b {
     display:inline-block;
     width:50%;
 }
-
+.image_normal {
+    display:inline-block;
+    width:65%;
+}
 .image_big {
     display:inline-block;
     width:80%;
@@ -251,6 +254,10 @@ table {
     .image_small {
         width:70%;
     }
+    .image_normal {
+        display:inline-block;
+        width:85%;
+    }
     .image_big {
         width:90%;
     }
@@ -307,6 +314,10 @@ table {
     .image_small {
         width:90%;
     }
+    .image_normal {
+        display:inline-block;
+        width:95%;
+    }
     .image_big {
         width:95%;
     }
@@ -343,7 +354,20 @@ table {
     }
 }
 
+.light_visible {
+    display: block;
+}
+.dark_visible {
+    display: none;
+}
 @media (prefers-color-scheme: dark) {
+    .light_visible {
+        display: none;
+    }
+    .dark_visible {
+        display: block;
+    }
+
     html, body {
         background-color: #000000;
         color: #ffffff;
