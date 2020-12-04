@@ -44,6 +44,49 @@
             Other features planned that I will implement when I have time include : pre-processor instructions to include files and generate code segments, parameters that are defined in an external file provided to the synthesizer program, synthesizer options for the full circuits with all the signals or only reg2reg circuit, optimization and rewriting rules, a linter and syntax highlighter, etc.
         </p>
 
+
+        <h2>Documentation</h2>
+
+
+        <h3>File structure</h3>
+
+        <p class="text">
+            The compiler takes a single source file as argument, the main TernaryVerilog file. However, a project can be broken down into many files in two ways : preprocessor includes and compilation includes.
+        </p>
+        <p class="text">
+            The former uses the Jinja2 <code>include</code> preprocessor statement and is equivalent to copy-pasting the content of one file into another. Therefore, a single TV file is generated. This method also allows for including code anywhere : inside module declarations, even in assignment statements. Moreover, using the <code>with</code> preprocessor statement, we can pass parameter values to the included code, thus allowing for templates. This is explained in more details in the preprocessor section.
+        </p>
+        <p class="text">
+            The latter uses include statements at the root of the file, preferably at the top for readability. The file included is pushed to the compilation list. The files in the list are compiled sequentially in-order.
+        </p>
+        <p class="text">
+            As the compiler works by stages with global variables and doesn't care about order of declaration (only scope is important), using both methods, a module or structure declared in one file is accessible in all files.
+        </p>
+
+        <h3>Preprocessor</h3>
+
+        <h3>Signal declaration</h3>
+
+        <p class="text">
+
+        </p>
+
+        <pre class="code"><code>
+logic binary foo;
+        </code></pre>
+
+        <h3>Modules and instantiation</h3>
+
+        <p class="text">
+        </p>
+
+        <pre class="code"><code>
+<span class="keyword">module</span> <span class="module">MyModule</span> {
+    <span class="keyword">input</span> <span class="type">binary</span> clk;
+}
+        </code></pre>
+
+
         <p class="series-header">
             This article is part of my series of projects around Ternary Computing and Processor Design. <a href="index-ternary.html">Click here to see the list of projects of this series.</a>
         </p>

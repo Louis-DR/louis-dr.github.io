@@ -354,6 +354,23 @@ table {
     }
 }
 
+pre.code,
+code {
+    background-color: #EEE;
+    border-radius: 4px;
+    padding: 0 5px;
+    white-space: pre-wrap;
+    font-weight: bold;
+}
+pre.code {
+    margin-left: 60px;
+    padding: 0 30px;
+    max-width: max-content;
+}
+code>.keyword { color: Purple; }
+code>.module { color: DarkCyan; }
+code>.type { color: SteelBlue; }
+
 .light_visible {
     display: block;
 }
@@ -366,6 +383,11 @@ table {
     }
     .dark_visible {
         display: block;
+    }
+
+    pre.code,
+    code {
+        background-color: #222;
     }
 
     html, body {
