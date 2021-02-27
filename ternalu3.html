@@ -45,7 +45,7 @@
         </div>
 
         <p class="text">
-            <strong><em>Abstract</em> – Ternary logic is an alternative to binary logic used in every modern processor. As a base-3 numerical system can represent numbers using fewer digits than in base 2, ternary logic circuits are theorized to be more compact than equivalent binary circuits. This increase in density could lead to a gain in performance measured in transistor cost, maximal frequency and energy consumption. In this project, the details of balanced ternary algebra are reviewed and a ternary Arithmetic Logic Unit (ALU) is designed and built using CMOS chips to prove the feasibility of large ternary CMOS circuits. Finally, a theoretical analysis of the benefits of balanced ternary logic is presented. The conservative conclusion of this analysis is that balanced ternary can be cheaper and faster than equivalent basic binary logic, however, binary logic has decades of optimization tricks making it way cheaper and faster.</strong>
+            <strong><em>Abstract</em> – Ternary logic is an alternative to binary logic used in every modern processor. As a base-3 numerical system can represent numbers using fewer digits than in base-2, ternary logic circuits are theorized to be more compact than equivalent binary circuits. This increase in density could lead to a gain in performance measured in transistor cost, maximal frequency and energy consumption. In this project, the details of balanced ternary algebra are reviewed and a ternary Arithmetic Logic Unit (ALU) is designed and built using CMOS chips to prove the feasibility of large ternary CMOS circuits. Finally, a theoretical analysis of the benefits of balanced ternary logic is presented. The conservative conclusion of this analysis is that balanced ternary can be cheaper and faster than equivalent basic binary logic, however, binary logic has decades of optimization tricks making it way cheaper and faster.</strong>
         </p>
         <p class="text">
             <strong><em>Keywords</em> – ternary computing, processor architecture, ALU design, many-valued logic</strong>
@@ -58,14 +58,14 @@
         <h3>Motivation</h3>
 
         <p class="text">
-            Every modern computer uses binary logic, 1s and 0s, for computations. Theoretically, any numerical base can be used for computation [1]. The numerical base (or radix) defines how many digits will be necessary to represent a certain number, this is the radix economy and is written as $$E(b,N)$$ for base $$b$$ and number $$N$$ and calculated with the following formula.
+            Every modern computer uses binary logic, 1s and 0s, for computations. Theoretically, any numerical base can be used for computation <sup>[1]</sup>. The numerical base (or radix) defines how many digits will be necessary to represent a certain number, this is the radix economy and is written as $$E(b,N)$$ for base $$b$$ and number $$N$$ and calculated with the following formula.
             ££ E(b,N) = b \lfloor 1+log_b N \rfloor££
         </p>
         <p class="text">
-            The lowest average radix economy is reached for base $$e \approx 2.72$$ [2]. The closest integer base is 3, not 2 ; ternary not binary, and leads on average to the smallest radix economy.
+            The lowest average radix economy is reached for base $$e \approx 2.72$$ <sup>[2]</sup>. The closest integer base is $$3$$, not $$2$$ ; ternary not binary, and leads on average to the smallest radix economy.
         </p>
         <p class="text">
-            Therefore, a computer using ternary logic could be more efficient by requiring less digits and less circuitry for a similarly powerful processor. The most famous ternary computer was the <em>Setun</em> made by the soviets in the 1970s and was more efficient [3]. However, binary processors are easier to develop and binary won. As Moore's law slows down, it might be time to bring ternary computing back to gain performance.
+            Therefore, a computer using ternary logic could be more efficient by requiring less digits and less circuitry for a similarly powerful processor. The most famous ternary computer was the <em>Setun</em> made by the soviets in the 1970s and was more efficient <sup>[3]</sup>. However, binary processors are easier to develop and binary won. As Moore's law slows down, it might be time to bring ternary computing back to gain performance.
         </p>
         <p class="text">
             Switching to ternary logic requires redefining a whole new algebra, and a more complex one as the number of possible states and thus gates is larger.
@@ -78,7 +78,7 @@
         <h3>Ternary values</h3>
 
         <p class="text">
-            As the binary set of values is written $$\mathbb{B}=\{0,1\}$$, the symbol $$\mathbb{T}$$ will be used for the set of ternary values. There exist multiple ternary sets of values and thus multiple algebras : perhaps the most obvious is unbalanced ternary with $$\mathbb{T}=\{0,1,2\}$$ ; unknown-state ternary with $$\mathbb{T}=\{F,?,T\}$$ similar to an epistemological set of truth values and an extension of the Boolean True-False interpretation of binary logic ; and balanced ternary $$\mathbb{T}=\{-,0,+\}$$ [4].
+            As the binary set of values is written $$\mathbb{B}=\{0,1\}$$, the symbol $$\mathbb{T}$$ will be used for the set of ternary values. There exist multiple ternary sets of values and thus multiple algebras : perhaps the most obvious is unbalanced ternary with $$\mathbb{T}=\{0,1,2\}$$ ; unknown-state ternary with $$\mathbb{T}=\{F,?,T\}$$ similar to an epistemological set of truth values and an extension of the Boolean True-False interpretation of binary logic ; and balanced ternary $$\mathbb{T}=\{-,0,+\}$$ <sup>[4]</sup>.
         </p>
         <p class="text">
             Balanced ternary logic will be used in this report. It allows operations on negative and positive numbers by default with-out having to use the ternary equivalent of two’s complement. Consequently, if we only use the positive numbers, the range of possible values is halved. This choice benefits unsigned operations over signed operations.
@@ -190,7 +190,7 @@
             Only the last two are useful.
         </p>
         <p class="text">
-            In ternary logic, one-input one-output gates can be represented with a three by one matrix. There are $$3^3=27$$ possible such gates. Here are the meaningful ones [5].
+            In ternary logic, one-input one-output gates can be represented with a three by one matrix. There are $$3^3=27$$ possible such gates. Here are the meaningful ones <sup>[5]</sup>.
         </p>
         <table>
             <tr>
@@ -369,8 +369,8 @@
                 <th>
                     $$
                     \begin{bmatrix}
-                    -\\
-                    -\\
+                    0\\
+                    0\\
                     +
                     \end{bmatrix}
                     $$
@@ -384,9 +384,9 @@
                 <th>
                     $$
                     \begin{bmatrix}
-                    -\\
+                    0\\
                     +\\
-                    -
+                    0
                     \end{bmatrix}
                     $$
                 </th>
@@ -400,8 +400,8 @@
                     $$
                     \begin{bmatrix}
                     +\\
-                    -\\
-                    -
+                    0\\
+                    0
                     \end{bmatrix}
                     $$
                 </th>
@@ -871,13 +871,13 @@
         </p>
 
         <p class="text">
-            This chip works with voltages up to 15V so an adjustable dual-rail power supply is used to test different configurations.
+            This chip works with voltages up to $$15V$$ so an adjustable dual-rail power supply is used to test different configurations.
         </p>
 
         <h2>Fundamental gates</h2>
 
         <p class="text">
-            The ternary inverter actually comes in three versions, the neutral NOT and the positive and negatively biased NNOT and PNOT, but they don't require more circuitry : just a single CMOS pair. The other basic gates have two inputs, thus two CMOS pairs. For the two-input gates, the two corresponding transistors of the two CMOS pairs can either be setup in parallel or in series. Two configurations for the NMOS and the PMOS, so four configurations in total for the two pairs. Those are the four basic gates : NAND, NOR, NCONS, NANY [6] [7].
+            The ternary inverter actually comes in three versions, the neutral NOT and the positive and negatively biased NNOT and PNOT, but they don't require more circuitry : just a single CMOS pair. The other basic gates have two inputs, thus two CMOS pairs. For the two-input gates, the two corresponding transistors of the two CMOS pairs can either be setup in parallel or in series. Two configurations for the NMOS and the PMOS, so four configurations in total for the two pairs. Those are the four basic gates : NAND, NOR, NCONS, NANY <sup>[6]</sup><sup>[7]</sup>.
         </p>
 
         <p class="text">
@@ -925,7 +925,7 @@
         </div>
 
         <p class="text">
-            This equivalent circuit uses 7 CMOS pairs when implementing each gate separately. Some transistors can be factorized to reduce the cost of this gate ; however, this requires transistor-level control of the circuit which is not possible using the CD4007 chip. Therefore, this will not be explored in this paper.
+            This equivalent circuit uses $$7$$ CMOS pairs when implementing each gate separately. Some transistors can be factorized to reduce the cost of this gate ; however, this requires transistor-level control of the circuit which is not possible using the CD4007 chip. Therefore, this will not be explored in this paper.
         </p>
 
         <p class="text">
@@ -950,7 +950,7 @@
         </div>
 
         <p class="text">
-            This equivalent circuit uses 11 CMOS pairs. However, the inverted version of the sum gate is cheaper as it uses one less inverter, thus one less CMOS pair. Again, some transistors can be factorized to reduce the cost of this gate.
+            This equivalent circuit uses $$11$$ CMOS pairs. However, the inverted version of the sum gate is cheaper as it uses one less inverter, thus one less CMOS pair. Again, some transistors can be factorized to reduce the cost of this gate.
         </p>
 
 
@@ -1054,11 +1054,11 @@
         </p>
 
         <p class="text">
-            First, the fundamental gate of the ALU is the SUM gate. The SUM gate costs 11 CMOS pairs. Then to build a half-adder, a SUM gate and a CONS gate are needed for a total of 14 CMOS pairs. Then the full-adder requires two half-adders and an ANY gate, 31 CMOS pairs. The first digit of the ALU is a single half adder (because there is no incoming carry trit), 14 CMOS pairs, and the last digits is two SUM gates (no output carry trit, even though it is often the case that the last carry bit in a binary ALU is stored in a flag for branching instructions and the ability to do calculations with multiple words), 22 CMOS pairs ; the rest are full-adders. For a n-trit ALU ($$n≥2$$), the total cost of the ALU (not including the sign controller required for subtraction) is $$31n-26$$ CMOS pairs. For a 3-trit ALU, that amounts to 67 CMOS pairs.
+            First, the fundamental gate of the ALU is the SUM gate. The SUM gate costs $$11$$ CMOS pairs. Then to build a half-adder, a SUM gate and a CONS gate are needed for a total of $$14$$ CMOS pairs. Then the full-adder requires two half-adders and an ANY gate, $$31$$ CMOS pairs. The first digit of the ALU is a single half adder (because there is no incoming carry trit), $$14$$ CMOS pairs, and the last digits is two SUM gates (no output carry trit, even though it is often the case that the last carry bit in a binary ALU is stored in a flag for branching instructions and the ability to do calculations with multiple words), $$22$$ CMOS pairs ; the rest are full-adders. For a n-trit ALU ($$n≥2$$), the total cost of the ALU (not including the sign controller required for subtraction) is $$31n-26$$ CMOS pairs. For a 3-trit ALU, that amounts to $$67$$ CMOS pairs.
         </p>
 
         <p class="text">
-            We can spare one CONS gate per half-adder by using the NCONS gate in the SUM gate and adding a NOT gate. That saves 2 CMOS pairs per half-adder. The new total cost is $$27n-20$$ CMOS pairs, 61 CMOS pairs for a 3-trit ALU.
+            We can spare one CONS gate per half-adder by using the NCONS gate in the SUM gate and adding a NOT gate. That saves $$2$$ CMOS pairs per half-adder. The new total cost is $$27n-20$$ CMOS pairs, $$61$$ CMOS pairs for a 3-trit ALU.
         </p>
 
         <div class="center_block">
@@ -1094,7 +1094,7 @@
         </div>
 
         <p class="text">
-            Here is an alternative half-adder. Two symbols are used and here is why. The circle on the output still means that the out-put is inverted compared to the default gate (here the half-adder). The round cup on the input is supposed to indicate an inverter should be present on the input ; that is, to get the behaviour of the default gate, we have to invert this input. Here, the two symbols, taken with the labels, are the same : to get the behaviour of the default half-adder, we can either invert both output or both inputs. This is a direct consequence of the formulae listed above.
+            Here is an alternative half-adder. Two symbols are used and here is why. The circle on the output still means that the output is inverted compared to the default gate (here the half-adder). The round cup on the input is supposed to indicate an inverter should be present on the input ; that is, to get the behaviour of the default gate, we have to invert this input. Here, the two symbols, taken with the labels, are the same : to get the behaviour of the default half-adder, we can either invert both output or both inputs. This is a direct consequence of the formulae listed above.
         </p>
 
         <p class="text">
@@ -1109,7 +1109,7 @@
         </div>
 
         <p class="text">
-            Again, both N-half-adders on this diagram correspond to the same internal circuitry described above. However, on the bottom one, we feed the original A and B signals, so we get the inverted sum and inverted carry of A and B. While on the top one, we feed in the inverted incoming carry and the inverted sum from the first N-half-adder, so we get the un-inverted final sum and the un-inverted carry. So, one carry is inverted and the other is not. To combine the two carries, we have to invert one and thus add a NOT gate. Then, to get the inverted total carry, a NANY is used, which is more expensive than the ANY gate.
+            Again, both N-half-adders on this diagram correspond to the same internal circuitry described above. However, on the bottom one, we feed the original A and B signals, so we get the inverted sum and inverted carry of A and B. While on the top one, we feed in the inverted incoming carry and the inverted sum from the first N-half-adder, so we get the un-inverted final sum and the uninverted carry. So, one carry is inverted and the other is not. To combine the two carries, we have to invert one and thus add a NOT gate. Then, to get the inverted total carry, a NANY is used, which is more expensive than the ANY gate.
         </p>
 
         <p class="text">
@@ -1124,7 +1124,7 @@
         </div>
 
         <p class="text">
-            With those modifications, the N-half-adder costs 10 CMOS pairs, the N-full-adder 24 CMOS pairs, the first digit 11 CMOS pairs and the last digit 21 CMOS pairs. The total and final cost after optimization is $$24n-16$$ CMOS pairs, 56 for the 3-trit ALU.
+            With those modifications, the N-half-adder costs 10 CMOS pairs, the N-full-adder 24 CMOS pairs, the first digit 11 CMOS pairs and the last digit $$21$$ CMOS pairs. The total and final cost after optimization is $$24n-16$$ CMOS pairs, 56 for the 3-trit ALU.
         </p>
 
         <p class="text">
@@ -1136,21 +1136,194 @@
         </p>
 
 
+        <h2>Physical build of the ALU</h2>
 
 
+        <h3>Sourcing materials</h3>
+
+        <p class="text">
+            The CD4007 chips were bought on ic-online.com. The custom PCBs were designed on EasyEDA and manufactured by JLCPCB. All other electrical components were bought from various suppliers on Aliexpress and eBay.
+        </p>
+
+        <h3>Ternary 2-trit ALU</h3>
+
+        <p class="text">
+            In order to verify the feasibility of ternary logic circuits using CMOS pairs, a 2-trit ALU with subtraction ability has been built. It uses almost all the gates described above including the SUM and MUL gates.
+        </p>
+
+        <div class="center_block">
+            <img class="image_smaller dark_invert" src="ternaryalu/ternary_sum.jpg" alt="">
+            <p class="caption">
+                Figure 15 : PCB of the ternary SUM gate using CD4007 chips
+            </p>
+        </div>
+
+        <div class="center_block">
+            <img class="image_smaller dark_invert" src="ternaryalu/ternary_2trit_alu.jpg" alt="">
+            <p class="caption">
+                Figure 16 : full circuit of the working 2-trit ALU
+            </p>
+        </div>
+
+        <p class="text">
+            A more in-depth description of the design and testing process as well as a demonstration of the circuit in action can be found in the other articles on this website.
+        </p>
 
 
+        <h2>Comparison with binary</h2>
 
 
+        <h3>Metrics</h3>
+
+        <p class="text">
+            Performance of processors can be measured on power consumption, maximal frequency and cost. Only the latter two will be compared here.
+        </p>
+
+        <p class="text">
+            Maximal frequency is determined by the longest path of the electric signal in the circuit, the critical path. The time the signal takes to propagate through the circuit can depend on multiple factors, but only the propagation time of the CMOS transistors will be considered. The comparison will be measured using the number of propagation delays of the critical path of the circuit. One CMOS propagation delay will refer to one propagation delay of the CMOS pair (about 20ns for the CD4007 for example). Simple gates such as NOT, NAND, NOR, NCONS and NANY only require a single CMOS propagation delay, but the more complex MUL, SUM and NSUM gates require respectively $$3$$, $$6$$ and $$5$$ CMOS propagation delays.
+        </p>
+
+        <p class="text">
+            Cost itself can be broken down on multiple factors. Processor fabrication costs are increased by the technology used, area of the die, number of fabrication steps, etc. In the case of ternary circuits, the technology is not explored in this report as it would require extensive experimenting using micro-fabrication. The number of transistors affect directly the area of semiconductor necessary. The number of fabrication steps depends in part on the technology used, and the density of interconnections between transistors requiring more or less layers on top of the semiconductor. For the sake of simplicity and to get a first idea of a comparison, the cost will be modelled by the number of CMOS pairs necessary.
+        </p>
+
+        <h3>Binary ALU design</h3>
+
+        <p class="text">
+            The ternary ALU described above will be compared to a binary ALU using a similar design, that is a n-bit ALU with a ripple carry system.
+        </p>
+
+        <p class="text">
+            Using similar CMOS architecture, the binary inverter (NOT) costs a single CMOS pair, and the binary NAND and NOR two-inputs gates cost two CMOS pairs each. All three of those gates require a single CMOS propagation delay
+        </p>
+
+        <p class="text">
+            The equivalent of the SUM gate of the ternary ALU in binary is the XOR gate. If we were to implement this gate as a combination of simpler gates (binary NAND and NOR) as we did for the ternary SUM gate, we can use the following formula.
+        </p>
+
+        <div class="center_block">
+            $$A \oplus B = \overline{ \overline{A + B} \times (A \times B) } $$
+        </div>
+
+        <div class="center_block">
+            <img class="image_small dark_invert" src="ternaryalu/B_SUM.png" alt="">
+            <p class="caption">
+                Figure 17 : binary XOR gate
+            </p>
+        </div>
+
+        <p class="text">
+            This brings the cost of this gate to $$8$$ CMOS pairs. Using binary algebra formulae, we can deduce that the cost for the XNOR gate is the same. The propagation delay is of $$3$$ CMOS propagation delays.
+        </p>
+
+        <p class="text">
+            The binary half-adder is built with a XOR gate for the sum and a AND gate for the carry. The AND gate inside the COR gate can be used to spare some transistors. Two half-adders are used to build the full-adder and an OR gate combines the two carries.
+        </p>
+
+        <div class="center_block">
+            <img class="image_normal dark_invert" src="ternaryalu/B_adder.png" alt="">
+            <p class="caption">
+                Figure 18 : binary full-adder
+            </p>
+        </div>
+
+        <p class="text">
+            This full-adder costs $$19$$ CMOS pairs and has a propagation delay of $$6$$ and $$7$$ CMOS propagation delays for the sum and the carry respectively. The first bit of the ALU only requires a single half-adder and the last one only two XOR gates using a similar architecture to the ternary ALU.
+        </p>
+
+        <p class="text">
+            However, some processors use a different implementation of the XOR gate using Pass Transistor Logic <sup>[8]</sup>, where the transistors are not connected to the power supply or ground, but to other gate outputs. This other logic family allows substantial cost reductions but also require more testing as the output of a PTL gate is not directly connected to the power supply but has to be able to drive other gates in the circuit. This can require additional circuitry. There exist many different PTL-like technologies such as Double-Pass Transistor Logic, Swing Restored Pass Transistor Logic and Complementary Pass Transistor Logic. They will not be compared in this report. However, a common PTL CMOS XOR gate can be built using only $$6$$ transistors.
+        </p>
+
+        <div class="center_block">
+            <img class="image_small dark_invert" src="ternaryalu/B_XOR.png" alt="">
+            <p class="caption">
+                Figure 19 : PTL CMOS binary XOR gate
+            </p>
+        </div>
+
+        <p class="text">
+            Thus, the cost of this XOR gate is only $$3$$ CMOS pairs, and the delay is $$2$$ CMOS propagation delays. As this XOR doesn’t contain a AND gate, we have to add it. However, we can use cheaper and faster NAND gates.
+        </p>
+
+        <div class="center_block">
+            <img class="image_normal dark_invert" src="ternaryalu/B_adderB.png" alt="">
+            <p class="caption">
+                Figure 20 : alternative binary full-adder for the PTL XOR
+            </p>
+        </div>
+
+        <p class="text">
+            This full-adder costs $$12$$ CMOS pairs and has a propagation delay of $$4$$ CMOS propagation delays for both the sum and the carry.
+        </p>
+
+        <p class="text">
+            Both implementations will be considered in the comparison. Without PTL logic, a n-bit binary ALU (without the subtraction circuit) costs $$19n-14$$ CMOS pairs and has a propagation delay of $$7n-6$$ CMOS propagation delays. With PTL logic, a n-bit binary ALU costs $$12n-13$$ CMOS pairs and has a propagation delay of $$4n-3$$ CMOS propagation delays.
+        </p>
+
+        <h3>Results</h3>
+
+        <p class="text">
+            Plotting the expected cost and propagation delay for different number of digits in the three different architectures as a function of the maximum range of values, we get the following results.
+        </p>
+
+        <div class="center_block">
+            <img class="image_normal dark_invert" src="ternaryalu/Cost comparison.svg" alt="">
+            <p class="caption">
+                Figure 21 : cost comparison
+            </p>
+        </div>
+
+        <div class="center_block">
+            <img class="image_normal dark_invert" src="ternaryalu/Delay comparison.svg" alt="">
+            <p class="caption">
+                Figure 22 : propagation delay comparison
+            </p>
+        </div>
+
+        <p class="text">
+            As we can see, while the proposed ternary ALU is substantially cheaper and faster than a similar binary ALU for equal maximum range of values, using Pass Transistor Logic brings a considerable advantage to binary over balanced ternary.
+        </p>
+
+        <h3>Critical analysis</h3>
+
+        <p class="text">
+            This comparison hints that ternary logic is not a worthwhile alternative to binary. However, binary logic has decades of advance in research, including PTL optimization. Using similar CMOS design, balanced ternary still presents an advantage over binary. Therefore, it can be expected that transistor-level design optimization applied to ternary logic can rival current binary processors.
+        </p>
+
+        <p class="text">
+            Many assumptions have been made in this analysis. A more thorough analysis would require experimenting at the semiconductor level and take into account power consumption as well.
+        </p>
+
+        <p class="text">
+            Moreover, this project only explores balanced ternary ALU. Unbalanced ternary logic might require less complex circuitry for some components of the processor such as look-ahead carry systems <sup>[9]</sup>.
+        </p>
 
 
+        <h2>Conclusion</h2>
 
 
+        <p class="text">
+            Balanced ternary logic can be computed on CMOS circuitry, as shown with the realization of the ternary ALU proposed in this report. It is overall cheaper and faster than similar basic binary logic, however, decades of research on transistor-level optimization allow binary to surpass the ternary logic presented.
+        </p>
+
+        <p class="text">
+            More experimenting with other logic families such as Transistor Pass Logic should be carried out to try to match the performance of optimized binary circuits. Research on the realization of ternary circuits in integrated circuits is required to conclude more accurately on the potential gains of ternary logic and its uses. Unbalanced ternary logic should be explored and compared to balanced ternary logic.
+        </p>
 
 
+        <h2>References</h2>
 
 
-
+        <p class="text">[1] Stanley L. Hurst. 1984. Multiple-Valued Logic – its Status and its Future. IEEE Transactions on Computers. Vol. c-33, No. 12, December 1984.</p>
+        <p class="text">[2] C.B. Tompkins, J.H. Wakelin, Engineering Research Associ-ates Inc. 1950. High-speed computing devices. McGraw-Hill Book Company Inc.</p>
+        <p class="text">[3] N. Brusentsov, J.R. Alvarez. 2006. Ternary Computers : The Setun and the Setun 70. Soviet and Russian Computing. July 2006.</p>
+        <p class="text">[4] W. Alexander. 1964. The Ternary Computer. Electronics and Power. Vol. 10, Issue 2, February 1964.</p>
+        <p class="text">[5] Douglas W. Jones. 2012. Standard Ternary Logic. The Ter-nary Manifesto. www.cs.uiowa.edu/~jones/ternary.</p>
+        <p class="text">[6] H.T. Mouftah. 1976. A Study on the Implementation of Three-Valued Logic. Proceedings of the sixth international sym-posium on multiple-valued logic, May 1976, 123-126.</p>
+        <p class="text">[7] H.T. Mouftah. 1978. Ternary Logic Circuits with CMOS Integrated Circuits. US patent 4,107,549, Aug. 15, 1978.</p>
+        <p class="text">[8] R.P. MeenaakshiSundari, R. Anita, M.K. Anandkumar. 2013. Implementation of Low Power CMOS Full Adders Using Pass Transistor Logic. IOSR Journal of VLSI and Signal Processing. Vol. 2, Issue 5 (May. – Jun. 2013).</p>
+        <p class="text">[9] Douglas W. Jones. 2012. Fast Ternary Addition. The Ternary Manifesto. www.cs.uiowa.edu/~jones/ternary.</p>
 
 
         <p class="series-header">

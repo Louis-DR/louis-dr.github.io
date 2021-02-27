@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Import Katex -->
+    <link rel="stylesheet" href="katex/katex.min.css">
+    <script src="katex/katex.min.js"></script>
+    <!-- Import Katex auto-render -->
+    <script src="katex/contrib/auto-render.min.js"></script>
+
     <meta charset="UTF-8">
     <link rel="stylesheet" href="articles.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,27 +32,730 @@
         </p>
 
         <p class="text">
-            After my internship at Arm, I improve my circuit architecture design skills. Of course, my never-ending interest for ternary logic had to be included is this project. However, current Hardware Description Languages (HDL) mostly support binary logic. Moreover, the tools are very impractical both for development and simulation/debugging. Therefore, I obviously had to develop my own HDL ! (if I don't stop soon, I'll start developing my own operating system...). Anyway, I present to you TernaryVerilog (initially called THDL for Ternary HDL, but as the language is based on SystemVerilog, the new name is more fitting).
+            After my internship at Arm, I seeked to improve my hardware design skills through the continuation of my exploration of ternary logic and its application to processor design. However, current Hardware Description Languages (HDL) mostly support binary logic only. Moreover, the tools are very impractical both for development and simulation/debugging. Therefore, I obviously had to develop my own HDL ! (if I don't stop soon, I'll start developing my own operating system...). Anyway, I present to you TernaryVerilog.
         </p>
         <p class="text">
-            I plan on upgrading this article into a guide for this language, but in the mean time, I will broadly explain how it works and how the synthesizer is implemented.
+            In this article, I will first describe the main features of the language, then explain how the tools I developed work, followed by a short documentation of the syntax.
+        </p>
+
+
+        <h2>The tools</h2>
+
+
+        <div class="center_block">
+            <img class="image_tall_small dark_invert" src="tverilog_workflow.png" alt="">
+            <p class="caption">
+                TernaryVerilog development workflow
+            </p>
+        </div>
+
+        <h3>Compiler-synthesizer</h3>
+
+        <p class="text">
+            The synthesizer/compiler is coded in Python because performance is not an issue (yet ?) and I wanted to be able to develop this faster. It works using the standard compiler design. Through a command-line interface, the compile options are provided. The compiler takes a single TernaryVerilog file as input. This main file can then include other files. First, if enabled, the file is preprocessed which creates a new version of the file.
+        </p>
+        <pre class="code"><code>
+   TernaryVerilog Compiler CLI :
+tvcompiler FILE [-o|--output OUTPUT_FILE] [-p|--preprocess] [-P|--ppdir PREPROCESSOR_DIRECTORY] [-c|--configs PREPROCESSOR_CONFIGS...] [-T|--templates TEMPLATE_DIRECTORIES...] [-r|--reduced] [-O|--optimized] [-w|--warnings] [-v|--verbose] [-t|--tree]
+    FILE path and file name of the main .tv input file to compile
+    -o --output OUTPUT_FILE path and file name for the output .tcir and .tdef files
+    -p --preprocess enable the preprocessor
+    -P --ppdir PREPROCESSOR_DIRECTORY directory where preprocessed files will be written
+    -c --configs PREPROCESSOR_CONFIGS... list of config files containing the parameters used by the Jinja2 preprocessor
+    -T --templates TEMPLATE_DIRECTORIES... directories of templates used by the Jinja2 preprocessor
+    -r --reduced enable reduced output (only reg2reg signals)
+    -O --optimized enable circuit optimization
+    -w --warnings enable syntax and semantic warning messages
+    -v --verbose enable compilation status messages
+    -t --tree enable abstract syntax tree message
+        </code></pre>
+        <p class="text">
+            The preprocessed file is then parsed into a list of tokens. Then, the list of tokens is fed to a finite state machine which carries out syntax analysis and outputs an Abstract Syntax Tree (AST) of syntax groups. The shunting yard algorithm is used to convert arithmetic operations into an AST representation. If any syntax errors and warnings are detected, the user is notified. If include statements are detected, the corresponding files are read, tokenized and syntax-analyzed sequentially in order of inclusion. When all files have gone through syntax analysis, the AST is converted through semantic analysis to a synthesized circuit described in a net-gate network. Semantic errors and warnings are detected.
         </p>
         <p class="text">
-            The main feature of this language is of course the support for ternary signals and logic gates, in addition to binary logic. Other notable features are : words (1D array of bits or trits), arrays (1D array of words or structures), structures (composite data type of binary or ternary signal, words, arrays and other structures), modules (description of a circuit with inputs, outputs and internal signals, registers, and the description of the combinatorial and synchronous logic), instances (of a module, describing how it connects to the rest of the circuit), registers (signals that can hold the value when triggered by the positive or negative edge of a signal).
+            Finally, the circuit is written to two files : a .tcir file listing the nodes by id with all information necessary for the simulator (propagation delay, trigger signal for flip-flops, and of course the expression in Reversed Polish Notation (RPN) with node IDs and gate operators) ; and a .tdef file containing information about compilation, the structure of the circuit, the names of each node with their ID, the structures, arrays and words, and everything else necessary to debug and visualize the circuit during simulation.
         </p>
+
+        <div class="center_block">
+            <img class="image_tall_normal dark_invert" src="compiler_pipeline.png" alt="">
+            <p class="caption">
+                Half-adder
+            </p>
+        </div>
+
+        <h3>Optimizer</h3>
+
         <p class="text">
-            Signals have to be declared in the module or in the root file. A value can be assigned either in combinatorial logic or synchronous blocks (for registers). Of course, the left hand side of an assignment can be any object : a singular signal, a word, an array, a struct, or of course an element in an array/word or a subarray/subword using square brackets (it supports indexing outside the size of the object and negative indexing for wrapping), an element in a structure using a point, or any combination of those. The right hand side of the assignment is a logic expression using different symbols for the basic binary gates (&, |, ^, ~) and the basic ternary gates (which there a many of ! I had to use symbols that are not on the keyboard : +, ×, ⊞, ⊠, ⨁, ⨂, ¬, ⁻, ⁰, ⁺). Some gates are duoary (the name I use for two inputs) or unary (one input). A duoary operator can also be used as a unary operator for collapsing of a word (a × before a word will collapse in the and-ing together of all the signals of the word). Of course, a multiplexer can be implemented with the ternary operator which supports a binary condition with two values (c?a:b) or a ternary condition with three values (c?a:b:c). Furthermore, signals can also be concatenated using curly brackets (multiple signals concatenated into a word), or vectorized using a comma (one signal duplicated to make a word). Finally, hardcoded values can be used in the expression, either binary or ternary, and in many formats : binary (0 and 1), balanced ternary (0, 1 and i for -1), unbalanced ternary (0,1 and 2), decimal (0 to 9), hexadecimal (0 to f), octal (0 to 7), heptavintinal (0 to z by skipping certain letters as described by Douglas W. Jones), nonal (0 to 8).
+            Since this article was written, I've worked on a circuit optimizer. When fed a .tcir file, it parses in a AST, counts the number of transistors, measures the latency for every reg2reg path, and calculates the maximum frequency the circuit can run at. It then tries to rewrite the AST while not modifying the functional design in order to reduce both the number of transistors and the maximum latency. Finally, the optimized circuit is re-encoded to .tcir to be used by the simulator. For more details about how the optimizer works and the preliminary results, you can read the article I wrote on the project (WIP).
         </p>
+
+        <h3>Simulator</h3>
+
+
+        <h3>Testbench</h3>
+
+
+        <h3>TelociDesi</h3>
+
+        <div class="center_block">
+            <img class="image_big dark_invert_brighter" src="telocidesi2_screenshot.png" alt="">
+            <p class="caption">
+                Screenshot of the WIP software
+            </p>
+        </div>
+
+        <h3>Additional tools</h3>
+
         <p class="text">
-            The synthesizer is coded in Python because performance is not an issue (yet ?) and I wanted to be able to develop this faster. It works using the standard compiler design : tokenization, syntax analysis, semantic analysis. It takes in a .thdl file (could be changed to .tv for TernaryVerilog) and outputs a file in .tcir format (for ternary circuit) that can be read by the simulator I am still developing.
-        </p>
-        <p class="text">
-            Other features planned that I will implement when I have time include : pre-processor instructions to include files and generate code segments, parameters that are defined in an external file provided to the synthesizer program, synthesizer options for the full circuits with all the signals or only reg2reg circuit, optimization and rewriting rules, a linter and syntax highlighter, etc.
+            I've also developed a syntax highlighter for Visual Studio Code using RegEx. It is based on the package for SystemVerilog but modified to understand TernaryVerilog syntax. This makes writing TV code much easier. I've planned to develop more utilities such as live linting and auto-completion also for VS Code, as well as their integration into TelociDesi.
         </p>
 
 
         <h2>Documentation</h2>
 
+
+        <h3>Signal declaration</h3>
+
+        <p class="text">
+            Signals are the nets holding a logic value during the simulation. Signals have a name used to reference them in the code, a node type and a logic type. The name must only include alphanumerical characters and underscores (the first character must be a letter or an underscore). The node type describes how the signal connects to other signals and modules. The logic type describes what values the net can hold.
+        </p>
+
+        <p class="text">
+            The node type can be one of the following :
+        </p>
+        <ul>
+            <li><code>logic</code> : structural signal used inside a module or at the global scope, synthesized as a wire.</li>
+            <li><code>register</code> : behavioral signal used inside a module or at the global scope, synthesized as a flip-flop, can hold a value assigned in a posedge or negedge block with a trigger signal.</li>
+            <li><code>input</code> : structural signal used to input a value to a module, synthesized as a wire.</li>
+            <li><code>output</code> : structural signal used to output a value from a module, synthesized as a wire.</li>
+            <li><code>pinin</code> : equivalent to logic, should be used for interface signals with the testbench.</li>
+            <li><code>pinout</code> : equivalent to logic, should be used for interface signals with the testbench.</li>
+        </ul>
+
+        <p class="text">
+            The logic type can be one of the following :
+        </p>
+        <ul>
+            <li><code>binary</code> : single binary signal, can hold the values 0, 1 and x (undefined).</li>
+            <li><code>ternary</code> : single ternary signal, can hold the values -1, 0, 1 and x (undefined).</li>
+            <li>A custom struct : aggregate object of other signals as defined in a struct block.</li>
+        </ul>
+        <p class="text">
+            Additionally, square brackets are used to indicate that the signal is an array. <code>ternary[9]</code> creates a one-dimensional word of 9 ternary signals (addressed from 0 to 8). <code>binary[4][16]</code> creates a two-dimensional array of 16 words of 4 binary signals (addressed first from 0 to 15, and then from 0 to 3). Arrays of more than two dimensions are not supported yet. One-dimensional arrays of structures are also possible : <code>mystruct[3]</code> creates an array of 3 objects of type <code>mystruct</code> (addressed from 0 to 2). Arrays are indexed LSD (Least Significant Digit) first : <code>arr[0]</code> is the least significant bit of the array ; it is also the rightmost bit, this is important for the concatenation operator explained later.
+        </p>
+        <p class="text">
+            Examples of signal declarations :
+        </p>
+
+        <pre class="code"><code>
+<span class="keyword">input</span> <span class="type">binary</span> clk;
+<span class="keyword">input</span> <span class="type">mystruct</span>[<span class="number">3</span>] i_data;
+<span class="keyword">output</span> <span class="type">ternary</span>[<span class="number">3</span>] o_result;
+<span class="keyword">register</span> <span class="type">binary</span>[<span class="number">8</span>][<span class="number">16</span>] r_memory;
+<span class="keyword">logic</span> <span class="type">binary</span>[<span class="number">16</span>] pointer;
+<span class="keyword">logic</span> <span class="type">ternary</span> flag_sign;
+<span class="keyword">pinout</span> <span class="type">binary</span>[<span class="number">4</span>] ext_device_id;
+<span class="keyword">pinin</span> <span class="type">binary</span>[<span class="number">4</span>] ext_bus;
+        </code></pre>
+
+        <p class="text">
+            Multiple declarations in a single line with a comma-separated list of signal names is planned but not yet implemented.
+        </p>
+
+        <h3>Structures</h3>
+
+        <p class="text">
+            Structures are aggregate objects of multiple signals of any type. Structures are declared at the global scope of any file. Each structure must be given a unique name by which it is referenced for signal declarations. Since all files are parsed before syntax analysis, structures can be declared anywhere before or after being referenced in a signal declaration and cannot be scoped to one file only. A structure is declared using the <code>struct</code> keyword :
+        </p>
+        <pre class="code"><code>
+<span class="keyword">struct</span> <span class="module">MyStruct</span> {
+    <span class="type">binary</span> attribute;
+    <span class="type">ternary</span>[<span class="number">3</span>] word_attr;
+    <span class="type">binary</span>[<span class="number">4</span>][<span class="number">16</span>] array_attr;
+    <span class="type">OtherStruct</span> struct_attr;
+    <span class="type">OtherStruct</span>[<span class="number">2</span>] struct_array_attr;
+}
+        </code></pre>
+
+        <p class="text">
+            Instances of a structure are declared as explained in the signal assignment section above. Structure attributes are accessed and assigned using the member access operator (dot) as explained in the signal assignment section below.
+        </p>
+
+        <h3>Combinatorial signal assignment</h3>
+
+        <p class="text">
+            Combinational assignments are always active and correspond to a gate-level description of the circuit. The syntax used is simply <code>LHS = RHS;</code> at the root of the main file or in a module declaration. Each signal should only be assigned once. If a signal is assigned multiple times, the compiler will throw a warning. Circular assignments are not allowed and the compiler will throw an error. The LHS expression can use the subscript operator or the member access operator. The RHS expression combines operands with appropriate operators to produce the desired functional expression using any of the operators detailed below.
+        </p>
+
+        <p class="text">
+            For all examples below, <code>a</code>, <code>b</code>, <code>c</code> and <code>d</code> are singular signals which can be written as 1D arrays of size 1 <code>{a}</code>, <code>{b}</code>, <code>{c}</code> and <code>{d}</code> respectively ; <code>u</code>, <code>v</code> and <code>w</code> are 3-elements words which can be written as 1D arrays of size 3 <code>{u<sub>2</sub>,u<sub>1</sub>,u<sub>0</sub>}</code>, <code>{v<sub>2</sub>,v<sub>1</sub>,v<sub>0</sub>}</code> and <code>{w<sub>2</sub>,w<sub>1</sub>,w<sub>0</sub>}</code> respectively ; <code>t</code> is an array of two rows and three columns (array of two words each of size three) flattened to <code>{t<sub>1,2</sub>,t<sub>1,1</sub>,t<sub>1,0</sub>,t<sub>0,2</sub>,t<sub>0,1</sub>,t<sub>0,0</sub>}</code> ; <code>s</code> is a structure instance of type <code>MyStruct</code> as defined above.
+        </p>
+
+        <p class="text">
+            Duoary operators perform an operation on two operands placed on either sides. The operands must be homogenous in size and should be homogenous in logic type All duoary operators are applied bit-wise on arrays. Note that the expression "duoary operator" is a neologism used instead of "binary operator" to not be confused with operators applied to binary or ternary signals.
+        </p>
+
+        <table>
+            <tr>
+                <th>Operator</th>
+                <th>Symbol</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td>Binary AND</td>
+                <td><code>&</code></td>
+                <td style="text-align: left;"><code>a&b</code> describes <code>{a&b}</code> <br> <code>v&w</code> describes <code>{v<sub>2</sub>&w<sub>2</sub> , v<sub>1</sub>&w<sub>1</sub> , v<sub>0</sub>&w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Binary OR</td>
+                <td><code>|</code></td>
+                <td style="text-align: left;"><code>a|b</code> describes <code>{a|b}</code> <br> <code>v|w</code> describes <code>{v<sub>2</sub>|w<sub>2</sub> , v<sub>1</sub>|w<sub>1</sub> , v<sub>0</sub>|w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Binary XOR</td>
+                <td><code>^</code></td>
+                <td style="text-align: left;"><code>a^b</code> describes <code>{a^b}</code> <br> <code>v^w</code> describes <code>{v<sub>2</sub>^w<sub>2</sub> , v<sub>1</sub>^w<sub>1</sub> , v<sub>0</sub>^w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary AND</td>
+                <td><code>×</code></td>
+                <td style="text-align: left;"><code>a×b</code> describes <code>{a×b}</code> <br> <code>v×w</code> describes <code>{v<sub>2</sub>×w<sub>2</sub> , v<sub>1</sub>×w<sub>1</sub> , v<sub>0</sub>×w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary OR</td>
+                <td><code>+</code></td>
+                <td style="text-align: left;"><code>a+b</code> describes <code>{a+b}</code> <br> <code>v+w</code> describes <code>{v<sub>2</sub>+w<sub>2</sub> , v<sub>1</sub>+w<sub>1</sub> , v<sub>0</sub>+w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary CONS</td>
+                <td><code>⊠</code></td>
+                <td style="text-align: left;"><code>a⊠b</code> describes <code>{a⊠b}</code> <br> <code>v⊠w</code> describes <code>{v<sub>2</sub>⊠w<sub>2</sub> , v<sub>1</sub>⊠w<sub>1</sub> , v<sub>0</sub>⊠w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary ANY</td>
+                <td><code>⊞</code></td>
+                <td style="text-align: left;"><code>a⊞b</code> describes <code>{a⊞b}</code> <br> <code>v⊞w</code> describes <code>{v<sub>2</sub>⊞w<sub>2</sub> , v<sub>1</sub>⊞w<sub>1</sub> , v<sub>0</sub>⊞w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary MUL</td>
+                <td><code>⊗</code></td>
+                <td style="text-align: left;"><code>a⊗b</code> describes <code>{a⊗b}</code> <br> <code>v⊗w</code> describes <code>{v<sub>2</sub>⊗w<sub>2</sub> , v<sub>1</sub>⊗w<sub>1</sub> , v<sub>0</sub>⊗w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary SUM</td>
+                <td><code>⊕</code></td>
+                <td style="text-align: left;"><code>a⊕b</code> describes <code>{a⊕b}</code> <br> <code>v⊕w</code> describes <code>{v<sub>2</sub>⊕w<sub>2</sub> , v<sub>1</sub>⊕w<sub>1</sub> , v<sub>0</sub>⊕w<sub>0</sub>}</code></td>
+            </tr>
+        </table>
+
+        <p class="text">
+            Unary operators perform an operation on one operand. The operator is said prefix if it is placed before the operand, and postfix if it is placed after. For an array operand, the operand is said to distribute bit-wise when it is applied to each element of the array and results in an array of the same size, and is said to distribute by reduction when it is applied to the array as a whole and results in a single signal. Duoary operators can be used as unary operators forming a reduction functional group.
+        </p>
+
+        <table>
+            <tr>
+                <th>Operator</th>
+                <th>Symbol</th>
+                <th>Placement</th>
+                <th>Distribution</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td>Binary NOT</td>
+                <td><code>~</code></td>
+                <td>Prefix</td>
+                <td>Bit-wise</td>
+                <td style="text-align: left;"><code>~a</code> describes <code>{~a}</code> <br> <code>~w</code> describes <code>{~w<sub>2</sub> , ~w<sub>1</sub> , ~w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary NOT</td>
+                <td><code>¬</code></td>
+                <td>Prefix</td>
+                <td>Bit-wise</td>
+                <td style="text-align: left;"><code>¬a</code> describes <code>{¬a}</code> <br> <code>¬w</code> describes <code>{¬w<sub>2</sub> , ¬w<sub>1</sub> , ¬w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary PNOT</td>
+                <td><code>⊤</code></td>
+                <td>Prefix</td>
+                <td>Bit-wise</td>
+                <td style="text-align: left;"><code>⊤a</code> describes <code>{⊤a}</code> <br> <code>⊤w</code> describes <code>{⊤w<sub>2</sub> , ⊤w<sub>1</sub> , ⊤w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary NNOT</td>
+                <td><code>⊥</code></td>
+                <td>Prefix</td>
+                <td>Bit-wise</td>
+                <td style="text-align: left;"><code>⊥a</code> describes <code>{⊥a}</code> <br> <code>⊥w</code> describes <code>{⊥w<sub>2</sub> , ⊥w<sub>1</sub> , ⊥w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary ISP</td>
+                <td><code>⁺</code></td>
+                <td>Postfix</td>
+                <td>Bit-wise</td>
+                <td style="text-align: left;"><code>a⁺</code> describes <code>{a⁺}</code> <br> <code>w⁺</code> describes <code>{w<sub>2</sub>⁺ , w<sub>1</sub>⁺ , w<sub>0</sub>⁺}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary ISZ</td>
+                <td><code>⁰</code></td>
+                <td>Postfix</td>
+                <td>Bit-wise</td>
+                <td style="text-align: left;"><code>a⁰</code> describes <code>{a⁰}</code> <br> <code>w⁰</code> describes <code>{w<sub>2</sub>⁰ , w<sub>1</sub>⁰ , w<sub>0</sub>⁰}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary ISN</td>
+                <td><code>⁻</code></td>
+                <td>Postfix</td>
+                <td>Bit-wise</td>
+                <td style="text-align: left;"><code>a⁻</code> describes <code>{a⁻}</code> <br> <code>w⁻</code> describes <code>{w<sub>2</sub>⁻ , w<sub>1</sub>⁻ , w<sub>0</sub>⁻}</code></td>
+            </tr>
+            <tr>
+                <td>Binary AND</td>
+                <td><code>&</code></td>
+                <td>Prefix</td>
+                <td>Reduction</td>
+                <td style="text-align: left;"><code>&w</code> describes <code>{w<sub>2</sub> & w<sub>1</sub> & w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Binary OR</td>
+                <td><code>|</code></td>
+                <td>Prefix</td>
+                <td>Reduction</td>
+                <td style="text-align: left;"><code>|w</code> describes <code>{w<sub>2</sub> | w<sub>1</sub> | w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Binary XOR</td>
+                <td><code>^</code></td>
+                <td>Prefix</td>
+                <td>Reduction</td>
+                <td style="text-align: left;"><code>^w</code> describes <code>{w<sub>2</sub> ^ w<sub>1</sub> ^ w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary AND</td>
+                <td><code>×</code></td>
+                <td>Prefix</td>
+                <td>Reduction</td>
+                <td style="text-align: left;"><code>×w</code> describes <code>{w<sub>2</sub> × w<sub>1</sub> × w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary OR</td>
+                <td><code>+</code></td>
+                <td>Prefix</td>
+                <td>Reduction</td>
+                <td style="text-align: left;"><code>+w</code> describes <code>{w<sub>2</sub> + w<sub>1</sub> + w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary CONS</td>
+                <td><code>⊠</code></td>
+                <td>Prefix</td>
+                <td>Reduction</td>
+                <td style="text-align: left;"><code>⊠w</code> describes <code>{w<sub>2</sub> ⊠ w<sub>1</sub> ⊠ w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary ANY</td>
+                <td><code>⊞</code></td>
+                <td>Prefix</td>
+                <td>Reduction</td>
+                <td style="text-align: left;"><code>⊞w</code> describes <code>{w<sub>2</sub> ⊞ w<sub>1</sub> ⊞ w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary MUL</td>
+                <td><code>⊗</code></td>
+                <td>Prefix</td>
+                <td>Reduction</td>
+                <td style="text-align: left;"><code>⊗w</code> describes <code>{w<sub>2</sub> ⊗ w<sub>1</sub> ⊗ w<sub>0</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>Ternary SUM</td>
+                <td><code>⊕</code></td>
+                <td>Prefix</td>
+                <td>Reduction</td>
+                <td style="text-align: left;"><code>⊕w</code> describes <code>{w<sub>2</sub> ⊕ w<sub>1</sub> ⊕ w<sub>0</sub>}</code></td>
+            </tr>
+        </table>
+
+        <p class="text">
+            The conditional operator describes a multiplexer. The first operand is the condition, followed by two or three operands called paths. The syntax uses the <code>?</code> symbol after the condition and the <code>:</code> symbol to separate the paths. If the condition is a binary signal, it expects two paths, respectively for logic values $$1$$ and $$0$$ ; and if the condition is a ternary signal it expects three paths, respectively for logic values $$+$$, $$0$$ and $$-$$. A ternary condition can be used with binary paths and vice-versa, as long as the paths are homogenous in logic type. The paths can be singular signals, words, arrays or structures as long as they are homogenous in size. If the condition is a word or array instead of a singular signal, and homogenous in size with the operands, then the conditional operator is applied bit-wise. Examples of conditional operators and their resulting signal :
+        </p>
+        <table>
+            <tr>
+                <td style="text-align: left;">
+                    <code>a ? b : c</code> with <code>a</code> a binary signal describes <code>{a?b:c}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>a ? b : c : d</code> with <code>a</code> a ternary signal describes <code>{a?b:c:d}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>a ? v : w</code> with <code>a</code> a binary signal describes <code>{a?v<sub>2</sub>:w<sub>2</sub> , a?v<sub>1</sub>:w<sub>1</sub> , a?v<sub>0</sub>:w<sub>0</sub>}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>u ? v : w</code> with <code>u</code> a word of binary signals describes <code>{u<sub>2</sub>?v<sub>2</sub>:w<sub>2</sub> , u<sub>1</sub>?v<sub>1</sub>:w<sub>1</sub> , u<sub>0</sub>?v<sub>0</sub>:w<sub>0</sub>}</code>
+                </td>
+            </tr>
+        </table>
+
+        <p class="text">
+            The concatenation operator combines singular signals or words into words. The syntax for a concatenation functional group is a list of <code>,</code> comma-separated operands inside <code>{}</code> curly brackets. The order is important as the left most operand corresponds to MSDs (Most Significant Digits) and the rightmost operand corresponds to LSDs (Least Significant Digits). Remember that words and arrays are indexed LSB-first, hence rightmost-first. Note that while using arrays or structures in concatenation works, and flattens the signals into a word (row-after-row for arrays, and with the attributes of the structures concatenated in order of the structure declaration), it is not recommended for readability reasons. Examples of concatenation and the resulting signals :
+        </p>
+        <table>
+            <tr>
+                <td style="text-align: left;">
+                    <code>{a,b,c}</code> describes <code>{a,b,c}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>{a,w}</code> describes <code>{a,w<sub>2</sub>,w<sub>1</sub>,w<sub>0</sub>}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>{w,a}</code> describes <code>{w<sub>2</sub>,w<sub>1</sub>,w<sub>0</sub>,a}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>{v,w}</code> describes <code>{v<sub>2</sub>,v<sub>1</sub>,v<sub>0</sub>,w<sub>2</sub>,w<sub>1</sub>,w<sub>0</sub>}</code>
+                </td>
+            </tr>
+        </table>
+
+        <p class="text">
+            The vectorization operator repeats a singular signal or a word into a longer word of a given size. The syntax for a vectorization functional group is the size of the desired resulting signal, followed by the <code>'</code> apostrophe symbol, and finally the signal to vectorize. Examples of vectorization and the resulting signals :
+        </p>
+        <table>
+            <tr>
+                <td style="text-align: left;">
+                    <code>3'a</code> describes <code>{a,a,a}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>6'w</code> describes <code>{w<sub>2</sub>,w<sub>1</sub>,w<sub>0</sub>,w<sub>2</sub>,w<sub>1</sub>,w<sub>0</sub>}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>4'w</code> describes <code>{w<sub>0</sub>,w<sub>2</sub>,w<sub>1</sub>,w<sub>0</sub>}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>2'w</code> describes <code>{w<sub>1</sub>,w<sub>0</sub>}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>5'{a,b}</code> describes <code>{b,a,b,a,b}</code>
+                </td>
+            </tr>
+        </table>
+
+        <p class="text">
+            Subscripting is used to access elements of words and arrays. The syntax for subscripting is the object to subscript, followed by the indexing in <code>[]</code> square brackets. The indexing can be element-based with a single number, or ranged with a <code>:</code> colon separating the start index on the left and end index on the right. In the case of element indexing, the result is a singular signal when subscripting a word, and a word when subscripting an array. In the case of ranged indexing, the result is a sub-word when subscripting a word, and a sub-array when subscripting an array. Indexing starts at 0 for the first element, which corresponds to the LSD and rightmost element. A negative index starts with the last element and counts backwards. An index greater than the size of the object wraps around (the index is modulo the size of the object). In the case of ranged indexing, if the start index (on the left) if greater than the end index (on the right), the elements of the result are in opposite order to the original object. In the case of ranged indexing, the start or end index can be omitted and will default to the start or end of the object respectively. Examples of subscripting :
+        </p>
+        <table>
+            <tr>
+                <td style="text-align: left;">
+                    <code>w[0]</code> describes <code>{w<sub>0</sub>}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>w[1]</code> describes <code>{w<sub>1</sub>}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>w[-1]</code> describes <code>{w<sub>2</sub>}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>w[3]</code> describes <code>{w<sub>0</sub>}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>w[0:1]</code> describes <code>{w<sub>1</sub>,w<sub>0</sub>}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>w[1:]</code> describes <code>{w<sub>2</sub>,w<sub>1</sub>}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>w[:1]</code> describes <code>{w<sub>1</sub>,w<sub>0</sub>}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>w[2:0]</code> describes <code>{w<sub>0</sub>,w<sub>1</sub>,w<sub>2</sub>}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>w[-1:0]</code> describes <code>{w<sub>0</sub>,w<sub>1</sub>,w<sub>2</sub>}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>{a,b,c}[0]</code> describes <code>{c}</code>
+                </td>
+            </tr>
+        </table>
+
+        <p class="text">
+            The member access operator is used to assign and access attributes of a structure. The syntax is the instance of a structure, followed by the <code>.</code> symbol and finally the name of the attribute to access. In the future, this operator will also be used to access input and output signals of module instances, but this feature is not implemented yet. Examples of member access :
+        </p>
+        <table>
+            <tr>
+                <td style="text-align: left;">
+                    <code>s.attribute</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>s.word_attr[2]</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>s.struct_attr.var</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>s.struct_array_attr[0].var</code>
+                </td>
+            </tr>
+        </table>
+
+        <p class="text">
+            Finally, constants (hardcoded values) can be used in expressions, either binary or ternary, and in many encodings. The syntax for a constant is the following : the number of digits of the constant, then the encoding of the constant, then the <code>$</code> symbol, then the value of the constant with the appropriate encoding. The encoding is noted with letters describing the logic encoding and and optional base encoding. The logic encodings are : <code>b</code> for binary (0 and 1), <code>t</code> for balanced ternary (0, 1 and i for -1), and <code>u</code> for unbalanced ternary (0,1 and 2) coded in balanced ternary ($$u0=t-$$, $$u1=t0$$ and $$u2=t+$$). The base encodings are : <code>d</code> for decimal (0 to 9), <code>x</code> for hexadecimal (0 to f), <code>o</code> for octal (0 to 7), <code>h</code> for heptavintinal (0 to z by skipping certain letters as described by Douglas W. Jones), <code>n</code> for nonal (0 to 8). Underscores can be used when writing the value of the constant as a separator. Signed binary constants are not yet implemented and must be written manually. Examples of constants :
+        </p>
+        <table>
+            <tr>
+                <td style="text-align: left;">
+                    <code>1b$0</code> describes <code>{0}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>4b$0101</code> describes <code>{0,1,0,1}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>8b$0101_1100</code> describes <code>{0,1,0,1,1,1,0,0}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>3t$01i</code> describes <code>{0,+,-}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>3u$012</code> describes <code>{-,0,+}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>4bd$13</code> describes <code>{1,1,0,1}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>6bo$27</code> describes <code>{0,1,0,1,1,1}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>8bx$4f</code> describes <code>{0,1,0,0,1,1,1,1}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>5td$19</code> describes <code>{0,+,-,0,+}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>3tn$6</code> describes <code>{+,-,0}</code>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <code>3tn$-8</code> describes <code>{-,0,+}</code>
+                </td>
+            </tr>
+        </table>
+
+        <h3>Missing operators</h3>
+
+        <p class="text">
+            Note that there are missing operators compared to other Hardware Description Languages or programming languages.
+        </p>
+
+        <p class="text">
+            First, expressions that are not practically synthesizable such as dynamic subscripting <code>a[b]</code> and dynamic-size vectorization <code>a'b</code> are not possible.
+        </p>
+
+        <p class="text">
+            Shift operations can be easily expressed with subscripting and concatenation :
+        </p>
+        <table>
+            <tr>
+                <th>Shifting</th>
+                <th>Fill</th>
+                <th>Expression</th>
+                <th>Result</th>
+            </tr>
+            <tr>
+                <td>$$w<<1$$</td>
+                <td>Padding</td>
+                <td><code>{w[0:1],1b&0}</code></td>
+                <td><code>{w<sub>1</sub>,w<sub>0</sub>,0}</code></td>
+            </tr>
+            <tr>
+                <td>$$w<<1$$</td>
+                <td>Wrapping</td>
+                <td><code>{w[0:1],w[-1]}</code></td>
+                <td><code>{w<sub>1</sub>,w<sub>0</sub>,w<sub>2</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>$$w>>1$$</td>
+                <td>Padding</td>
+                <td><code>{1b&0,w[1:]}</code></td>
+                <td><code>{0,w<sub>2</sub>,w<sub>1</sub>}</code></td>
+            </tr>
+            <tr>
+                <td>$$w>>1$$</td>
+                <td>Wrapping</td>
+                <td><code>{w[0],w[1:]}</code></td>
+                <td><code>{w<sub>0</sub>,w<sub>2</sub>,w<sub>1</sub>}</code></td>
+            </tr>
+        </table>
+
+        <p class="text">
+            Word-wise arithmetic operations (add, subtract, multiply, divide, modulo, power, increment, decrement) are complex in hardware and there exists many implementations (such as ripple-carry adder and carry-lookahead adder) with different properties (latency, size, etc). Therefore, those operations should be implemented through a custom module. TernaryVerilog is therefore closer to circuit description than Verilog which is more abstract and leaves more of the work to the synthesizer. For the same reason, comparisons (greater than, greater or equal to, less than, less or equal to) are not available. The comparisons equal and not-equal are easy enough to implement with gates.
+        </p>
+
+        <h3>Synchronous signal assignment</h3>
+
+        <p class="text">
+            Register assignments are described with synchronous assignment blocks using the <code>posedge</code> or <code>negedge</code> keyword for rising-edge-triggered or falling-edge-triggered flip-flops, followed by the trigger signal. Multiple synchronous assignments can be written implemented in a synchronous assignment block. Example of the syntax :
+        </p>
+        <pre class="code"><code>
+<span class="keyword">pinin</span> <span class="type">binary</span> clk;
+<span class="keyword">logic</span> <span class="type">binary</span> a;
+<span class="keyword">logic</span> <span class="type">binary</span> b;
+<span class="keyword">register</span> <span class="type">binary</span> res1;
+<span class="keyword">register</span> <span class="type">binary</span> res2;
+
+<span class="keyword">posedge</span> clk {
+    res1 = a & b;
+    res2 = a | b;
+}
+        </code></pre>
+
+        <p class="text">
+            Note that the trigger signal cannot be an expression such as <code>clk & reset</code> or <code>triggers[0]</code>. If this is necessary, a separate logic signal should be declared and assigned then used as a trigger.
+        </p>
+
+        <p class="text">
+            Note that circular assignments with the previous value of the register inside the synchronous assignment block are not allowed, that each register can be assigned in only one synchronous assignment block even with different trigger signals, and that there is no if-else syntax. Those restrictions exist to make the code easier to read and to make compilation much easier. The recommended workaround is to declare and assign a logic signal for the next value of the register. For example, if a register <code>res</code> is triggered by the rising edge of the clock signal <code>clk</code>, needs to be initialized to $$0$$ when the <code>reset</code> control signal is true, and updated to the value of $$a|b$$ if the enable signal <code>en</code> is true, else it keeps its previous value :
+        </p>
+        <pre class="code"><code>
+<span class="keyword">pinin</span>    <span class="type">binary</span> clk;
+<span class="keyword">pinin</span>    <span class="type">binary</span> reset;
+<span class="keyword">logic</span>    <span class="type">binary</span> en;
+<span class="keyword">logic</span>    <span class="type">binary</span> a;
+<span class="keyword">logic</span>    <span class="type">binary</span> b;
+<span class="keyword">register</span> <span class="type">binary</span> res;
+<span class="keyword">logic</span>    <span class="type">binary</span> next_res;
+
+next_res = reset ? <span class="number">1b$0</span>
+            : en ? (a | b)
+                 : res;
+
+<span class="keyword">posedge</span> clk {
+    res = next_res;
+}
+        </code></pre>
+
+        <h3>Modules and instantiation</h3>
+
+        <p class="text">
+            A module is a circuit with input, outputs and internal signals with their assignments. Modules are used for code factorization, abstraction and structuring. Similar to a class in programming languages, a module needs to be declared, then any number of instances of the module can be created.
+        </p>
+        <p class="text">
+            A module is declared with the <code>module</code> keyword followed by the name of the module and the block containing all the signal declarations and assignments. Input and output signals are declared like regular signals using the <code>input</code> and <code>output</code> keywords. They can be declared anywhere in the code but it is recommended to declare them at the top of the module. Assignments inside the module can only use the signals declared inside the module and the input and output signals of the module. The module can also include instances of other modules and synchronous assignment blocks.
+        </p>
+        <p class="text">
+            Instance of a module are create using the <code>instance</code> keyword, followed by the name of the module, then by the unique name of the instance, and finally the block of connections. Connections describe how the input and output signals of the instance of the module connect to signals outside the module. Connections work like regular assignments, with a <code>.</code> symbol at the start of the line, thus they support RHS expressions with operations.
+        </p>
+        <p class="text">
+            Here is an example of two module declarations, with one module instantiated inside the other.
+        </p>
+        <pre class="code"><code>
+<span class="keyword">module</span> <span class="module">MyFirstModule</span> {
+    <span class="keyword">input</span>  <span class="type">binary</span> clk;
+    <span class="keyword">input</span>  <span class="type">binary</span> i_a;
+    <span class="keyword">input</span>  <span class="type">binary</span> i_b;
+    <span class="keyword">output</span> <span class="type">binary</span> o_q;
+
+    <span class="keyword">logic</span> <span class="type">binary</span> c;
+
+    c = a & b;
+    o_q = ~c;
+}
+
+<span class="keyword">module</span> <span class="module">MySecondModule</span> {
+    <span class="keyword">input</span>  <span class="type">binary</span>    clk;
+    <span class="keyword">input</span>  <span class="type">binary</span>    reset;
+    <span class="keyword">input</span>  <span class="type">binary</span>[<span class="number">2</span>] i_w;
+    <span class="keyword">output</span> <span class="type">binary</span>    o_res;
+
+    <span class="keyword">logic</span>    <span class="type">binary</span> n_res;
+    <span class="keyword">register</span> <span class="type">binary</span>   res;
+
+    <span class="keyword">logic</span> <span class="type">binary</span> q;
+    <span class="keyword">instance</span> <span class="module">MyFirstModule</span> firstInstance {
+        .clk = clk;
+        .i_a = i_w[0];
+        .i_b = i_w[1];
+        .o_q = q;
+    }
+
+    n_res = reset ? <span class="number">1b$0</span> : q;
+    <span class="keyword">posedge</span> clk {
+        res = n_res;
+    }
+    o_res = res;
+}
+
+<span class="keyword">pinin</span> <span class="type">binary</span>    clk;
+<span class="keyword">pinin</span> <span class="type">binary</span>    reset;
+<span class="keyword">logic</span> <span class="type">binary</span>[<span class="number">2</span>] v;
+<span class="keyword">logic</span> <span class="type">binary</span>    result;
+
+<span class="keyword">instance</span> <span class="module">MySecondModule</span> mainInstance {
+    .clk   = clk;
+    .reset = reset;
+    .i_w   = v;
+    .o_res = result;
+}
+        </code></pre>
 
         <h3>File structure</h3>
 
@@ -57,33 +766,68 @@
             The former uses the Jinja2 <code>include</code> preprocessor statement and is equivalent to copy-pasting the content of one file into another. Therefore, a single TV file is generated. This method also allows for including code anywhere : inside module declarations, even in assignment statements. Moreover, using the <code>with</code> preprocessor statement, we can pass parameter values to the included code, thus allowing for templates. This is explained in more details in the preprocessor section.
         </p>
         <p class="text">
-            The latter uses include statements at the root of the file, preferably at the top for readability. The file included is pushed to the compilation list. The files in the list are compiled sequentially in-order.
+            The latter uses include statements at the root of the file, preferably at the top for readability. The file included is pushed to the compilation list. The files in the list are compiled sequentially in-order. Example :
         </p>
+        <pre class="code"><code>
+<span class="comment">// file2.tv</span>
+<span class="keyword">struct</span> <span class="module">MyStruct</span> {
+    <span class="type">binary</span> attr;
+}
+        </code></pre>
+        <pre class="code"><code>
+<span class="comment">// main.tv</span>
+<span class="keyword">include</span> <span class="preprocessor">"file2.tv"</span>;
+<span class="keyword">logic</span> <span class="type">MyStruct</span> s;
+        </code></pre>
         <p class="text">
             As the compiler works by stages with global variables and doesn't care about order of declaration (only scope is important), using both methods, a module or structure declared in one file is accessible in all files.
         </p>
 
         <h3>Preprocessor</h3>
 
-        <h3>Signal declaration</h3>
-
         <p class="text">
-
+            The preprocessor uses the Jinja2 framework and syntax. When compiling a TernaryVerilog project, if the preprocessor is enabled, config files can be provided to define constants used by the preprocessor. Those config files use the .tcfg extension but are equivalent to Python scripts as described in the Jinja2 documentation. Therefore Python functions can be used including libraries and file input.
         </p>
-
+        <p class="text">
+            For more information about Jinja2 preprocessing, please refer to Jinja2's documentation. Here are some simple examples of preprocessing :
+        </p>
         <pre class="code"><code>
-logic binary foo;
+<span class="comment">// parameters.tcfg</span>
+PARAM_VAR = <span class="number">5</span>
+PARAM_LIST = <span class="keyword">range</span>(PARAM_VAR)
+PARAM_BOOL = <span class="number">True</span>
         </code></pre>
-
-        <h3>Modules and instantiation</h3>
-
-        <p class="text">
-        </p>
-
         <pre class="code"><code>
-<span class="keyword">module</span> <span class="module">MyModule</span> {
-    <span class="keyword">input</span> <span class="type">binary</span> clk;
-}
+<span class="comment">// main.tv</span>
+<span class="keyword">logic</span> <span class="type">binary</span> a;
+<span class="keyword">logic</span> <span class="type">binary</span> b;
+<span class="keyword">logic</span> <span class="type">binary</span>[<span class="preprocessor">{{PARAM_VAR}}</span>] q;
+
+b = <span class="preprocessor">{%if PARAM_BOOL%}</span> <span class="number">1b$0</span> <span class="preprocessor">{%else%}</span> a <span class="preprocessor">{%endif%}</span>;
+
+<span class="preprocessor">{%for idx in PARAM_LIST%}</span>
+<span class="keyword">logic</span> <span class="type">binary</span> res_<span class="preprocessor">{{idx}}</span>;
+res_<span class="preprocessor">{{idx}}</span> = q[<span class="preprocessor">{{idx}}</span>] & b;
+<span class="preprocessor">{%endfor%}</span>
+        </code></pre>
+        <pre class="code"><code>
+<span class="comment">// main.tv after preprocessing</span>
+<span class="keyword">logic</span> <span class="type">binary</span> a;
+<span class="keyword">logic</span> <span class="type">binary</span> b;
+<span class="keyword">logic</span> <span class="type">binary</span>[<span class="number">5</span>] q;
+
+b = <span class="number">1b$0</span>;
+
+<span class="keyword">logic</span> <span class="type">binary</span> res_0;
+res_0 = q[<span class="number">0</span>] & b;
+<span class="keyword">logic</span> <span class="type">binary</span> res_1;
+res_1 = q[<span class="number">1</span>] & b;
+<span class="keyword">logic</span> <span class="type">binary</span> res_2;
+res_2 = q[<span class="number">2</span>] & b;
+<span class="keyword">logic</span> <span class="type">binary</span> res_3;
+res_3 = q[<span class="number">3</span>] & b;
+<span class="keyword">logic</span> <span class="type">binary</span> res_4;
+res_4 = q[<span class="number">4</span>] & b;
         </code></pre>
 
 
@@ -94,6 +838,12 @@ logic binary foo;
         <a id="indexlink" href="index.html" style="margin-top: 60px">
             Go back to the list of projects
         </a>
+        <script>
+            renderMathInElement(document.body,{delimiters: [
+                {left: "$$", right: "$$", display: false},
+                {left: "££", right: "££", display: true}
+            ]});
+        </script>
     </div>
 </body>
 </html>
