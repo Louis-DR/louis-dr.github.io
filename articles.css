@@ -192,6 +192,10 @@ td b {
     display:inline-block;
     width:90%;
 }
+.image_huge {
+    display:inline-block;
+    width:98%;
+}
 
 .image_tall_smaller {
     display:inline-block;
@@ -423,6 +427,7 @@ code>.comment { color: gray; }
         box-shadow: 0 4px 8px 0 rgba(255,255,255, 0.1), 0 6px 20px 0 rgba(255,255,255, 0.1);
         background-blend-mode: screen;
         background-color: rgba(255, 255, 255, 0.12);
+        background-color: #E1E1E1;
     }
 
     .dark_invert {

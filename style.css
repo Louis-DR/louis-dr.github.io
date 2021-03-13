@@ -82,6 +82,14 @@ h1,h2,h3,h4,h5,h6 {
     opacity: 1;
 }
 
+.favcards {
+    justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    grid-gap: 30px;
+    margin-bottom: 80px;
+}
+
 .cards {
     justify-content: center;
     display: grid;

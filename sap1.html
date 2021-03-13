@@ -13,8 +13,7 @@
         <a id="indexlink" href="index.html" style="margin-bottom: 30px">
             Go back to the list of projects
         </a>
-        <img class="banner_img dark_visible" src="sap1.png" alt="">
-        <img class="banner_img light_visible" src="sap1-light.png" alt="">
+        <img class="banner_img dark_invert_lite" src="sap1.jpg" alt="">
         <div id="page_title">
             Binary and Ternary SAP1 Processor & Testbench
         </div>
@@ -27,9 +26,216 @@
         </p>
 
         <p class="text">
-            This article is still a WIP ! Sorry about that. You can check out my other articles.
+            In this project, I implemented my first architecture in both binary and ternary logic using my TernaryVerilog hardware description language and tool suite.
         </p>
 
+        <h2>Malvino's SAP1</h2>
+
+        <p class="text">
+            The Simple-As-Possible 1 (SAP1) processor is a very basic architecture introduced by Albert Paul Malvino in his book <i>Digital Computer Electronics</i> to explain how processors and their most fundamental components work.
+        </p>
+        <div class="center_block">
+            <img class="image_tall_normal dark_invert_brighter" src="SAP1/sap1_block.svg" alt="">
+            <p class="caption">
+                SAP1 block diagram
+            </p>
+        </div>
+        <p class="text">
+            The instruction set presented by Malvino is very limited. Instructions are encoded into one byte, with 4 bits for the opcode and 4 bits for the operand. While it is enough to implement up to 16 instructions, Malvino only proposed 5 instructions : LDA, ADD, SUB, OUT and HLT which I will explain later. This instruction set doesn't even contain conditional and unconditional jumps or store instructions (it is not Turing complete).
+        </p>
+        <p class="text">
+            Additionally, as RAM addresses are encoded on 4 bits, both the program and the data have to fit into 16 bytes. Hence, the SAP1 is closer to a Von Neumann architecture. The RAM is accessed through two registers : the Memory Address Register (MAR) is used to set which RAM address is read ; the Memory Data Register (MDR, W register, or RAM Out register) is used to access the value at the address pointed to by the MAR.
+        </p>
+        <p class="text">
+            The SAP1 can perform additions and subtraction of unsigned 8-bit numbers. The two registers used for operations are the accumulator (register A) and the operand register (register B). A value can be directly written from RAM to the accumulator. When performing an arithmetic operation, the value of the operand is written to the B register, then the result of the ALU is written to the accumulator. The ALU implemented here is a simple ripple-carry adder. The third register is the Out register, used to display the result of calculations.
+        </p>
+        <p class="text">
+            The Program Counter (PC) is incremented to read the next instruction. It can also be halted using the HLT instruction to stop execution of the program (when the result is calculated for instance). For each instruction, the Program Counter is used to read the instruction in RAM. The instruction is written to the Instruction Register (IR) where it is decoded.
+        </p>
+        <p class="text">
+            All components are connected around the central bus which is used for every data transfer. For instance, to get a value from register A to register Out, register A is set to output its value on the bus and the register Out is set to read the value from the bus at the next rising edge of the clock cycle.
+        </p>
+        <p class="text">
+            Execution of instructions is sequential and is performed in multiple steps (hence multiple cycles). In the original architecture, each instruction takes six steps to execute. The first three steps are common to each instruction and correspond to the Fetch sequence :
+        </p>
+        <ul>
+            <li>T1 : MAR ← PC — The address of the next instruction is copied from the Program Counter to the Memory Address Register</li>
+            <li>T2 : PC ← PC+1 — The value of the Program Counter is incremented for the next instruction</li>
+            <li>T3 : IR ← RAM — The instruction at the correct RAM address is written to the Instruction Register</li>
+        </ul>
+        <p class="text">
+            When the instruction is in the Instruction Register, the opcode is read and decoded. The correct sequence of control signals is emitted during the next three steps, T4, T5 and T6, this is the Execution sequence and depends on the instruction. The execution sequences for each instruction are detailed below alongside the instructions I added.
+        </p>
+
+        <h2>Improved SAP1</h2>
+
+        <p class="text">
+            Malvino might have wanted to keep its architecture really as simple as possible. However, we can make a few modifications to make the processor more interesting.
+        </p>
+        <div class="center_block">
+            <img class="image_tall_bigger dark_invert" src="SAP1/sap1.svg" alt="">
+            <p class="caption">
+                SAP1 architecture
+            </p>
+        </div>
+        <p class="text">
+            First, the execution cycle can be improved in two ways. During the fetch sequence, incrementing the Program Counter doesn't utilize the bus and therefore can be performed simultaneously with the third step. This reduces the fetch sequence from three to two cycles. Then, not all instructions require three cycles for their execution sequence. We can stop the execution at different steps for each instruction and avoid this waste.
+        </p>
+        <p class="text">
+            And most importantly, we can add useful instructions to the instruction set. The main type of instruction missing are unconditional jumps and conditional branches. The latter require a condition depending on the result of the last operation of the ALU. Therefore, I added two flags : the Overflow and Zero flags. The flags are 1-bit registers updated after each operation of the ALU at the same time as the update of the Accumulator.
+        </p>
+        <p class="text">
+            The other instruction I added are for convenience : load immediate, add immediate and subtract immediate with 4-bit value operand ; and compare and compare immediate to update the flags without changing the value of the Accumulator.
+        </p>
+        <table>
+            <tr>
+                <th>Instruction</th>
+                <th>Mnemonic</th>
+                <th>Execution sequence</th>
+            </tr>
+            <tr>
+                <td>No operation</td>
+                <td>NOP</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Stop the processor</td>
+                <td>HLT</td>
+                <td style="padding: 5px 0px; text-align: left;">
+                    T3 : HLT
+                </td>
+            </tr>
+            <tr>
+                <td>Load RAM to A</td>
+                <td>LDA</td>
+                <td style="padding: 5px 0px; text-align: left;">
+                    T3 : MAR ← IR<br>
+                    T4 : A ← RAM
+                </td>
+            </tr>
+            <tr>
+                <td>Load immediate to A</td>
+                <td>LDA</td>
+                <td style="padding: 5px 0px; text-align: left;">
+                    T3 : A ← IR
+                </td>
+            </tr>
+            <tr>
+                <td>Store A to RAM</td>
+                <td>STA</td>
+                <td style="padding: 5px 0px; text-align: left;">
+                    T3 : MAR ← IR<br>
+                    T4 : RAM ← A
+                </td>
+            </tr>
+            <tr>
+                <td>Output result</td>
+                <td>OUT</td>
+                <td style="padding: 5px 0px; text-align: left;">
+                    T3 : OUT ← A
+                </td>
+            </tr>
+            <tr>
+                <td>Add</td>
+                <td>ADD</td>
+                <td style="padding: 5px 0px; text-align: left;">
+                    T3 : MAR ← IR<br>
+                    T4 : B ← RAM<br>
+                    T5 : A ← ALU & F ← ALU
+                </td>
+            </tr>
+            <tr>
+                <td>Add immediate</td>
+                <td>ADI</td>
+                <td style="padding: 5px 0px; text-align: left;">
+                    T3 : B ← IR<br>
+                    T4 : A ← ALU & F ← ALU
+                </td>
+            </tr>
+            <tr>
+                <td>Subtract</td>
+                <td>SUB</td>
+                <td style="padding: 5px 0px; text-align: left;">
+                    T3 : MAR ← IR<br>
+                    T4 : B ← RAM<br>
+                    T5 : A ← ALU & F ← ALU
+                </td>
+            </tr>
+            <tr>
+                <td>Subtract immediate</td>
+                <td>SUI</td>
+                <td style="padding: 5px 0px; text-align: left;">
+                    T3 : B ← IR<br>
+                    T4 : SUB & A ← ALU & F ← ALU
+                </td>
+            </tr>
+            <tr>
+                <td>Compare</td>
+                <td>CMP</td>
+                <td style="padding: 5px 0px; text-align: left;">
+                    T3 : MAR ← IR<br>
+                    T4 : B ← RAM<br>
+                    T5 : F ← ALU
+                </td>
+            </tr>
+            <tr>
+                <td>Compare immediate</td>
+                <td>CMI</td>
+                <td style="padding: 5px 0px; text-align: left;">
+                    T3 : B ← IR<br>
+                    T4 : SUB & F ← ALU
+                </td>
+            </tr>
+            <tr>
+                <td>Jump</td>
+                <td>JMP</td>
+                <td style="padding: 5px 0px; text-align: left;">
+                    T3 : PC ← IR
+                </td>
+            </tr>
+            <tr>
+                <td>Branch if overflow</td>
+                <td>JIO</td>
+                <td style="padding: 5px 0px; text-align: left;">
+                    T3 : (OF flag) ? PC ← IR
+                </td>
+            </tr>
+            <tr>
+                <td>Branch if zero</td>
+                <td>JIZ</td>
+                <td style="padding: 5px 0px; text-align: left;">
+                    T3 : (Z flag) ? PC ← IR
+                </td>
+            </tr>
+        </table>
+
+        <p class="text">
+            Note that the instruction set is made of 15 instructions. This means we still have one opcode left for an additional instruction. However, I could not find an interesting instruction without adding a whole new component to the architecture.
+        </p>
+
+        <h2>Ternary SAP1</h2>
+
+        <p class="text">
+            What's the point of using TernaryVerilog to implement a binary architecture ? So I also created a variant of the improved SAP1 using ternary logic.
+        </p>
+        <p class="text">
+            This variant is a 6-trit processor working with 3-trit addresses. This allows for 27 lines of code instead of 16 for the binary version, and computation with signed numbers in the -364 to +364 range (instead of only unsigned values from 0 to 255). To be fully compatible, this variant has the same instruction set as the binary version. The opcode is encoded on three trits instead of four bits. Thus we could fit up to 27 instruction opcodes.
+        </p>
+        <p class="text">
+            Ternary logic allows us to simplify the control signals, as well as change the zero flag to a sign flag. However, this is not used for the branch instructions.
+        </p>
+        <p class="text">
+            The advantages of ternary logic cannot be appreciated just yet. A satisfying comparison would take into account power (simulating static and dynamic power consumption), performance (here only the range of values differs as the instruction set and execution sequences are the same) and area (simplified to the number of transistors). However, this requires a working circuit optimizer, as we saw in a previous article that a ternary ALU could be made faster and smaller through ternary algebra optimization.
+        </p>
+
+        <h2>Testbench</h2>
+
+        <p class="text">
+            The secondary purpose of this project was to develop and test the TernaryVerilog testbench Python library. As stated in the previous article on the subject, it allows the user to initialize the processor and visualize the state of the processor while simulating it cycle by cycle.
+        </p>
+        <p class="text">
+            Here are animations of the binary and ternary variants of the improved SAP1 architecture running a simple program to compute the Fibonacci sequence, simulated at 5Hz.
+        </p>
         <div class="center_block">
             <video width="49%" controls loop autoplay>
                 <source src="SAP1/SAP1-binary-5Hz.mp4" type="video/mp4">
@@ -51,3 +257,4 @@
     </div>
 </body>
 </html>
+

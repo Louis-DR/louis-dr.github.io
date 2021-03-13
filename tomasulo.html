@@ -22,11 +22,15 @@
         </div>
 
         <p class="text">
-            This article is still a WIP ! Sorry about that. You can check out my other articles.
+            This small project was an assignment for ECE6100 - Advanced Computer Architecture at Georgia Tech. The task was to implement Tomasulo's algorithm, an instruction scheduling algorithm that allows for Out-Of-Order execution and parallelization of operations on multiple functional units. I implemented the algorithm in Python. The simulator is heavily configurable and outputs to a text file a table with each row describing the state of the processor at one cycle.
         </p>
 
+        <h2>The algorithm</h2>
+
+        <h3>Overview of the architecture</h3>
+
         <p class="text">
-            This small project was an assignment for ECE6100 - Advanced Computer Architecture at Georgia Tech. The task was to implement Tomasulo's algorithm, an instruction scheduling algorithm that allows for Out-Of-Order execution and parallelization of operations on multiple functional units. I implemented the algorithm in Python.
+            The processor is based on the Tomasulo’s architecture. The instructions are loaded into an instruction queue waiting to be issued to reservation stations. Reservation stations are grouped into three banks, one for add and subtract operations, one for multiply and divide operations, and one for load and store operations. Instructions in reservation stations wait for their operands to be resolved (from the register bank or the common data bus) and for an available functional unit to begin execution. The functional units are either dedicated to add/subtract operations, or multiply/divide operations (with a parameter to differentiate functional units for multiply and divide operations). The load/store reservation stations are arranged in a circular buffer (table with read and write pointers) and the operations in this buffer are handled sequentially in order.
         </p>
 
         <div class="center_block">
@@ -35,6 +39,272 @@
                 Tomasulo's algorithm
             </p>
         </div>
+
+        <p class="text">
+            Each entry in the reservation stations for addition, subtraction, multiplication and division operations contains the mnemonics of the function, the tag (source) of each operand, the value of each operand when available, and a reference to the functional unit when being executed.
+        </p>
+
+        <p class="text">
+            Each entry in a functional unit contains the mnemonics of the function, the value of each operand, the result of the operation at the end of execution, a reference to the reservation station and a execution countdown initiated to the duration of the operation in question at the start of execution, then decremented each cycle down to zero when the execution is over and the result is ready to be broadcast.
+        </p>
+
+        <p class="text">
+            The load/store circular reservation station bank is implemented with a read and a write pointer in a linear table. Both pointers are initialized to the first element. Then, when a memory manipulation instruction is issued, it is placed in the reservation station pointed to by the write pointer (if it is available, otherwise this means the buffer is full), and the write pointer is incremented. When an instruction is completed and its result is broadcast, the reservation station is emptied and the read pointer is incremented. Each entry of those reservation stations contains the mnemonic of the instruction, the sink (target, register or memory), the source (‘D’ for direct value, ‘F#’ for register #, ‘M#’ for memory), the value of the source when available and the execution timer similar to the functional units.
+        </p>
+
+        <p class="text">
+            The common data bus contains simply the tag of the reservation station broadcasting its result, and the value.
+        </p>
+
+        <p class="text">
+            Each entry of the register bank contains the value currently held by the register, and if an instruction in the pipeline targets this register, then the tag of the corresponding reservation station.
+        </p>
+
+        <p class="text">
+            The memory is implemented with a Python dictionary. The key is the memory address and the value is the number stored at that address. If the address read is not in the dictionary (it has not been written to yet), then the value of zero is returned.
+        </p>
+
+        <h3>The instruction set</h3>
+
+        <p class="text">
+            This processor model uses a very simplified instruction set. Each line of assembly code starts with a three letters mnemonic followed by operands separated by spaces. Most operands can either be a direct value (42, -10), a register reference (F0, F7) or a memory address (M0, M512). Note that the processor also supports relative memory addressing (M512-16, M512+16).
+        </p>
+
+        <p class="text">
+            The ADD, SUB, MUL and DIV instructions use the same syntax and allow addition, subtraction, multiplication and division operations. The first operand provided is the target register. The next two operands (direct value or register) are the arguments.
+        </p>
+
+        <p class="text">
+            The LOD (load) operation can also be used to write a value to a register. The first operand is the target register. The second operand is the source, either a direct value, another register, or a memory address.
+        </p>
+
+        <p class="text">
+            The STR (store) operation is used to write to memory. The first operand is the memory address, and the second operand is the source (direct value, register or memory address).
+        </p>
+
+        <p class="text">
+            Finally, the NOP (no-operation) instruction doesn’t take any operand and is simply discarded when issued. It can be used to wait one cycle.
+        </p>
+
+        <p class="text">
+            There is no branching instruction as this assignment was focused on Tomasulo's algorithm only and not other parts of the pipeline. There is no binary operations either but implementing the corresponding Functional Units and Reservation Stations is trivial and not interesting.
+        </p>
+
+        <h3>The parameters</h3>
+
+        <p class="text">
+            At the top of the source file of the program is a list of parameters that can be adjusted with their default value (that will be used for the examples, except with exceptions explicitly mentioned later) and description.
+        </p>
+
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Default value</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>IQ_SIZE</td>
+                <td>6</td>
+                <td style="text-align: left;">Size of the instruction queue</td>
+            </tr>
+            <tr>
+                <td>REG_SIZE</td>
+                <td>8</td>
+                <td style="text-align: left;">Size of the register bank</td>
+            </tr>
+            <tr>
+                <td>LODD_CYCLES</td>
+                <td>0</td>
+                <td style="text-align: left;">Execution time of a direct load (val2reg)</td>
+            </tr>
+            <tr>
+                <td>LOD_CYCLES</td>
+                <td>3</td>
+                <td style="text-align: left;">Execution time of a load (reg2reg or ram2reg)</td>
+            </tr>
+            <tr>
+                <td>STR_CYCLES</td>
+                <td>4</td>
+                <td style="text-align: left;">Execution time of a store (val2ram, reg2ram or ram2ram)</td>
+            </tr>
+            <tr>
+                <td>AS_CYCLES</td>
+                <td>2</td>
+                <td style="text-align: left;">Execution time of a add or subtract operation</td>
+            </tr>
+            <tr>
+                <td>MUL_CYCLES</td>
+                <td>10</td>
+                <td style="text-align: left;">Execution time of a multiply operation</td>
+            </tr>
+            <tr>
+                <td>DIV_CYCLES</td>
+                <td>40</td>
+                <td style="text-align: left;">Execution time of a divide operation</td>
+            </tr>
+            <tr>
+                <td>RS_AS_SIZE</td>
+                <td>4</td>
+                <td style="text-align: left;">Number of reservation stations for add and subtract operations</td>
+            </tr>
+            <tr>
+                <td>RS_MD_SIZE</td>
+                <td>3</td>
+                <td style="text-align: left;">Number of reservation stations for multiply and divide operations</td>
+            </tr>
+            <tr>
+                <td>RS_LS_SIZE</td>
+                <td>4</td>
+                <td style="text-align: left;">Number of reservation stations for load and store operations</td>
+            </tr>
+            <tr>
+                <td>FU_AS_SIZE</td>
+                <td>3</td>
+                <td style="text-align: left;">Number of functional units for add and subtract operations</td>
+            </tr>
+            <tr>
+                <td>FU_MD_SIZE</td>
+                <td>2</td>
+                <td style="text-align: left;">Number of functional units for multiply and divide operations</td>
+            </tr>
+            <tr>
+                <td>SEPARATE_MD_FU</td>
+                <td>False</td>
+                <td style="text-align: left;">Use separate functional units for multiply and divide</td>
+            </tr>
+            <tr>
+                <td>FU_MUL_SIZE</td>
+                <td>1</td>
+                <td style="text-align: left;">If separate FUs, how many for multiply operations</td>
+            </tr>
+            <tr>
+                <td>FU_DIV_SIZE</td>
+                <td>1</td>
+                <td style="text-align: left;">If separate FUs, how many for divide operations</td>
+            </tr>
+            <tr>
+                <td>AS_DISPATCH_PER_CYCLE</td>
+                <td>1</td>
+                <td style="text-align: left;">Number of add/subtract instructions that can start execution from a reservation station to an available functional unit per cycle</td>
+            </tr>
+            <tr>
+                <td>MD_DISPATCH_PER_CYCLE</td>
+                <td>1</td>
+                <td style="text-align: left;">Number of multiply/divide instructions that can start execution from a reservation station to an available functional unit per cycle</td>
+            </tr>
+            <tr>
+                <td>MAX_CYCLES</td>
+                <td>100</td>
+                <td style="text-align: left;">Maximum execution duration</td>
+            </tr>
+        </table>
+
+
+        <h2>Examples</h2>
+
+
+        <p class="text">
+            The program produces a text file describing the state of the machine at each cycle. The text file should be read on a text editor with word wrap disabled, a monospace font and no line spacing.
+        </p>
+
+        <p class="text">
+            The outputs of the example programs are provided in the archive of this project. For each example, register F0 is initialized to the value 1 and register F1 is initialized to the value 2. Also, to make the examples shorter and easier to read, the execution for add/subtract operations is 2 cycles, multiply is 4 cycles and divide is 6 operations. Instructions are referred to I# with # the number of the line starting at 1.
+        </p>
+
+        <h3>Hazards</h3>
+
+        <p class="text">
+            Those three basic programs test that the architecture is able to deal with potential data hazards : Read-After-Write, Write-After-Read and Write-After-Write.
+        </p>
+
+        <table>
+            <tr>
+                <th>RAW</th>
+                <th>WAR</th>
+                <th>WAW</th>
+            </tr>
+            <tr>
+                <td style="text-align: left">ADD F2 F0 F1<br>
+                    ADD F3 F2 F1</td>
+                <td style="text-align: left">ADD F2 F0 F1<br>
+                    ADD F0 F1 F1</td>
+                <td style="text-align: left">DIV F2 F0 F1<br>
+                    ADD F3 F2 F1<br>
+                    ADD F2 F1 F1</td>
+            </tr>
+            <tr>
+                <td style="text-align: left">
+                    The processor waits for the value of F2 provided by the I1 to be available before starting the execution of I2. Note that the execution is only possible on the cycle following the availability of all operand values.
+                </td>
+                <td style="text-align: left">
+                    I1 is already in a reservation station with the proper value of F0 before I2 overrides this register.
+                </td>
+                <td style="text-align: left">
+                    I2 is issued and waits in RS0 for the value of F2 provided by the I1 in reservation station RS4. Even though I3 finishes executing before I1 and writes to register F2 directly, I2 still gets the correct value as it uses the tag of RS4. Moreover, when I1 finishes executing, it doesn’t override the value that I3 wrote in F2 as the register tag doesn’t point to RS4 anymore.
+                </td>
+            </tr>
+        </table>
+
+        <h3>Priority conflicts</h3>
+
+        <p class="text">
+            The following two examples test that the architecture is able to deal with two entries competing for the same slot : two reservation stations competing for the same functional unit (RS2FU), or two functional units competing for the common data bus (FU2CDB).
+        </p>
+
+        <table>
+            <tr>
+                <th>RS2FU</th>
+                <th>FU2CDB</th>
+            </tr>
+            <tr>
+                <td style="text-align: left">ADD F2 F0 F1<br>
+                    ADD F3 F0 F2<br>
+                    ADD F4 F1 F2</td>
+                <td style="text-align: left">MUL F2 F0 F1<br>
+                    NOP<br>
+                    ADD F3 F0 F1</td>
+            </tr>
+            <tr>
+                <td style="text-align: left">
+                    The operands for I2 and I3 are both available at the same time, but I2 is dispatched to a FU first as it was issued to RS1. I3 was issued to RS2. The FU priority is given to the RS in numerical order. Note that here only one instruction is dispatched to FU per cycle as this is the parameter we chose.
+                </td>
+                <td style="text-align: left">
+                    I1 and I3 both finish executing on the same cycle, but the result of I3 is broadcast first because it was issued in RS0. I1 was issued to RS4. The CDB priority is given to the RS is numerical order. Note that the no-op instruction is only used for timing.
+                </td>
+            </tr>
+        </table>
+
+        <h3>Capacity conflict</h3>
+
+        <p class="text">
+            The following two examples test that the architecture is able to deal with there being no slot available for an instruction : no free reservation station to issue an instruction (NO_RS) and no free functional unit for a reservation station (NO_FU).
+        </p>
+
+        <table>
+            <tr>
+                <th>NO_RS</th>
+                <th>NO_FU</th>
+            </tr>
+            <tr>
+                <td style="text-align: left">DIV F2 F0 F1<br>
+                    ADD F3 F2 F0<br>
+                    ADD F4 F2 F1<br>
+                    ADD F5 F2 F2<br>
+                    ADD F6 F3 F4<br>
+                    ADD F7 F0 F0</td>
+                <td style="text-align: left">MUL F2 F0 F0<br>
+                    MUL F3 F0 F1<br>
+                    MUL F3 F1 F1</td>
+            </tr>
+            <tr>
+                <td style="text-align: left">
+                    Even though I6 could be executed much earlier, all RS for add operations are full. Therefore, I6 has to wait for one to become available. No other instruction can be issued until this is resolved.
+                </td>
+                <td style="text-align: left">
+                    I3 in RS6 has all its operands known, but there is no FU available for multiply operations, therefore it has to wait for one to become available.
+                </td>
+            </tr>
+        </table>
 
         <a id="indexlink" href="index.html" style="margin-top: 60px">
             Go back to the list of projects
