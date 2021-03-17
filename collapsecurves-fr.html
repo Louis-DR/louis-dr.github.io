@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Import Katex -->
+    <link rel="stylesheet" href="katex/katex.min.css">
+    <script src="katex/katex.min.js"></script>
+    <!-- Import Katex auto-render -->
+    <script src="katex/contrib/auto-render.min.js"></script>
+
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="articles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <title>Courbes d'effondrement</title>
+</head>
+<body>
+    <div id="content">
+        <a id="indexlink" href="index.html" style="margin-bottom: 30px">
+            Retourner à la liste de projets
+        </a>
+        <img class="banner_img dark_invert_lite" src="collapsecurves.png" alt="">
+        <div id="page_title">
+            Simulation de courbes d'effondrement
+        </div>
+        <div id="page_date">
+            16/03/2021
+        </div>
+
+        <p class="text">
+            La motivation derrière ce petit projet est venue en regardant une conférence de Jean-Marc Jancovici sur l'énergie et le changement climatique. Une de ses principales thèses est que nous vivons dans le monde physique réel qui est limité, et que si nous n'agissons pas pour limiter notre consommation maintenant, nous atteindrons ces limites et serons de toute façon obligés de réduire notre consommation. Si nous gardons la croissance comme objectif, les contraintes physiques de notre environnement (climat, ressources) nous frapperont encore plus tôt et brutalement.
+        </p>
+        <p class="text">
+            Or, c'est précisément notre exploitation des ressources et la croissance constante de l'énergie qui ont rendu possible nos niveaux de vie élevés, qu'il s'agisse de nourriture abondante, variée et bon marché, d'une espérance de vie plus longue, de divertissements et de voyages, de technologie et de progrès. Demander à la population de renoncer à la moitié de notre confort moderne, c'est demander des troubles sociaux menant à la révolution (et dans une démocratie, aucun politicien ne promettrait la décroissance du pouvoir d'achat et la diminution de la qualité de vie pour se faire élire). Par conséquent, nous devons trouver un point de décroissance à la fois acceptable pour la population et physiquement possible pour éviter l'effondrement.
+        </p>
+        <p class="text">
+            Pour visualiser cette tâche d'optimisation, j'ai conceptualisé des <b>Courbes d'effondrement</b> : en supposant que nous puissions décroître notre consommation à un rythme régulier (pour nous donner le temps de nous adapter et pour que le progrès scientifique nous aide), nous pouvons estimer si cela est suffisant pour éviter un effondrement physique (dû à des pénuries de ressources ou au changement climatique par exemple) tout en évitant un effondrement social (dû à des troubles dus à la baisse de la qualité de vie). Ainsi, nous pouvons tracer des courbes d'effondrement avec le temps sur l'axe horizontal et la croissance/décroissance sur l'axe vertical. Les courbes d'effondrement social nous mordront par le bas (trop de décroissance) et les courbes d'effondrement physique par le haut (trop de croissance).
+        </p>
+        <p class="text">
+            Afin de dessiner les courbes d'effondrement, j'ai modélisé certains défis et contraintes dans une simulation simple. Bien sûr, il s'agit d'un petit projet et je n'ai pas les capacités de modéliser le climat aux niveaux du GIEC ou de mener des études réelles sur la tolérance sociale à la décroissance. Ce modèle n'a donc pour but que d'introduire le concept et de visualiser les formes sur les courbes en travaillant avec des approximations par ordres de grandeur. Voici les courbes obtenues par cette simulation que j'expliquerai en détail dans la suite de l'article.
+        </p>
+        <div class="center_block">
+            <img class="image_tall_bigger dark_invert" src="collapsecurves.svg" alt="">
+            <p class="caption">
+                Courbes d'effondrement correspondant aux contraintes climatiques, ressources et sociales
+            </p>
+        </div>
+
+
+        <h2>Structure de la simulation</h2>
+
+
+        <p class="text">
+            La simulation fonctionne par pas d'un mois, de 2020 à 2100. Certains paramètres sont décomposés entre le court terme (2020-2030), le moyen terme (2030-2050) et le long terme (2050-2100).
+        </p>
+        <p class="text">
+            La croissance/décroissance est considérée en pourcentage à partir d'une unité arbitraire combinant la consommation totale, les émissions de GES et le PIB, car ils sont corrélés linéairement depuis que nous avons commencé à compter et il est peu probable que cela change radicalement.
+        </p>
+        <div class="center_block">
+            <img class="image_tall_big dark_invert" src="collapse_co2_gdp.jpg" alt="">
+            <div class="caption">
+                Source : Jean-Marc Jancovici
+            </div>
+        </div>
+        <p class="text">
+            Une décroissance de 1% par an équivaut à une décroissance de 26% d'ici 2050 et de 55% d'ici 2100. Une décroissance de 4% par an équivaut à 70% d'ici 2050 et 96% d'ici 2100 ! Un scénario envisagé dans le chapitre des résultats considère la décroissance jusqu'en 2050 seulement.
+        </p>
+        <div class="center_block">
+            <img class="image_tall_huge dark_invert" src="collapse_co2_gdp.svg" alt="">
+        </div>
+        <p class="text">
+            La croissance démographique est prise en compte afin de calculer la part de la consommation de chaque personne. Ainsi, à consommation totale constante, la consommation individuelle doit diminuer. En utilisant les estimations de l'ONU, le modèle considère une croissance de 10% à court terme (2020 à 2030 de 7.795Mrds hab à 8.548Mrds hab), 15% à moyen terme (2030 à 2050 à 9.735Mrds hab) et 11% à long terme (2050 à 2100 à 10.875Mrds hab).
+        </p>
+        <div class="center_block">
+            <img class="image_tall_huge dark_invert" src="collapse_population.svg" alt="">
+        </div>
+
+
+        <h2>Courbes d'effondrement climatique</h2>
+
+
+        <p class="text">
+            La première approximation de ce modèle consiste à distiller les conséquences du changement climatique au réchauffement de la planète. Bien sûr, notre consommation a des impacts sur la biodiversité, les phénomènes météorologiques extrêmes, l'élévation du niveau de la mer et bien d'autres choses encore, mais c'est une simplification suffisante pour l'objectif de ce projet. D'autres impacts environnementaux critiques peuvent être grossièrement corrélés et extrapolés à partir des courbes d'effondrement du climat.
+        </p>
+        <p class="text">
+            Les modèles de réchauffement climatique utilisés par le GIEC sont incroyablement complexes. Pour des raisons évidentes, je ne peux pas les égaler. Cependant, je peux utiliser des approximations pour modéliser le problème avec des équations simples et régler les paramètres en fonction des résultats décrits dans les rapports du GIEC.
+        </p>
+        <p class="text">
+            Le moteur du réchauffement considéré sont les GES (gaz à effet de serre) mesurés comme une valeur en tonnes de CO<sub>2</sub> à effet de réchauffement équivalent émis depuis l'époque préindustrielle. En 2020, cela représente environ $$2200 \: GteqCO_2$$ ($$1600 \: GteqCO_2$$ du seul CO<sub>2</sub>).
+        </p>
+        <div class="center_block">
+            <img class="image_tall_huge dark_invert" src="collapse_emitted.svg" alt="">
+        </div>
+        <p class="text">
+            Ensuite, notre consommation génère des émissions mesurées en GteqCO<sub>2</sub> par an. En 2019 (car 2020 est une anomalie due à la pandémie), nous avons émis environ $$50 \: GteqCO_2$$. Les améliorations de l'efficacité qui nous permettraient de consommer autant tout en émettant moins de GES sont prises en compte dans le facteur d'efficacité de la QDV décrit plus loin.
+        </p>
+        <div class="center_block">
+            <img class="image_tall_huge dark_invert" src="collapse_emissions.svg" alt="">
+        </div>
+        <p class="text">
+            Enfin, les GES sont dotés d'un pouvoir de réchauffement, ce qui signifie que pour une certaine quantité d'émissions cumulées de GES, nous nous attendons à ce que la température moyenne de la planète augmente d'une certaine quantité. Le pouvoir de réchauffement de l'équivalent CO<sub>2</sub> est fixé à $$1\degree C/2000 \: GteqCO_2$$. En outre, l'effet de réchauffement a une certaine latence fixée à $$20 \: ans$$ pour voir $$80 \: \%$$ des effets.
+        </p>
+        <div class="center_block">
+            <img class="image_tall_bigger dark_invert" src="collapse_co2_temperature.png" alt="">
+            <div class="caption">
+                Source : IPCC AR5 report
+            </div>
+        </div>
+        <p class="text">
+            L'effondrement dû au réchauffement climatique est lent et complexe, incluant l'élévation du niveau de la mer, la réduction de la production alimentaire, la température extérieure létale dans les régions équatoriales, l'immigration massive, les événements climatiques extrêmes, c'est pourquoi les courbes d'effondrement sont calculées comme le croisement d'augmentations arbitraires de la température par rapport à l'époque préindustrielle (1,5°C, 2°C et 5°C).
+        </p>
+        <p class="text">
+            En utilisant ces paramètres, le modèle indique que si les émissions de GES stagnent (ce qui correspond à l'intervalle entre les scénarios RCP4.5 et RCP6.0 du rapport du GIEC), nous pouvons nous attendre à atteindre 1,5°C vers 2037 (alors que le GIEC l'estime vers 2030), 2°C vers 2058 (2050 pour le GIEC) et 5°C après 2100 (idem pour le GIEC). D'autres rapports indiquent que de faibles efforts pour réduire les GES (tout en conservant une petite quantité de croissance) nous conduiraient à 1,5°C au début des années 2030, ce qui correspond au modèle. Les estimations de groupes de réflexion tels que The Shift Project de JMJ montrent qu'une réduction de 4,5 % des émissions par an à partir d'aujourd'hui est nécessaire pour atteindre notre objectif de 1,5°C d'ici 2050, ce qui valide à nouveau mon modèle. Dans l'ensemble, on peut considérer que le modèle est raisonnablement précis.
+        </p>
+
+
+        <h2>Courbes d'effondrement des ressources</h2>
+
+
+        <p class="text">
+            Nous vivons sur une planète finie dont la taille et le contenu ne changeront pas beaucoup au cours du siècle. Nous ne pouvons donc pas supposer une croissance infinie, notamment en matière de consommation des ressources. Ce défi est largement éclipsé par le changement climatique et il est difficile d'obtenir une bonne estimation de son amplitude car les données sont constamment affinées avec de grandes variations.
+        </p>
+        <p class="text">
+            La pénurie d'hélium a commencé en 2019 et certains estiment que nous en manquerons dans les prochaines décennies. L'hélium est essentiel pour la médecine, les semi-conducteurs et les laboratoires. De plus, la principale source d'hélium est un sous-produit de l'extraction du gaz "naturel", que nous devrons arrêter à mesure que nous réduisons nos émissions de GES.
+        </p>
+        <p class="text">
+            Les réserves de minerai de phosphate de haute qualité devraient s'épuiser avant 2100, ce qui pourrait entraîner une baisse de 90 % des rendements agricoles mondiaux. La récupération du phosphore dans les eaux usées est une solution prometteuse mais nécessite de grands changements dans les infrastructures.
+        </p>
+        <p class="text">
+            Certains éléments de terres rares comme le Néodyme, le Dysprosium et le Lithium sont essentiels pour les hautes technologies et les énergies renouvelables, et pourraient s'épuiser plus tôt que prévu. Beaucoup de ces métaux sont surveillés de près. Comme leur nom l'indique, ils sont rares dans la croûte terrestre, et si de nouveaux filons sont régulièrement découverts, ces sources sont imprévisibles. De plus, ces éléments sont utilisés de manière très diffuse, ce qui les rend pratiquement impossibles à recycler.
+        </p>
+        <p class="text">
+            Dans l'ensemble, les pénuries de ressources sont inévitables, car l'offre totale est limitée et le recyclage ne peut être parfaitement efficace. De plus, avant que les pénuries ne deviennent fatales, les sources restantes sont celles de plus en plus difficiles d'accès, surtout dans un contexte où nous essayons de réduire en même temps nos infrastructures et notre consommation d'énergie. Les alternatives ne sont pas une solution valable car elles ne sont pas garanties et conduisent de toute façon à un épuisement plus rapide des autres ressources.
+        </p>
+        <p class="text">
+            Le modèle utilisé ici est simple : on considère une ressource unique avec une réserve initiale (d'une valeur de 20,50 et 100 ans au taux de consommation initial) dont on consomme une certaine quantité par an (1 unité arbitraire par an initialement) qui augmente avec la consommation. Les améliorations conduisant à un épuisement moindre, comme le recyclage et les alternatives, sont regroupées dans le facteur d'efficacité de la QDV décrit plus loin.
+        </p>
+
+
+        <h2>Courbes d'effondrement social</h2>
+
+
+        <p class="text">
+            L'effondrement social est de loin le phénomène le plus difficile à estimer car, contrairement au réchauffement climatique et à l'épuisement des ressources, il dépend du niveau de vie initial de chaque nation, de la croissance démographique, de la tolérance aux restrictions et même de la perception individuelle de la qualité de vie. Par conséquent, ces courbes sont essentiellement conceptuelles.
+        </p>
+        <p class="text">
+            La première approximation que nous pouvons prendre est l'indice de développement humain, dont les trois dimensions clés sont une vie longue et saine, l'accès à l'éducation et un niveau de vie décent est le pouvoir d'achat. Nous pouvons observer que la plupart des nations s'améliorent dans cette métrique à un rythme similaire, bien qu'il existe encore de grandes inégalités entre les nations. Si l'on considère que la décroissance entraîne une réduction équivalente de l'IDH, alors une décroissance de 50 % des nations occidentales telles que les États-Unis et l'UE, passant d'un IDH d'environ 0,8 à 0,4, nous ramènerait aux conditions de vie de l'après-guerre, ou à peu près à celles de l'Inde aujourd'hui.
+        </p>
+        <div class="center_block">
+            <img class="image_tall_huge dark_invert" src="collapse_hdi.svg" alt="">
+        </div>
+        <p class="text">
+            Mais bien sûr, la linéarité entre la consommation (alias le PIB) et l'IDH est une approximation inacceptable. La relation réelle est plutôt logarithmique avec une grande variance. De plus, examiner la relation dans le temps au lieu de comparer les nations est également imparfait et ne tient pas compte des progrès de la médecine et de la démocratie.
+        </p>
+        <div class="center_block">
+            <img class="image_tall_huge dark_invert" src="collapse_hdi_gdp.svg" alt="">
+        </div>
+        <p class="text">
+            De plus, ce qu'est un pouvoir d'achat décent est vague et variable. J'ai donc décidé d'utiliser un modèle différent. Je considère une relation linéaire entre la consommation et une sorte de bonheur ou de qualité de vie perçue, qui est ce qui, selon moi, compte le plus pour les troubles sociaux. Ensuite, je considère l'agitation sociale comme la conséquence d'une réduction de la qualité de vie (QDV) par rapport à la valeur initiale avant la décroissance (à 25%, 50% et 75%).
+        </p>
+        <p class="text">
+            Par exemple, une réduction de 50% des dépenses et des émissions de GES (de $$12tCO_2$$ à $$6tCO_2$$) du citoyen français moyen pourrait être décomposée en : 90 % de réduction dans l'aviation, 80 % de réduction dans les déplacements en voiture personnelle, 20 % de réduction dans les services publics, 80 % de réduction dans le mobilier domestique, 50 % de réduction dans les appareils personnels et Internet, 50 % de réduction dans les autres biens et services, 70 % de réduction dans les vêtements (achetés, pas portés tous les jours évidemment), 90 % de réduction dans la consommation de viande, 40 % de réduction dans les produits laitiers et les œufs, 50 % de réduction dans les boissons, 10 % de réduction dans les autres denrées alimentaires et enfin 10 % de réduction dans les services publics.
+        </p>
+        <p class="text">
+            Notez que je ne pourrais pas atteindre une réduction de 75 % des émissions même en supprimant tous les transports, la viande et les produits laitiers, et en éliminant 90 % de toutes les consommations de biens et services, car la partie restante est essentiellement constituée de l'énergie provenant des logements, qu'il faut réduire par d'importants projets d'isolation thermique à l'échelle nationale. De plus, il est peu probable qu'une réduction de 50 % soit même possible dans les nations émergentes et sous-développées en réduisant les besoins de survie de base. Par conséquent, l'effondrement à 50% de la QDV pré-croissance est déjà généreux, sans parler de 25% (réduction de 75%).
+        </p>
+        <p class="text">
+            Cependant, comme mentionné ci-dessus, les améliorations telles que l'isolation thermique ne sont pas prises en compte. Ceci est modélisé par une augmentation de l'efficacité décrite par la quantité de qualité de vie (en unité arbitraire) pouvant être obtenue pour une consommation donnée (en unités arbitraires également) qui est à son tour proportionnelle aux émissions de GES et à l'utilisation des ressources. Par exemple, un gain d'efficacité de 30 % signifie que les voitures et les avions consomment 30 % de carburant en moins par trajet, que les appareils électroniques et les centres de données utilisent 30 % d'électricité en moins, que l'isolation thermique est 30 % plus efficace, que les aliments sont produits avec 30 % d'impact en moins (de la déforestation, ce qui signifie pas d'agriculture biologique, des transports, ce qui signifie pas de fruits exotiques et hors saison, et des animaux domestiques, ce qui signifie leur demander poliment d'arrêter de roter du méthane, merci beaucoup), qu'il y a 30 % de métal en moins dans les machines et les centrales électriques à énergie renouvelable, etc. Ce facteur d'amélioration de l'efficacité est fixé pour correspondre à un gain de 30% à court terme (d'ici 2030), 10% supplémentaires à moyen terme (d'ici 2050) et encore 10% à long terme (d'ici 2100) pour une amélioration combinée de 57% de l'efficacité de 2020 à 2100.
+        </p>
+
+
+        <h2>Resultas</h2>
+
+
+        <h3>Scénario de base</h3>
+        <p class="text">
+            En utilisant le scénario par défaut avec la paramétrisation décrite ci-dessus, nous obtenons les courbes suivantes. Pour les lire, il faut considérer une valeur annuelle de croissance (positive) ou de décroissance (négative) sur l'axe vertical et tracer une ligne horizontale. Cette ligne croisera les courbes d'effondrement à la date de chaque événement. Par exemple, avec une croissance de 2% par an, on peut s'attendre à épuiser nos réserves de la ressource dont nous disposions depuis 20 ans en 2036, à atteindre 2°C de réchauffement en 2038, et à épuiser la ressource dont nous disposions de réserves jusqu'en 2100 en 2075 plutôt. Autre exemple, pour une décroissance de 2% par an, la qualité de vie est réduite de 25% (75% de l'initial) en 2040, de 50% avant 2060, et nous atteignons encore 2°C de réchauffement dans les années 2080, probablement avant ma mort, et en même temps que la qualité de vie atteint 25% de 2020 (réduction de 75%).
+        </p>
+        <div class="center_block">
+            <img class="image_tall_bigger dark_invert" src="collapsecurves.svg" alt="">
+        </div>
+
+        <h3>Aucune amélioration de l'efficacité</h3>
+        <p class="text">
+            Dans le scénario initial, je supposais que nous pouvions améliorer l'efficacité d'à peu près tout, rapidement et tout en diminuant le PIB et la production en même temps. Ceci est bien sûr très optimiste. Voici les résultats si nous supprimons cette hypothèse ; ainsi pour le même service ou bien, le transport, la nourriture et l'isolation consomment toujours la même quantité de ressources et émettent la même quantité de GES. Comme nous le voyons, lorsque nous appliquons l'efficacité à l'impact sur la qualité de vie (c'est-à-dire que nous mesurons la croissance/décroissance comme des variations des GES émis et des ressources consommées), seules les courbes d'effondrement social sont affectées, et bien sûr la qualité de vie est réduite plus rapidement.
+        </p>
+        <div class="center_block">
+            <img class="image_tall_bigger dark_invert" src="collapsecurves_noimprovement.svg" alt="">
+        </div>
+
+        <h3>Décroissance non durable</h3>
+        <p class="text">
+            Soutenir une forte décroissance sur l'ensemble du siècle est également une hypothèse très généreuse. Comme je l'ai expliqué précédemment, une décroissance de 4 % par an équivaut à 70 % en 2050 et 96 % en 2100 ! Cela signifie qu'en 2100, nous ne consommerions que 4% de ce que nous consommons aujourd'hui. C'est impossible. Voyons donc ce qui se passe si nous considérons que la décroissance fixée sur l'axe horizontal ne peut être maintenue que jusqu'en 2050, puis nous revenons à une variation de 0 % chaque année (mais la population continue d'augmenter et la consommation est partagée entre de plus en plus de personnes, ce qui réduit toujours la part de chacun). Bien sûr, cela n'affecte que la moitié inférieure du graphique, et les courbes d'effondrement du climat et des ressources sont encore pires (l'effondrement arrive plus tôt que si nous gardions la décroissance).
+        </p>
+        <div class="center_block">
+            <img class="image_tall_bigger dark_invert" src="collapsecurves_degrowth2050.svg" alt="">
+        </div>
+
+        <h3>Décroissance limitée</h3>
+        <p class="text">
+            Cependant, si la croissance infinie est physiquement impossible, la décroissance infinie l'est également. Comme je l'ai expliqué précédemment, je n'ai pas trouvé le moyen de réduire de plus de 70% la consommation du Français moyen. Il y a des sources de consommation irréductibles : le monde sans émission de GES et sans ressource renouvelable est celui que nous avons laissé en entrant dans l'ère industrielle ; nous ne pouvons pas nourrir une métropole moderne sans transport, sans réfrigération et sans agriculture intensive, ni même une nation avec les seules technologies et ressources dont nous disposions lorsque 95% de la population était agricultrice, et même si nous pouvions tous reprendre une houe, nous manquerions de terres arables même en déforestant la Terre entière. Pour la même raison, il n'est pas possible de chauffer et de loger la population toujours croissante, y compris les réfugiés climatiques, lors de conditions météorologiques plus extrêmes, même avec de la biomasse et du bois tout en restant durable. Et bien sûr, toute sorte d'infrastructure rendant possible les services de santé a disparu.
+        </p>
+        <p class="text">
+            Par conséquent, voyons ce qui se passe si nous limitons la décroissance à 50%. Ne faites pas attention aux artefacts bizarres sur certaines courbes, ils sont dus à des effets de bord. Une valeur de décroissance plus élevée sur l'axe vertical signifie que nous atteignons plus rapidement les 50% de décroissance totale, puis nous revenons à 0% de changement. Comme nous pouvons le voir, même avec une décroissance de 50%, nous atteignons toujours un réchauffement de 2°C en 2090, et, en raison de la croissance de la population, il y a de moins en moins pour tout le monde, ce qui conduit à des troubles sociaux de toute façon.
+        </p>
+        <div class="center_block">
+            <img class="image_tall_bigger dark_invert" src="collapsecurves_50degrowth.svg" alt="">
+        </div>
+
+        <h3>Une seule nation</h3>
+        <p class="text">
+            Enfin, et peut-être la simulation la plus révélatrice, il y a une dernière approximation qui ne peut être ignorée : le monde est composé d'environ 200 nations avec des populations, des croissances récentes, des niveaux de développement et des impacts environnementaux différents ; et il n'y a pas de gouvernement mondial central capable de définir une politique de décroissance pour toutes les nations simultanément. La décroissance est par nature douloureuse et indésirable, si un gouvernement décide seul d'adopter cette politique, il se contentera de se verdir en dehors de l'économie internationale, et pendant que sa population souffre pour réduire son impact, la population du reste du monde continue de s'améliorer. Plus la nation est petite, plus son impact peut être insignifiant sur la lutte contre le réchauffement climatique ou l'épuisement des ressources. Cependant, les conséquences sociales se font pleinement sentir ! Lorsqu'on envisage la décroissance pour une seule nation et qu'on laisse l'autre continuer à croître à un taux raisonnable de 2% par an, les courbes d'effondrement social de cette nation sont inchangées par rapport aux simulations précédentes, mais les courbes d'effondrement du climat et des ressources sont à peine modifiées (sauf si la nation parvient à dépasser énormément le reste bien sûr).
+        </p>
+        <p class="text">
+            Voici les courbes d'effondrement correspondantes pour une nation représentant 20 % de la consommation mondiale en 2020 (comme les États-Unis ou la Chine). Alors que cette nation peut faire de gros dégâts en courant après une forte croissance, son effet en décroissant est faible : passer d'une croissance nulle à une décroissance de 5% par an ne repousse l'effondrement d'un réchauffement de 5°C que d'environ 3 ans, et de 2°C d'à peine un an....
+        </p>
+        <div class="center_block">
+            <img class="image_tall_bigger dark_invert" src="collapsecurves_nation020.svg" alt="">
+        </div>
+        <p class="text">
+            Et voici les mêmes courbes pour une nation ne représentant que 2% de la consommation (comme le Royaume-Uni, la France ou l'Allemagne). Maintenant, même avec des niveaux suicidaires de décroissance, les effets sont dans l'épaisseur de la ligne. Et cela a un coût énorme pour la population de cette nation.
+        </p>
+        <div class="center_block">
+            <img class="image_tall_bigger dark_invert" src="collapsecurves_nation002.svg" alt="">
+        </div>
+
+
+        <h2>Conclusion</h2>
+
+
+        <p class="text">
+            Bien sûr, il s'agit encore d'une simulation très approximative. Néanmoins, je pense que ce concept de courbes d'effondrement a une part de vérité et peut contribuer à expliquer l'importance des défis auxquels nous sommes confrontés.
+        </p>
+
+
+        <a id="indexlink" href="index.html" style="margin-top: 60px">
+            Retourner à la liste de projets
+        </a>
+        <script>
+            renderMathInElement(document.body,{delimiters: [
+                {left: "$$", right: "$$", display: false},
+                {left: "££", right: "££", display: true}
+            ]});
+        </script>
+    </div>
+</body>
+</html>
