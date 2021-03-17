@@ -217,6 +217,10 @@ td b {
     display:inline-block;
     width: min(98%,600px);
 }
+.image_tall_huge {
+    display:inline-block;
+    width: min(98%,700px);
+}
 
 .video {
     width: 560px;

@@ -1,0 +1,296 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1"
+  style="font-family:Lato, &#x27;Helvetica Neue&#x27;, Helvetica, Arial, sans-serif;font-size:16px;background-color:white;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased"
+  width="850" height="600" viewBox="0 0 850 600">
+  <g class="HeaderView">
+    <a href="https://ourworldindata.org/grapher/total-ghg-emissions?tab=chart"
+      style="font-family:&quot;Playfair Display&quot;, Georgia, &quot;Times New Roman&quot;, serif" target="_blank"
+      rel="noopener"><text font-size="22.40" x="15.0" y="32.9" fill="#555">
+        <tspan x="15" y="32.92">Total greenhouse gas emissions</tspan>
+      </text></a><text font-size="12.80" x="15.0" y="51.6" fill="#666">
+      <tspan x="15" y="51.64">Greenhouse gas emissions – from carbon dioxide, methane, nitrous oxide, and F-gases – are
+        summed up and measured in</tspan>
+      <tspan x="15" y="67">tonnes of carbon-dioxide equivalents (CO₂e), where “equivalent” means “having the same
+        warming effect as CO₂ over a period</tspan>
+      <tspan x="15" y="82.36">of 100 years”. Emissions from land use change – which can be positive or negative – are
+        taken into account.</tspan>
+    </text>
+  </g>
+  <g class="LineChart">
+    <defs>
+      <clipPath id="boundsClip-3">
+        <rect x="75.08800000000001" y="82.2" width="830" height="897.2"></rect>
+      </clipPath>
+    </defs>
+    <g class="DualAxisView">
+      <g class="HorizontalAxis">
+        <line x1="85.1" y1="529.4000000000001" x2="85.1" y2="533.4000000000001" stroke="#ccc"></line>
+        <line x1="201.1" y1="529.4000000000001" x2="201.1" y2="533.4000000000001" stroke="#ccc"></line>
+        <line x1="317" y1="529.4000000000001" x2="317" y2="533.4000000000001" stroke="#ccc"></line>
+        <line x1="433" y1="529.4000000000001" x2="433" y2="533.4000000000001" stroke="#ccc"></line>
+        <line x1="549" y1="529.4000000000001" x2="549" y2="533.4000000000001" stroke="#ccc"></line>
+        <line x1="688.2" y1="529.4000000000001" x2="688.2" y2="533.4000000000001" stroke="#ccc"></line><text x="85.1"
+          y="548.8000000000001" fill="#666" text-anchor="middle" font-size="14.4">1990</text><text x="201.1"
+          y="548.8000000000001" fill="#666" text-anchor="middle" font-size="14.4">1995</text><text x="317"
+          y="548.8000000000001" fill="#666" text-anchor="middle" font-size="14.4">2000</text><text x="433"
+          y="548.8000000000001" fill="#666" text-anchor="middle" font-size="14.4">2005</text><text x="549"
+          y="548.8000000000001" fill="#666" text-anchor="middle" font-size="14.4">2010</text><text x="688.2"
+          y="548.8000000000001" fill="#666" text-anchor="middle" font-size="14.4">2016</text>
+      </g>
+      <g class="VerticalAxis"><text x="80.09" y="529.4" fill="#666" dominant-baseline="middle" text-anchor="end"
+          font-size="14.4">0 t</text><text x="80.09" y="443.3" fill="#666" dominant-baseline="middle" text-anchor="end"
+          font-size="14.4">10 billion t</text><text x="80.09" y="357.2" fill="#666" dominant-baseline="middle"
+          text-anchor="end" font-size="14.4">20 billion t</text><text x="80.09" y="271.1" fill="#666"
+          dominant-baseline="middle" text-anchor="end" font-size="14.4">30 billion t</text><text x="80.09" y="185"
+          fill="#666" dominant-baseline="middle" text-anchor="end" font-size="14.4">40 billion t</text></g>
+      <g class="AxisGridLines horizontalLines">
+        <line x1="85.09" y1="529.4" x2="688.16" y2="529.4" stroke="#ccc"></line>
+        <line x1="85.09" y1="443.3" x2="688.16" y2="443.3" stroke="#d3d3d3" stroke-dasharray="3,2"></line>
+        <line x1="85.09" y1="357.2" x2="688.16" y2="357.2" stroke="#d3d3d3" stroke-dasharray="3,2"></line>
+        <line x1="85.09" y1="271.1" x2="688.16" y2="271.1" stroke="#d3d3d3" stroke-dasharray="3,2"></line>
+        <line x1="85.09" y1="185" x2="688.16" y2="185" stroke="#d3d3d3" stroke-dasharray="3,2"></line>
+      </g>
+    </g>
+    <g clip-path="url(#boundsClip-3)">
+      <g class="LineLabels" style="cursor:default">
+        <g class="legendMark">
+          <rect x="688.1600000000001" y="100.2" width="66.32" height="12" fill="#fff" opacity="0"></rect><text
+            font-size="12.00" x="692.2" y="109.8" fill="#3C4E66">
+            <tspan x="692.1600000000001" y="109.8">World</tspan>
+          </text>
+        </g>
+        <g class="legendMark">
+          <rect x="688.1600000000001" y="423.7" width="66.44" height="12" fill="#fff" opacity="0"></rect><text
+            font-size="12.00" x="692.2" y="433.3" fill="#00847E">
+            <tspan x="692.1600000000001" y="433.3">China</tspan>
+          </text>
+        </g>
+        <g class="legendMark">
+          <rect x="688.1600000000001" y="473.2" width="107.36" height="12" fill="#fff" opacity="0"></rect><text
+            font-size="12.00" x="692.2" y="482.8" fill="#6D3E91">
+            <tspan x="692.1600000000001" y="482.8">United States</tspan>
+          </text>
+        </g>
+        <g class="legendMark">
+          <rect x="688.1600000000001" y="488.85" width="61.16" height="12" fill="#fff" opacity="0"></rect><text
+            font-size="12.00" x="692.2" y="498.5" fill="#883039">
+            <tspan x="692.1600000000001" y="498.45000000000005">India</tspan>
+          </text>
+        </g>
+        <g class="legendMark">
+          <rect x="688.1600000000001" y="502.85" width="146.83999999999997" height="12" fill="#fff" opacity="0"></rect>
+          <text font-size="12.00" x="692.2" y="512.5" fill="#CF0A66">
+            <tspan x="692.1600000000001" y="512.45">European Union (27)</tspan>
+          </text>
+        </g>
+      </g>
+      <g class="Lines">
+        <rect x="85" y="100" width="603" height="429" fill="rgba(255,255,255,0)" opacity="0"></rect>
+        <g>
+          <path stroke-linecap="round" stroke="#ddd"
+            d="M85 481L108 481L132 480L155 479L178 479L201 478L224 477L248 475L271 475L294 475L317 474L340 474L363 475L387 475L410 473L433 474L456 474L479 473L503 475L526 479L549 477L572 476L595 478L619 477L642 477L665 478L688 479"
+            fill="none" stroke-width="1"></path>
+        </g>
+        <g>
+          <path stroke-linecap="round" stroke="#ddd"
+            d="M85 519L108 519L132 519L155 518L178 518L201 517L224 517L248 516L271 516L294 515L317 515L340 516L363 516L387 515L410 515L433 514L456 513L479 512L503 511L526 509L549 508L572 505L595 504L619 504L642 502L665 502L688 502"
+            fill="none" stroke-width="1"></path>
+        </g>
+        <g>
+          <path stroke-linecap="round" stroke="#ddd"
+            d="M85 504L108 503L132 502L155 500L178 499L201 495L224 495L248 495L271 494L294 494L317 493L340 491L363 488L387 483L410 477L433 470L456 465L479 460L503 457L526 452L549 445L572 437L595 434L619 430L642 430L665 430L688 430"
+            fill="none" stroke-width="1"></path>
+        </g>
+        <g>
+          <path stroke-linecap="round" stroke="#ddd"
+            d="M85 228L108 227L132 228L155 227L178 226L201 219L224 219L248 208L271 211L294 213L317 207L340 199L363 187L387 179L410 164L433 156L456 153L479 146L503 142L526 143L549 129L572 118L595 113L619 108L642 104L665 100L688 105"
+            fill="none" stroke-width="1"></path>
+        </g>
+        <g>
+          <path stroke-linecap="round" stroke="#ddd"
+            d="M85 493L108 494L132 495L155 496L178 496L201 495L224 494L248 495L271 495L294 496L317 496L340 496L363 496L387 495L410 495L433 496L456 496L479 496L503 497L526 499L549 499L572 500L595 501L619 502L642 503L665 502L688 502"
+            fill="none" stroke-width="1"></path>
+        </g>
+        <g>
+          <path stroke="#6D3E91" stroke-linecap="round"
+            d="M85 481L108 481L132 480L155 479L178 479L201 478L224 477L248 475L271 475L294 475L317 474L340 474L363 475L387 475L410 473L433 474L456 474L479 473L503 475L526 479L549 477L572 476L595 478L619 477L642 477L665 478L688 479"
+            fill="none" stroke-width="1.5"></path>
+          <g fill="#6D3E91">
+            <circle cx="85" cy="481" r="2"></circle>
+            <circle cx="108" cy="481" r="2"></circle>
+            <circle cx="132" cy="480" r="2"></circle>
+            <circle cx="155" cy="479" r="2"></circle>
+            <circle cx="178" cy="479" r="2"></circle>
+            <circle cx="201" cy="478" r="2"></circle>
+            <circle cx="224" cy="477" r="2"></circle>
+            <circle cx="248" cy="475" r="2"></circle>
+            <circle cx="271" cy="475" r="2"></circle>
+            <circle cx="294" cy="475" r="2"></circle>
+            <circle cx="317" cy="474" r="2"></circle>
+            <circle cx="340" cy="474" r="2"></circle>
+            <circle cx="363" cy="475" r="2"></circle>
+            <circle cx="387" cy="475" r="2"></circle>
+            <circle cx="410" cy="473" r="2"></circle>
+            <circle cx="433" cy="474" r="2"></circle>
+            <circle cx="456" cy="474" r="2"></circle>
+            <circle cx="479" cy="473" r="2"></circle>
+            <circle cx="503" cy="475" r="2"></circle>
+            <circle cx="526" cy="479" r="2"></circle>
+            <circle cx="549" cy="477" r="2"></circle>
+            <circle cx="572" cy="476" r="2"></circle>
+            <circle cx="595" cy="478" r="2"></circle>
+            <circle cx="619" cy="477" r="2"></circle>
+            <circle cx="642" cy="477" r="2"></circle>
+            <circle cx="665" cy="478" r="2"></circle>
+            <circle cx="688" cy="479" r="2"></circle>
+          </g>
+        </g>
+        <g>
+          <path stroke="#883039" stroke-linecap="round"
+            d="M85 519L108 519L132 519L155 518L178 518L201 517L224 517L248 516L271 516L294 515L317 515L340 516L363 516L387 515L410 515L433 514L456 513L479 512L503 511L526 509L549 508L572 505L595 504L619 504L642 502L665 502L688 502"
+            fill="none" stroke-width="1.5"></path>
+          <g fill="#883039">
+            <circle cx="85" cy="519" r="2"></circle>
+            <circle cx="108" cy="519" r="2"></circle>
+            <circle cx="132" cy="519" r="2"></circle>
+            <circle cx="155" cy="518" r="2"></circle>
+            <circle cx="178" cy="518" r="2"></circle>
+            <circle cx="201" cy="517" r="2"></circle>
+            <circle cx="224" cy="517" r="2"></circle>
+            <circle cx="248" cy="516" r="2"></circle>
+            <circle cx="271" cy="516" r="2"></circle>
+            <circle cx="294" cy="515" r="2"></circle>
+            <circle cx="317" cy="515" r="2"></circle>
+            <circle cx="340" cy="516" r="2"></circle>
+            <circle cx="363" cy="516" r="2"></circle>
+            <circle cx="387" cy="515" r="2"></circle>
+            <circle cx="410" cy="515" r="2"></circle>
+            <circle cx="433" cy="514" r="2"></circle>
+            <circle cx="456" cy="513" r="2"></circle>
+            <circle cx="479" cy="512" r="2"></circle>
+            <circle cx="503" cy="511" r="2"></circle>
+            <circle cx="526" cy="509" r="2"></circle>
+            <circle cx="549" cy="508" r="2"></circle>
+            <circle cx="572" cy="505" r="2"></circle>
+            <circle cx="595" cy="504" r="2"></circle>
+            <circle cx="619" cy="504" r="2"></circle>
+            <circle cx="642" cy="502" r="2"></circle>
+            <circle cx="665" cy="502" r="2"></circle>
+            <circle cx="688" cy="502" r="2"></circle>
+          </g>
+        </g>
+        <g>
+          <path stroke="#00847E" stroke-linecap="round"
+            d="M85 504L108 503L132 502L155 500L178 499L201 495L224 495L248 495L271 494L294 494L317 493L340 491L363 488L387 483L410 477L433 470L456 465L479 460L503 457L526 452L549 445L572 437L595 434L619 430L642 430L665 430L688 430"
+            fill="none" stroke-width="1.5"></path>
+          <g fill="#00847E">
+            <circle cx="85" cy="504" r="2"></circle>
+            <circle cx="108" cy="503" r="2"></circle>
+            <circle cx="132" cy="502" r="2"></circle>
+            <circle cx="155" cy="500" r="2"></circle>
+            <circle cx="178" cy="499" r="2"></circle>
+            <circle cx="201" cy="495" r="2"></circle>
+            <circle cx="224" cy="495" r="2"></circle>
+            <circle cx="248" cy="495" r="2"></circle>
+            <circle cx="271" cy="494" r="2"></circle>
+            <circle cx="294" cy="494" r="2"></circle>
+            <circle cx="317" cy="493" r="2"></circle>
+            <circle cx="340" cy="491" r="2"></circle>
+            <circle cx="363" cy="488" r="2"></circle>
+            <circle cx="387" cy="483" r="2"></circle>
+            <circle cx="410" cy="477" r="2"></circle>
+            <circle cx="433" cy="470" r="2"></circle>
+            <circle cx="456" cy="465" r="2"></circle>
+            <circle cx="479" cy="460" r="2"></circle>
+            <circle cx="503" cy="457" r="2"></circle>
+            <circle cx="526" cy="452" r="2"></circle>
+            <circle cx="549" cy="445" r="2"></circle>
+            <circle cx="572" cy="437" r="2"></circle>
+            <circle cx="595" cy="434" r="2"></circle>
+            <circle cx="619" cy="430" r="2"></circle>
+            <circle cx="642" cy="430" r="2"></circle>
+            <circle cx="665" cy="430" r="2"></circle>
+            <circle cx="688" cy="430" r="2"></circle>
+          </g>
+        </g>
+        <g>
+          <path stroke="#3C4E66" stroke-linecap="round"
+            d="M85 228L108 227L132 228L155 227L178 226L201 219L224 219L248 208L271 211L294 213L317 207L340 199L363 187L387 179L410 164L433 156L456 153L479 146L503 142L526 143L549 129L572 118L595 113L619 108L642 104L665 100L688 105"
+            fill="none" stroke-width="1.5"></path>
+          <g fill="#3C4E66">
+            <circle cx="85" cy="228" r="2"></circle>
+            <circle cx="108" cy="227" r="2"></circle>
+            <circle cx="132" cy="228" r="2"></circle>
+            <circle cx="155" cy="227" r="2"></circle>
+            <circle cx="178" cy="226" r="2"></circle>
+            <circle cx="201" cy="219" r="2"></circle>
+            <circle cx="224" cy="219" r="2"></circle>
+            <circle cx="248" cy="208" r="2"></circle>
+            <circle cx="271" cy="211" r="2"></circle>
+            <circle cx="294" cy="213" r="2"></circle>
+            <circle cx="317" cy="207" r="2"></circle>
+            <circle cx="340" cy="199" r="2"></circle>
+            <circle cx="363" cy="187" r="2"></circle>
+            <circle cx="387" cy="179" r="2"></circle>
+            <circle cx="410" cy="164" r="2"></circle>
+            <circle cx="433" cy="156" r="2"></circle>
+            <circle cx="456" cy="153" r="2"></circle>
+            <circle cx="479" cy="146" r="2"></circle>
+            <circle cx="503" cy="142" r="2"></circle>
+            <circle cx="526" cy="143" r="2"></circle>
+            <circle cx="549" cy="129" r="2"></circle>
+            <circle cx="572" cy="118" r="2"></circle>
+            <circle cx="595" cy="113" r="2"></circle>
+            <circle cx="619" cy="108" r="2"></circle>
+            <circle cx="642" cy="104" r="2"></circle>
+            <circle cx="665" cy="100" r="2"></circle>
+            <circle cx="688" cy="105" r="2"></circle>
+          </g>
+        </g>
+        <g>
+          <path stroke="#CF0A66" stroke-linecap="round"
+            d="M85 493L108 494L132 495L155 496L178 496L201 495L224 494L248 495L271 495L294 496L317 496L340 496L363 496L387 495L410 495L433 496L456 496L479 496L503 497L526 499L549 499L572 500L595 501L619 502L642 503L665 502L688 502"
+            fill="none" stroke-width="1.5"></path>
+          <g fill="#CF0A66">
+            <circle cx="85" cy="493" r="2"></circle>
+            <circle cx="108" cy="494" r="2"></circle>
+            <circle cx="132" cy="495" r="2"></circle>
+            <circle cx="155" cy="496" r="2"></circle>
+            <circle cx="178" cy="496" r="2"></circle>
+            <circle cx="201" cy="495" r="2"></circle>
+            <circle cx="224" cy="494" r="2"></circle>
+            <circle cx="248" cy="495" r="2"></circle>
+            <circle cx="271" cy="495" r="2"></circle>
+            <circle cx="294" cy="496" r="2"></circle>
+            <circle cx="317" cy="496" r="2"></circle>
+            <circle cx="340" cy="496" r="2"></circle>
+            <circle cx="363" cy="496" r="2"></circle>
+            <circle cx="387" cy="495" r="2"></circle>
+            <circle cx="410" cy="495" r="2"></circle>
+            <circle cx="433" cy="496" r="2"></circle>
+            <circle cx="456" cy="496" r="2"></circle>
+            <circle cx="479" cy="496" r="2"></circle>
+            <circle cx="503" cy="497" r="2"></circle>
+            <circle cx="526" cy="499" r="2"></circle>
+            <circle cx="549" cy="499" r="2"></circle>
+            <circle cx="572" cy="500" r="2"></circle>
+            <circle cx="595" cy="501" r="2"></circle>
+            <circle cx="619" cy="502" r="2"></circle>
+            <circle cx="642" cy="503" r="2"></circle>
+            <circle cx="665" cy="502" r="2"></circle>
+            <circle cx="688" cy="502" r="2"></circle>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g class="SourcesFooter" style="fill:#777">
+    <g style="fill:#777"><text font-size="11.20" x="15.0" y="582.8">
+        <tspan x="15" y="582.76">Source: CAIT Climate Data Explorer via. Climate Watch</tspan>
+      </text></g><text font-size="11.20" x="476.7" y="582.8">
+      <tspan x="476.71200000000005" y="582.76"><a target='_blank' style='fill: #777;'
+          href='https://ourworldindata.org/co2-and-other-greenhouse-gas-emissions'>OurWorldInData.org/co2-and-other-greenhouse-gas-emissions</a>
+        • <a style="fill: #777;" class="cclogo" href="http://creativecommons.org/licenses/by/4.0/deed.en_US"
+          target="_blank">CC BY</a></tspan>
+    </text>
+  </g>
+</svg>
