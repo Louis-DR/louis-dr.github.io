@@ -409,6 +409,9 @@ code>.comment { color: gray; }
 .dark_visible {
     display: none;
 }
+.light_invert {
+    filter: invert(1.0) hue-rotate(180deg);
+}
 @media (prefers-color-scheme: dark) {
     .light_visible {
         display: none;
@@ -444,6 +447,10 @@ code>.comment { color: gray; }
 
     .dark_invert_brighter {
         filter: invert(1) hue-rotate(180deg) brightness(1.5);
+    }
+
+    .light_invert {
+        filter: invert(0) hue-rotate(0deg);
     }
 
     #indexlink {

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="articles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <title>Circuit optimizer</title>
+</head>
+<body>
+    <div id="content">
+        <a id="indexlink" href="index.html" style="margin-bottom: 30px">
+            Go back to the list of projects
+        </a>
+        <img class="banner_img dark_invert_lite" src="" alt="">
+        <div id="page_title">
+            TernaryVerilog circuit optimizer
+        </div>
+        <div id="page_date">
+            31/01/2021
+        </div>
+
+        <p class="series-header">
+            This article is part of my series of projects around Ternary Computing and Processor Design. <a href="index-ternary.html">Click here to see the list of projects of this series.</a>
+        </p>
+
+        <p class="text">
+            In this ongoing project, I am implementing a circuit optimizer for my TernaryVerilog tool suite. It takes a circuit file as an input and the goal is to count the number of transistors necessary to build the circuit and estimate the latency between each register2register pair (hence the maximum frequency of the circuit), and then factorize, prune, simplify and modify some parts of the circuits in order to reduce both the number of transistors and the latency.
+        </p>
+        <p class="text">
+            The number of transistors can be an estimate of the Area of the chip (and by proxy the cost of fabrication and the yield), and the maximum frequency helps us appreciate the Performance of the processor. Hence, this tool is crucial to compare two processors and evaluate the impact of architectural improvements on PPA figures (power-Performance-Area).
+        </p>
+        <p class="text">
+            As this project needs refactoring and improvement, this article is a Work In Progress. Sorry about that. You can check out my other articles.
+        </p>
+
+        <p class="series-header">
+            This article is part of my series of projects around Ternary Computing and Processor Design. <a href="index-ternary.html">Click here to see the list of projects of this series.</a>
+        </p>
+
+        <a id="indexlink" href="index.html" style="margin-top: 60px">
+            Go back to the list of projects
+        </a>
+    </div>
+</body>
+</html>

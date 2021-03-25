@@ -226,15 +226,24 @@
 
 
         <p class="text">
-            Synthetic benchmarks : no hazard operations, hazard operations, conditional short loop, operation to and from memory, mix
+            Benchmarking is not really relevant as this architecture is so much more capable than the SAP1 yet its ISA doesn't allow for interesting benchmarks. When I finish developing the other architectures on my list, I might create alternative versions with a common more powerful ISA in order to measure the impact of different architectures on performance. This comparison will also require a working circuit optimizer.
         </p>
+        <p class="text">
+            In place of benchmarking, here is a video of the SimP architecture running a simple program at 5Hz. This program features some conditional branches and dependencies, therefore the fetch and decode stages have to stall often.
+        </p>
+        <div class="center_block">
+            <video class="image_huge" controls loop autoplay>
+                <source src="SimP.mp4" type="video/mp4">
+            Your browser does not support videos.
+            </video>
+        </div>
 
 
         <h2>Future work</h2>
 
 
         <p class="text">
-            For the next architectures, I want to explore more complex and modern features. In order, I plan on first implementing petter instruction-level parallelism through Tomasulo's scheduling algorithm. Then, adding out-of-order execution and branch prediction. And then caches.
+            For the next architectures, I want to explore more complex and modern features. In order, I plan on first implementing better instruction-level parallelism through Tomasulo's scheduling algorithm (SimT). Then, adding speculation, out-of-order execution and branch prediction (SimS). And then caches (SimC).
         </p>
 
         <p class="series-header">
