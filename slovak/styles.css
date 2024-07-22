@@ -1,0 +1,72 @@
+
+th:not(:last-child), td:not(:last-child) { padding-right: 15px; }
+h1 {
+  font-size: 2.2em;
+}
+h2 {
+  font-size: 1.8em;
+  margin-block-start: 3.2em;
+  margin-block-end:   0.8em;
+}
+h3 {
+  font-size: 1.2em;
+  margin-block-start: 1.6em;
+  margin-block-end:   0.4em;
+}
+body { color: #333; font-family: 'Roboto', sans-serif; }
+em { color: #888; font-style: normal; }
+.center { text-align: center; }
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: black;
+    color: #CCC;
+  }
+  em {
+    color: white;
+  }
+}
+.sk {
+  color: hsl(0, 45%, 65%);
+  @media (prefers-color-scheme: dark) {
+    color: hsl(0, 40%, 55%);
+  }
+  font-weight: 500;
+  em {
+    color: hsl(0, 40%, 55%);
+    @media (prefers-color-scheme: dark) {
+      color: hsl(0, 45%, 65%);
+    }
+    font-weight: 900;
+    font-style: normal;
+  }
+  i {
+    color: hsl(0, 45%, 65%);
+    @media (prefers-color-scheme: dark) {
+      color: hsl(0, 40%, 55%);
+    }
+    font-weight: 100;
+    font-style: normal;
+  }
+}
+.fr , .xx {
+  color: hsl(220, 45%, 65%);
+  @media (prefers-color-scheme: dark) {
+    color: hsl(220, 40%, 55%);
+  }
+  em {
+    color: hsl(220, 40%, 55%);
+    @media (prefers-color-scheme: dark) {
+      color: hsl(220, 45%, 65%);
+    }
+    font-weight: bold;
+    font-style: normal;
+  }
+  i {
+    color: hsl(220, 45%, 65%);
+    @media (prefers-color-scheme: dark) {
+      color: hsl(220, 40%, 55%);
+    }
+    font-weight: 100;
+    font-style: normal;
+  }
+}
