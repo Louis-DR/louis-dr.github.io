@@ -1,6 +1,6 @@
 document.addEventListener('click', function(event) {
   if (event.target.classList.contains('audio')) {
-    const word = event.target.textContent.toLowerCase().replace('/','-');
+    const word = event.target.textContent.toLowerCase().replace('/','-').replace('.','');
     console.log(word)
     const soundFilePath = 'audio/' + word + '.m4a';
     const audio = new Audio(soundFilePath);
