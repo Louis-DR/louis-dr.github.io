@@ -32,6 +32,77 @@ const maxWords = 4;
 let firebaseApp = null;
 let database = null;
 
+// Utility functions to reduce code duplication
+function getQuizContainer() {
+  const quizContainer = document.querySelector('.quiz');
+  if (!quizContainer) {
+    console.error("Error: Element with class 'quiz' not found.");
+    return null;
+  }
+  return quizContainer;
+}
+
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let arrayIndex = shuffled.length - 1; arrayIndex > 0; arrayIndex--) {
+    const randomArrayIndex = Math.floor(Math.random() * (arrayIndex + 1));
+    [shuffled[arrayIndex], shuffled[randomArrayIndex]] = [shuffled[randomArrayIndex], shuffled[arrayIndex]];
+  }
+  return shuffled;
+}
+
+function createAudioEmoji(word, marginLeft = '10px') {
+  const audioEmoji = document.createElement('span');
+  audioEmoji.textContent      = ' 🔊';
+  audioEmoji.className        = 'audio-emoji';
+  audioEmoji.style.cursor     = 'pointer';
+  audioEmoji.style.marginLeft = marginLeft;
+  audioEmoji.addEventListener('click', (event) => {
+    event.stopPropagation();
+    if (typeof playAudio === 'function') {
+      playAudio(word);
+    }
+  });
+  return audioEmoji;
+}
+
+function createProgressElement(text) {
+  const progressElement = document.createElement('p');
+  progressElement.textContent = text;
+  progressElement.className   = 'progress';
+  return progressElement;
+}
+
+function drawMatchingLine(button1, button2, color = '#007bff') {
+  const container     = getQuizContainer().querySelector('.matching-container');
+  const rect1         = button1.getBoundingClientRect();
+  const rect2         = button2.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+
+  const line = document.createElement('div');
+  line.className = 'matching-line';
+
+  const x1 = rect1.right                  - containerRect.left - 2;
+  const y1 = rect1.top + rect1.height / 2 - containerRect.top;
+  const x2 = rect2.left                   - containerRect.left + 2;
+  const y2 = rect2.top + rect2.height / 2 - containerRect.top;
+
+  const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  const angle  = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+  line.style.position        = 'absolute';
+  line.style.left            = `${x1}px`;
+  line.style.top             = `${y1}px`;
+  line.style.width           = `${length}px`;
+  line.style.height          = '2px';
+  line.style.backgroundColor = color;
+  line.style.transformOrigin = '0 0';
+  line.style.transform       = `rotate(${angle}deg)`;
+  line.style.zIndex          = '-1';
+
+  container.appendChild(line);
+}
+
 function initializeQuiz(wordPairs, quizName = 'Slovak Language Quiz') {
   // Store original word pairs for the very first initialization
   if (wordPairs) {
@@ -59,12 +130,7 @@ function initializeQuiz(wordPairs, quizName = 'Slovak Language Quiz') {
     const maxPairs = Math.min(maxWords, quizState.originalWordPairs.length);
 
     // Randomly select word pairs
-    const shuffledPairs = [...quizState.originalWordPairs];
-    for (let pairIndex = shuffledPairs.length - 1; pairIndex > 0; pairIndex--) {
-      const randomPairIndex = Math.floor(Math.random() * (pairIndex + 1));
-      [shuffledPairs[pairIndex], shuffledPairs[randomPairIndex]] = [shuffledPairs[randomPairIndex], shuffledPairs[pairIndex]];
-    }
-
+    const shuffledPairs = shuffleArray(quizState.originalWordPairs);
     quizState.selectedWordPairs = shuffledPairs.slice(0, maxPairs);
   } else if (quizState.quizType === 'matching') {
     // Moving to multiple choice with same words
@@ -103,11 +169,8 @@ function initializeQuiz(wordPairs, quizName = 'Slovak Language Quiz') {
 }
 
 function showStartScreen() {
-  const quizContainer = document.querySelector('.quiz');
-  if (!quizContainer) {
-    console.error("Error: Element with class 'quiz' not found.");
-    return;
-  }
+  const quizContainer = getQuizContainer();
+  if (!quizContainer) return;
 
   quizContainer.innerHTML = ''; // Clear previous content
 
@@ -135,17 +198,13 @@ function startQuiz() {
 
 function generateMatchingQuestion() {
   // Get the quiz container element
-  const quizContainer = document.querySelector('.quiz');
-  if (!quizContainer) {
-    console.error("Error: Element with class 'quiz' not found.");
-    return;
-  }
+  const quizContainer = getQuizContainer();
+  if (!quizContainer) return;
+
   quizContainer.innerHTML = ''; // Clear previous content
 
   // Add progress indicator
-  const progressElement = document.createElement('p');
-  progressElement.textContent = `Progrès: Correspondances`;
-  progressElement.className   = 'progress';
+  const progressElement = createProgressElement(`Progrès: Correspondances`);
   quizContainer.appendChild(progressElement);
 
   // Create instruction
@@ -171,20 +230,11 @@ function generateMatchingQuestion() {
   const frenchWords = quizState.selectedWordPairs.map(pair => pair[0]);
   const slovakWords = quizState.selectedWordPairs.map(pair => pair[1]);
 
-  // Shuffle French words
-  for (let wordIndex = frenchWords.length - 1; wordIndex > 0; wordIndex--) {
-    const randomWordIndex = Math.floor(Math.random() * (wordIndex + 1));
-    [frenchWords[wordIndex], frenchWords[randomWordIndex]] = [frenchWords[randomWordIndex], frenchWords[wordIndex]];
-  }
-
-  // Shuffle Slovak words
-  for (let wordIndex = slovakWords.length - 1; wordIndex > 0; wordIndex--) {
-    const randomWordIndex = Math.floor(Math.random() * (wordIndex + 1));
-    [slovakWords[wordIndex], slovakWords[randomWordIndex]] = [slovakWords[randomWordIndex], slovakWords[wordIndex]];
-  }
+  const shuffledFrenchWords = shuffleArray(frenchWords);
+  const shuffledSlovakWords = shuffleArray(slovakWords);
 
   // Create French word buttons
-  frenchWords.forEach((word, wordIndex) => {
+  shuffledFrenchWords.forEach((word, wordIndex) => {
     const wordButton = document.createElement('button');
     wordButton.textContent = word;
     wordButton.className   = 'matching-word french-word';
@@ -195,7 +245,7 @@ function generateMatchingQuestion() {
   });
 
   // Create Slovak word buttons
-  slovakWords.forEach((word, wordIndex) => {
+  shuffledSlovakWords.forEach((word, wordIndex) => {
     const wordButton = document.createElement('button');
     wordButton.textContent = word;
     wordButton.className   = 'matching-word slovak-word';
@@ -204,17 +254,7 @@ function generateMatchingQuestion() {
     wordButton.addEventListener('click', () => handleMatchingClick(wordButton));
 
     // Add audio emoji for Slovak words
-    const audioEmoji = document.createElement('span');
-    audioEmoji.textContent      = ' 🔊';
-    audioEmoji.className        = 'audio-emoji';
-    audioEmoji.style.cursor     = 'pointer';
-    audioEmoji.style.marginLeft = '10px';
-    audioEmoji.addEventListener('click', (event) => {
-      event.stopPropagation(); // Prevent word selection
-      if (typeof playAudio === 'function') {
-        playAudio(word);
-      }
-    });
+    const audioEmoji = createAudioEmoji(word);
     wordButton.appendChild(audioEmoji);
 
     rightColumn.appendChild(wordButton);
@@ -325,36 +365,6 @@ function updateMatchingDisplay() {
   }
 }
 
-function drawMatchingLine(button1, button2) {
-  const container     = document.querySelector('.matching-container');
-  const rect1         = button1.getBoundingClientRect();
-  const rect2         = button2.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-
-  const line = document.createElement('div');
-  line.className = 'matching-line';
-
-  const x1 = rect1.right                  - containerRect.left - 2;
-  const y1 = rect1.top + rect1.height / 2 - containerRect.top;
-  const x2 = rect2.left                   - containerRect.left + 2;
-  const y2 = rect2.top + rect2.height / 2 - containerRect.top;
-
-  const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-  const angle  = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-
-  line.style.position        = 'absolute';
-  line.style.left            = `${x1}px`;
-  line.style.top             = `${y1}px`;
-  line.style.width           = `${length}px`;
-  line.style.height          = '2px';
-  line.style.backgroundColor = '#007bff';
-  line.style.transformOrigin = '0 0';
-  line.style.transform       = `rotate(${angle}deg)`;
-  line.style.zIndex          = '-1';
-
-  container.appendChild(line);
-}
-
 function handleMatchingSubmit() {
   let correctPairs = 0;
   let totalErrors  = 0;
@@ -425,7 +435,14 @@ function handleMatchingSubmit() {
     const slovakButton = document.querySelector(`[data-word="${slovakWord}"][data-language="slovak"]`);
 
     if (frenchButton && slovakButton) {
-      drawMatchingResultLine(frenchButton, slovakButton);
+      // Determine line color based on correctness
+      let lineColor;
+      if (frenchButton.classList.contains('correct-answer') && slovakButton.classList.contains('correct-answer') && !slovakButton.classList.contains('show-correct')) {
+        lineColor = '#28a745'; // Green for correct
+      } else {
+        lineColor = '#dc3545'; // Red for incorrect
+      }
+      drawMatchingLine(frenchButton, slovakButton, lineColor);
     }
   });
 
@@ -433,42 +450,6 @@ function handleMatchingSubmit() {
   setTimeout(() => {
     showNextButton();
   }, 1000);
-}
-
-function drawMatchingResultLine(button1, button2) {
-  const container     = document.querySelector('.matching-container');
-  const rect1         = button1.getBoundingClientRect();
-  const rect2         = button2.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-
-  const line = document.createElement('div');
-  line.className = 'matching-line';
-
-  const x1 = rect1.right                  - containerRect.left - 2;
-  const y1 = rect1.top + rect1.height / 2 - containerRect.top;
-  const x2 = rect2.left                   - containerRect.left + 2;
-  const y2 = rect2.top + rect2.height / 2 - containerRect.top;
-
-  const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-  const angle  = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-
-  line.style.position        = 'absolute';
-  line.style.left            = `${x1}px`;
-  line.style.top             = `${y1}px`;
-  line.style.width           = `${length}px`;
-  line.style.height          = '2px';
-  line.style.transformOrigin = '0 0';
-  line.style.transform       = `rotate(${angle}deg)`;
-  line.style.zIndex          = '-1';
-
-  // Color based on correctness
-  if (button1.classList.contains('correct-answer') && button2.classList.contains('correct-answer') && !button2.classList.contains('show-correct')) {
-    line.style.backgroundColor = '#28a745'; // Green for correct
-  } else {
-    line.style.backgroundColor = '#dc3545'; // Red for incorrect
-  }
-
-  container.appendChild(line);
 }
 
 function generateNextQuestion() {
@@ -501,25 +482,16 @@ function generateNextQuestion() {
   }
 
   // Combine correct and incorrect answers and shuffle them
-  let allChoices = [correctAnswer, ...incorrectAnswers];
-  // Fisher-Yates shuffle algorithm
-  for (let choiceIndex = allChoices.length - 1; choiceIndex > 0; choiceIndex--) {
-    const randomChoiceIndex = Math.floor(Math.random() * (choiceIndex + 1));
-    [allChoices[choiceIndex], allChoices[randomChoiceIndex]] = [allChoices[randomChoiceIndex], allChoices[choiceIndex]];
-  }
+  const allChoices = shuffleArray([correctAnswer, ...incorrectAnswers]);
 
   // Get the quiz container element
-  const quizContainer = document.querySelector('.quiz');
-  if (!quizContainer) {
-    console.error("Error: Element with class 'quiz' not found.");
-    return;
-  }
+  const quizContainer = getQuizContainer();
+  if (!quizContainer) return;
+
   quizContainer.innerHTML = ''; // Clear previous content
 
   // Add progress indicator
-  const progressElement = document.createElement('p');
-  progressElement.textContent = `Progrès: ${quizState.correctAnswers}/${quizState.selectedWordPairs.length} mots maîtrisés`;
-  progressElement.className   = 'progress';
+  const progressElement = createProgressElement(`Progrès: ${quizState.correctAnswers}/${quizState.selectedWordPairs.length} mots maîtrisés`);
   quizContainer.appendChild(progressElement);
 
   // Create the HTML for the question and choices
@@ -529,16 +501,7 @@ function generateNextQuestion() {
 
   // Add audio emoji for Slovak words in the question
   if (!isFrenchQuestion) { // Slovak is the question
-    const audioEmoji = document.createElement('span');
-    audioEmoji.textContent      = ' 🔊';
-    audioEmoji.className        = 'audio-emoji';
-    audioEmoji.style.cursor     = 'pointer';
-    audioEmoji.style.marginLeft = '10px';
-    audioEmoji.addEventListener('click', () => {
-      if (typeof playAudio === 'function') {
-        playAudio(questionText);
-      }
-    });
+    const audioEmoji = createAudioEmoji(questionText);
     questionElement.appendChild(audioEmoji);
   }
 
@@ -579,17 +542,13 @@ function generateTypingQuestion() {
   const correctAnswer    = isFrenchQuestion ? questionPair[1] : questionPair[0];
 
   // Get the quiz container element
-  const quizContainer = document.querySelector('.quiz');
-  if (!quizContainer) {
-    console.error("Error: Element with class 'quiz' not found.");
-    return;
-  }
+  const quizContainer = getQuizContainer();
+  if (!quizContainer) return;
+
   quizContainer.innerHTML = ''; // Clear previous content
 
   // Add progress indicator
-  const progressElement = document.createElement('p');
-  progressElement.textContent = `Progrès: ${quizState.correctAnswers}/${quizState.selectedWordPairs.length} mots maîtrisés`;
-  progressElement.className   = 'progress';
+  const progressElement = createProgressElement(`Progrès: ${quizState.correctAnswers}/${quizState.selectedWordPairs.length} mots maîtrisés`);
   quizContainer.appendChild(progressElement);
 
   // Create the HTML for the question
@@ -599,16 +558,7 @@ function generateTypingQuestion() {
 
   // Add audio emoji for Slovak words in the question
   if (!isFrenchQuestion) { // Slovak is the question
-    const audioEmoji = document.createElement('span');
-    audioEmoji.textContent      = ' 🔊';
-    audioEmoji.className        = 'audio-emoji';
-    audioEmoji.style.cursor     = 'pointer';
-    audioEmoji.style.marginLeft = '10px';
-    audioEmoji.addEventListener('click', () => {
-      if (typeof playAudio === 'function') {
-        playAudio(questionText);
-      }
-    });
+    const audioEmoji = createAudioEmoji(questionText);
     questionElement.appendChild(audioEmoji);
   }
 
@@ -686,17 +636,7 @@ function handleAnswerClick(clickedButton, selectedAnswer, correctAnswer, allButt
 
       // Add audio emoji for Slovak correct answers
       if (isFrenchQuestion) { // Correct answer is Slovak
-        const audioEmoji = document.createElement('span');
-        audioEmoji.textContent      = ' 🔊';
-        audioEmoji.className        = 'audio-emoji';
-        audioEmoji.style.cursor     = 'pointer';
-        audioEmoji.style.marginLeft = '10px';
-        audioEmoji.addEventListener('click', (event) => {
-          event.stopPropagation(); // Prevent button click
-          if (typeof playAudio === 'function') {
-            playAudio(correctAnswer);
-          }
-        });
+        const audioEmoji = createAudioEmoji(correctAnswer);
         button.appendChild(audioEmoji);
       }
     }
@@ -760,7 +700,7 @@ function handleTypingSubmit(inputField, correctAnswer, questionPair, isFrenchQue
   }
 
   // Show feedback
-  const quizContainer = document.querySelector('.quiz');
+  const quizContainer = getQuizContainer();
   const feedbackElement = document.createElement('div');
   feedbackElement.className = 'typing-feedback';
 
@@ -776,16 +716,7 @@ function handleTypingSubmit(inputField, correctAnswer, questionPair, isFrenchQue
 
     // Add audio emoji for Slovak correct answers
     if (isFrenchQuestion) { // Correct answer is Slovak
-      const audioEmoji = document.createElement('span');
-      audioEmoji.textContent      = ' 🔊';
-      audioEmoji.className        = 'audio-emoji';
-      audioEmoji.style.cursor     = 'pointer';
-      audioEmoji.style.marginLeft = '10px';
-      audioEmoji.addEventListener('click', () => {
-        if (typeof playAudio === 'function') {
-          playAudio(correctAnswer);
-        }
-      });
+      const audioEmoji = createAudioEmoji(correctAnswer);
       feedbackElement.querySelector('.correct-answer-display').appendChild(audioEmoji);
     }
   }
@@ -833,7 +764,8 @@ function handleTypingSubmit(inputField, correctAnswer, questionPair, isFrenchQue
 }
 
 function showNextButton() {
-  const quizContainer = document.querySelector('.quiz');
+  const quizContainer = getQuizContainer();
+  if (!quizContainer) return;
 
   // Remove existing next button if any
   const existingNextButton = quizContainer.querySelector('.next-button');
@@ -865,7 +797,9 @@ function showNextButton() {
 }
 
 async function showQuizCompletion() {
-  const quizContainer = document.querySelector('.quiz');
+  const quizContainer = getQuizContainer();
+  if (!quizContainer) return;
+
   quizContainer.innerHTML = '';
 
   // Generate and print results
@@ -939,8 +873,8 @@ async function pushQuizResultsToFirebase(results) {
     // Dynamic import for database functions
     const { ref, push } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
 
-    // Define the reference to the 'test' node
-    const resultsRef = ref(database, 'test');
+    // Define the reference to the 'resultsTest' node
+    const resultsRef = ref(database, 'resultsTest');
 
     // Push the quiz results. Firebase will generate a unique key for this entry.
     const newEntryRef = await push(resultsRef, results);
@@ -950,13 +884,15 @@ async function pushQuizResultsToFirebase(results) {
     console.error("Error pushing quiz results to Firebase:", error);
 
     // Show user-friendly error message
-    const quizContainer = document.querySelector('.quiz');
-    const errorElement  = document.createElement('p');
-    errorElement.textContent     = "Erreur d'enregistrement dans la base de donnée.";
-    errorElement.style.color     = '#dc3545';
-    errorElement.style.fontSize  = '14px';
-    errorElement.style.marginTop = '10px';
-    quizContainer.appendChild(errorElement);
+    const quizContainer = getQuizContainer();
+    if (quizContainer) {
+      const errorElement  = document.createElement('p');
+      errorElement.textContent     = "Erreur d'enregistrement dans la base de donnée.";
+      errorElement.style.color     = '#dc3545';
+      errorElement.style.fontSize  = '14px';
+      errorElement.style.marginTop = '10px';
+      quizContainer.appendChild(errorElement);
+    }
   }
 }
 
