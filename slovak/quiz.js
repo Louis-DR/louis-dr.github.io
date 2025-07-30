@@ -26,7 +26,7 @@ const firebaseConfig = {
   measurementId:     "G-XGGHW6L1M1"
 };
 
-const maxWords = 4;
+const maxWords = 10;
 
 // Firebase app and database - will be initialized when needed
 let firebaseApp = null;
@@ -777,19 +777,20 @@ function showNextButton() {
   nextButton.textContent = 'Suivant';
   nextButton.className   = 'next-button';
   nextButton.addEventListener('click', () => {
-    if (quizState.quizType === 'matching') {
-      // Move to multiple choice or completion
-      if (quizState.correctAnswers === quizState.selectedWordPairs.length) {
-        // Perfect score, continue to multiple choice
+    // Check if current quiz type should continue or transition
+    if (quizState.incorrectPairs.length > 0) {
+      // Continue with current quiz type until mastery
+      if (quizState.quizType === 'multiple_choice') {
         generateNextQuestion();
+      } else if (quizState.quizType === 'typing') {
+        generateTypingQuestion();
       } else {
-        // Has errors, continue to multiple choice with same words
-        generateNextQuestion();
+        // Matching is always one question, so transition
+        initializeQuiz();
       }
-    } else if (quizState.quizType === 'multiple_choice') {
-      generateTypingQuestion();
     } else {
-      generateTypingQuestion();
+      // All words mastered, transition to next quiz type
+      initializeQuiz();
     }
   });
 
