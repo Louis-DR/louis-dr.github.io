@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href='http://fonts.googleapis.com/css?family=Roboto:100,500,900' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="quiz.css">
   <title>Slovaque - Adjectifs Utiles</title>
 </head>
 <body>
@@ -505,6 +506,83 @@
   </tbody>
 </table>
 
+<div class="quiz">Loading quiz...</div>
+
 </body>
 <script src="audio.js"></script>
+<script src="quiz.js"></script>
+<script>
+const myWordList = [
+  ["bon", "dobrý"],
+  ["mauvais", "zlý"],
+  ["grand", "veľký"],
+  ["petit", "malý"],
+  ["nouveau", "nový"],
+  ["ancien", "bývalý"],
+  ["joli", "pekný"],
+  ["laid", "škaredý"],
+  ["très", "veľmi"],
+  ["un peu", "troška"],
+  ["plutôt", "dosť"],
+  ["complètement", "úplne"],
+  ["incroyablement", "neskutočne"],
+  ["pas très", "nie veľmi"],
+  ["pas", "nie"],
+  ["heureux", "šťastný"],
+  ["triste", "smutný"],
+  ["énervé", "nahnevaný"],
+  ["fatigué", "unavený"],
+  ["affamé", "hladný"],
+  ["assoiffé", "smädný"],
+  ["excité", "nadšený"],
+  ["nerveux", "nervózny"],
+  ["confiant", "sebavedomý"],
+  ["peureux", "vystrašený"],
+  ["ennuyé", "znudený"],
+  ["jeune", "mladý"],
+  ["vieux", "starý"],
+  ["gentil", "láskavý"],
+  ["méchant", "nezbedný"],
+  ["beau", "krásny"],
+  ["moche", "škaredý"],
+  ["intéligent", "múdry"],
+  ["stupide", "hlúpy"],
+  ["généreux", "veľkorysý"],
+  ["honnête", "úprimný"],
+  ["lourd", "ťažký"],
+  ["léger", "ľahký"],
+  ["bon marché", "lacný"],
+  ["cher", "drahý"],
+  ["rapide", "rýchly"],
+  ["lent", "pomalý"],
+  ["dur", "tvrdý"],
+  ["mou", "mäkký"],
+  ["propre", "čistý"],
+  ["sale", "špinavý"],
+  ["long", "dlhý"],
+  ["court", "krátky"],
+  ["large", "široký"],
+  ["fin", "úzky"],
+  ["grand", "vysoký"],
+  ["petit", "nízky"],
+  ["plein", "plný"],
+  ["vide", "prázdny"],
+  ["chaud", "horúcé"],
+  ["froid", "studený"],
+  ["tiède", "teplý"],
+  ["frais", "chladný"],
+  ["ensoleillé", "slnečný"],
+  ["pluvieux", "daždivý"],
+  ["venteux", "veterný"],
+  ["orageux", "búrlivý"],
+  ["sucré", "sladký"],
+  ["acide", "kyslý"],
+  ["salé", "slaný"],
+  ["amère", "horký"],
+  ["épicé", "pikantný"],
+];
+document.addEventListener('DOMContentLoaded', () => {
+  initializeQuiz(myWordList, "Verbes Utiles");
+});
+</script>
 </html>

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href='http://fonts.googleapis.com/css?family=Roboto:100,500,900' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="quiz.css">
   <title>Slovaque - Nourriture</title>
 </head>
 <body>
@@ -545,6 +546,111 @@
   </tbody>
 </table>
 
+<div class="quiz">Loading quiz...</div>
+
 </body>
 <script src="audio.js"></script>
+<script src="quiz.js"></script>
+<script>
+const myWordList = [
+  ["Pomme", "Jablko"],
+  ["Poire", "Hruška"],
+  ["Prune", "Slivka"],
+  ["Pèche", "Broskyňa"],
+  ["Abricot", "Marhuľa"],
+  ["Fraise", "Jahoda"],
+  ["Framboise", "Malina"],
+  ["Cerise", "Čerešňa"],
+  ["Groseille", "Ríbezľa"],
+  ["Mûre", "Černica"],
+  ["Myrtille", "Čučoriedka"],
+  ["Orange", "Pomaranč"],
+  ["Mandarine", "Mandarínka"],
+  ["Citron", "Citrón"],
+  ["Citron vert", "Limetka"],
+  ["Pamplemousse", "Grapefruit"],
+  ["Raisin", "Hrozno"],
+  ["Datte", "Datľa"],
+  ["Figue", "Figa"],
+  ["Melon", "Melón"],
+  ["Banane", "Banán"],
+  ["Ananas", "Ananás"],
+  ["Mangue", "Mango"],
+  ["Avocat", "Avokádo"],
+  ["Kiwi", "Kivi"],
+  ["Tomate", "Paradajka"],
+  ["Concombre", "Uhorka"],
+  ["Courgette", "Cuketa"],
+  ["Aubergine", "Baklažán"],
+  ["Poivron", "Paprika"],
+  ["Piment", "Čili"],
+  ["Betterave", "Červená repa"],
+  ["Oignon", "Cibuľa"],
+  ["Echalotte", "Šalotka"],
+  ["Ail", "Cesnak"],
+  ["Carotte", "Mrkva"],
+  ["Radis", "Reďkovka"],
+  ["Poireau", "Pór"],
+  ["Patate", "Zemiak"],
+  ["Salade", "Šalát"],
+  ["Chou", "Kapusta"],
+  ["Chou-fleur", "Karfiol"],
+  ["Chou frisé", "Kel"],
+  ["Brocoli", "Brokolica"],
+  ["Artichaut", "Artičok"],
+  ["Asperge", "Špargľa"],
+  ["Haricot", "Fazuľa"],
+  ["Petit pois", "Hrášok"],
+  ["Pois chiches", "Cícer"],
+  ["Lentilles", "Šošovica"],
+  ["Maïs", "Kukurica"],
+  ["Quinoa", "Kvinoa"],
+  ["Amande", "Mandľa"],
+  ["Noisette", "Lieskový orech"],
+  ["Pistache", "Pistácia"],
+  ["Cacahuète", "Arašid"],
+  ["Noix", "Vlašský orech"],
+  ["Pignon de pin", "Píniový oriešok"],
+  ["Graine de tournesol", "Slnečnicové semienko"],
+  ["Graine de courge", "Tekvicové semienko"],
+  ["Graine de lin", "Ľanové semienko"],
+  ["Graine de shia", "Chia semienko"],
+  ["Lait", "Mlieko"],
+  ["Yaourt", "Jogurt"],
+  ["Fromage", "Syr"],
+  ["Beurre", "Maslo"],
+  ["Crème", "Smotana"],
+  ["Poulet", "Kurča"],
+  ["Boeuf", "Hovädzie mäso"],
+  ["Porc", "Bravčové mäso"],
+  ["Agneau", "Jahňacie mäso"],
+  ["Poisson", "Ryba"],
+  ["Saumon", "Losos"],
+  ["Thon", "Tuniak"],
+  ["Sel", "Soľ"],
+  ["Poivre", "Čierne korenie"],
+  ["Paprika (épice)", "Paprika"],
+  ["Cannelle", "Škorica"],
+  ["Basilic", "Bazalka"],
+  ["Origan", "Oregano"],
+  ["Persil", "Petržlen"],
+  ["Eau", "Voda"],
+  ["Jus", "Džús"],
+  ["Thé", "Čaj"],
+  ["Café", "Káva"],
+  ["Vin", "Víno"],
+  ["Bière", "Pivo"],
+  ["Sucre", "Cukor"],
+  ["Farine", "Múka"],
+  ["Riz", "Ryža"],
+  ["Pâtes", "Cestoviny"],
+  ["Pain", "Chlieb"],
+  ["Oeuf", "Vajce"],
+  ["Huile", "Olej"],
+  ["Vinaigre", "Ocot"],
+];
+document.addEventListener('DOMContentLoaded', () => {
+  initializeQuiz(myWordList, "Verbes Utiles");
+});
+</script>
 </html>

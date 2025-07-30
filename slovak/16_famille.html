@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href='http://fonts.googleapis.com/css?family=Roboto:100,500,900' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="quiz.css">
   <title>Slovaque - Famille</title>
 </head>
 <body>
@@ -285,6 +286,60 @@
   </tbody>
 </table>
 
+<div class="quiz">Loading quiz...</div>
+
 </body>
 <script src="audio.js"></script>
+<script src="quiz.js"></script>
+<script>
+const myWordList = [
+  ["Homme", "Muž"],
+  ["Femme", "Žena"],
+  ["Garçon", "Chlapec"],
+  ["Fille", "Dievča"],
+  ["Parent", "Rodič"],
+  ["Père", "Otec"],
+  ["Mère", "Matka"],
+  ["Enfant", "Dieťa"],
+  ["Fils", "Syn"],
+  ["Fille", "Dcéra"],
+  ["Frères et sœurs", "Súrodenec"],
+  ["Frère", "Brat"],
+  ["Sœur", "Sestra"],
+  ["Grand-parent", "Starý rodič"],
+  ["Grand-père", "Starý otec"],
+  ["Grand-mère", "Stará matka"],
+  ["Petit-enfant", "Vnúča"],
+  ["Petit-fils", "Vnuk"],
+  ["Petite-fille", "Vnučka"],
+  ["Oncle", "Strýko"],
+  ["Tante", "Teta"],
+  ["Oncle (hors-famille)", "Ujo"],
+  ["Tante (hors-famille)", "Stryná"],
+  ["Cousin", "Bratranec"],
+  ["Cousine", "Sesternica"],
+  ["Neveu", "Synovec"],
+  ["Nièce", "Neter"],
+  ["Ami", "Kamarád"],
+  ["Amie", "Kamarátka"],
+  ["Copain", "Priateľ"],
+  ["Copine", "Priateľka"],
+  ["Petit-copain", "Frajer"],
+  ["Petite-copine", "Frajerka"],
+  ["Fiancé", "Snúbenec"],
+  ["Fiancée", "Snúbenica"],
+  ["Conjoints", "Manžel"],
+  ["Époux", "Manžel"],
+  ["Épouse", "Manželka"],
+  ["Beau-père", "Svokor"],
+  ["Belle-mère", "Svokra"],
+  ["Beau-fils", "Zať"],
+  ["Belle-fille", "Nevesta"],
+  ["Beau-frère", "Švagor"],
+  ["Belle-sœur", "Švagriná"],
+];
+document.addEventListener('DOMContentLoaded', () => {
+  initializeQuiz(myWordList, "Verbes Utiles");
+});
+</script>
 </html>
