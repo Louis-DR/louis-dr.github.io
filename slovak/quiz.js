@@ -26,11 +26,11 @@ const firebaseConfig = {
   measurementId:     "G-XGGHW6L1M1"
 };
 
-const maxWords = 10;
+const maxWords = 8;
 
 // Firebase app and database - will be initialized when needed
 let firebaseApp = null;
-let database = null;
+let database    = null;
 
 // Utility functions to reduce code duplication
 function getQuizContainer() {
@@ -103,13 +103,13 @@ function drawMatchingLine(button1, button2, color = '#007bff') {
   container.appendChild(line);
 }
 
-function initializeQuiz(wordPairs, quizName = 'Slovak Language Quiz') {
+function initializeQuiz(wordPairs, quizName) {
   // Store original word pairs for the very first initialization
   if (wordPairs) {
     quizState.originalWordPairs = wordPairs;
   }
 
-  // Store quiz name
+  // Store quiz name only if explicitly provided (not default parameter)
   if (quizName) {
     quizState.quizName = quizName;
   }
@@ -785,12 +785,12 @@ function showNextButton() {
       } else if (quizState.quizType === 'typing') {
         generateTypingQuestion();
       } else {
-        // Matching is always one question, so transition
-        initializeQuiz();
+        // Matching is always one question, so show completion (which will upload to DB)
+        showQuizCompletion();
       }
     } else {
-      // All words mastered, transition to next quiz type
-      initializeQuiz();
+      // All words mastered, show completion screen (which uploads to database)
+      showQuizCompletion();
     }
   });
 
@@ -874,8 +874,8 @@ async function pushQuizResultsToFirebase(results) {
     // Dynamic import for database functions
     const { ref, push } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
 
-    // Define the reference to the 'resultsTest' node
-    const resultsRef = ref(database, 'resultsTest');
+    // Define the reference to the 'results' node
+    const resultsRef = ref(database, 'results');
 
     // Push the quiz results. Firebase will generate a unique key for this entry.
     const newEntryRef = await push(resultsRef, results);
@@ -958,7 +958,9 @@ function clearQuizResults() {
 }
 
 function restartQuiz() {
-  // Restart the quiz with stored word pairs (alternation will happen automatically)
-  quizState.isFirstStart = true; // Reset to first start for new sequence
+  // Only set isFirstStart to true if we're starting a completely new sequence (after typing)
+  if (quizState.quizType === 'typing') {
+    quizState.isFirstStart = true; // Reset to first start for new sequence
+  }
   initializeQuiz();
 }
