@@ -16,13 +16,13 @@ h3 {
   margin-block-start: 1.6em;
   margin-block-end:   0.4em;
 }
-body { color: #333; font-family: 'Roboto', sans-serif; }
-a {text-decoration: underline dotted; color: #333}
+body, a { color: #333; font-family: 'Roboto', sans-serif; }
+a {text-decoration: underline dotted;}
 b { color: #888; font-style: normal; }
 .audio {cursor: pointer;}
 .center { text-align: center; }
 @media (prefers-color-scheme: dark) {
-  body {
+  body, a {
     background-color: black;
     color: #CCC;
   }

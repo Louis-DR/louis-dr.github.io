@@ -176,7 +176,7 @@ function showStartScreen() {
 
   const startElement = document.createElement('div');
   startElement.className = 'quiz-start';
-  startElement.innerHTML = `<button class="start-button" id="start-quiz-button">Commencer le Quiz "${quizState.quizName}"</button>`;
+  startElement.innerHTML = `<button class="btn btn-success btn-lg start-button" id="start-quiz-button">Commencer le Quiz "${quizState.quizName}"</button>`;
 
   quizContainer.appendChild(startElement);
 
@@ -266,7 +266,7 @@ function generateMatchingQuestion() {
   // Create submit button (initially disabled)
   const submitButton = document.createElement('button');
   submitButton.textContent = 'Soumettre';
-  submitButton.className   = 'submit-button';
+  submitButton.className   = 'btn btn-primary submit-button';
   submitButton.disabled    = true;
   submitButton.addEventListener('click', handleMatchingSubmit);
   quizContainer.appendChild(submitButton);
@@ -397,19 +397,19 @@ function handleMatchingSubmit() {
 
     if (isCorrect) {
       // Mark as correct
-      frenchButton.classList.add('correct-answer');
-      slovakButton.classList.add('correct-answer');
+      frenchButton.classList.add('state-correct');
+      slovakButton.classList.add('state-correct');
       correctPairs++;
       console.log(`correct: ${frenchWord} - ${slovakWord}`);
     } else {
       // Mark as incorrect
-      frenchButton.classList.add('wrong-answer');
+      frenchButton.classList.add('state-incorrect');
       if (userSlovakButton) {
-        userSlovakButton.classList.add('wrong-answer');
+        userSlovakButton.classList.add('state-incorrect');
       }
 
       // Show the correct answer
-      slovakButton.classList.add('correct-answer');
+      slovakButton.classList.add('state-correct');
 
       totalErrors++;
       console.log(`incorrect: ${frenchWord} - ${userSlovakWord || 'none'}, correct: ${slovakWord}`);
@@ -437,7 +437,7 @@ function handleMatchingSubmit() {
     if (frenchButton && slovakButton) {
       // Determine line color based on correctness
       let lineColor;
-      if (frenchButton.classList.contains('correct-answer') && slovakButton.classList.contains('correct-answer') && !slovakButton.classList.contains('show-correct')) {
+      if (frenchButton.classList.contains('state-correct') && slovakButton.classList.contains('state-correct') && !slovakButton.classList.contains('show-correct')) {
         lineColor = '#28a745'; // Green for correct
       } else {
         lineColor = '#dc3545'; // Red for incorrect
@@ -516,7 +516,7 @@ function generateNextQuestion() {
   allChoices.forEach(choice => {
     const button = document.createElement('button');
     button.textContent = choice;
-    button.className   = 'choice-button';
+    button.className   = 'btn btn-outline btn-block choice-button';
     button.addEventListener('click', () => handleAnswerClick(button, choice, correctAnswer, choiceButtons, questionPair, isFrenchQuestion));
     choiceButtons.push(button);
     choicesContainer.appendChild(button);
@@ -570,7 +570,7 @@ function generateTypingQuestion() {
 
   const inputField = document.createElement('input');
   inputField.type         = 'text';
-  inputField.className    = 'typing-input';
+  inputField.className    = 'form-input typing-input';
   inputField.placeholder  = 'Type your answer here...';
   inputField.autocomplete = 'off';
 
@@ -584,7 +584,7 @@ function generateTypingQuestion() {
     const charButton = document.createElement('button');
     charButton.type        = 'button';
     charButton.textContent = char;
-    charButton.className   = 'special-char-button';
+    charButton.className   = 'btn btn-secondary btn-sm special-char-button';
     charButton.addEventListener('click', () => {
       // Insert character at cursor position
       const cursorPosition = inputField.selectionStart;
@@ -602,7 +602,7 @@ function generateTypingQuestion() {
 
   const submitButton = document.createElement('button');
   submitButton.textContent = 'Soumettre';
-  submitButton.className   = 'submit-button';
+  submitButton.className   = 'btn btn-primary submit-button';
   submitButton.addEventListener('click', () => handleTypingSubmit(inputField, correctAnswer, questionPair, isFrenchQuestion));
 
   // Allow Enter key to submit
@@ -632,7 +632,7 @@ function handleAnswerClick(clickedButton, selectedAnswer, correctAnswer, allButt
   // Highlight the correct answer in green
   allButtons.forEach(button => {
     if (button.textContent === correctAnswer) {
-      button.classList.add('correct-answer');
+      button.classList.add('state-correct');
 
       // Add audio emoji for Slovak correct answers
       if (isFrenchQuestion) { // Correct answer is Slovak
@@ -669,7 +669,7 @@ function handleAnswerClick(clickedButton, selectedAnswer, correctAnswer, allButt
     }
   } else {
     // If the clicked answer is wrong, highlight it in red
-    clickedButton.classList.add('wrong-answer');
+    clickedButton.classList.add('state-incorrect');
     console.log("incorrect");
 
     // Make sure this pair stays in the incorrect pairs (it should already be there)
@@ -702,17 +702,17 @@ function handleTypingSubmit(inputField, correctAnswer, questionPair, isFrenchQue
   // Show feedback
   const quizContainer = getQuizContainer();
   const feedbackElement = document.createElement('div');
-  feedbackElement.className = 'typing-feedback';
+  feedbackElement.className = 'feedback typing-feedback';
 
   if (isCorrect) {
-    feedbackElement.innerHTML = `<span class="correct-feedback">✓ Correct!</span>`;
-    inputField.classList.add('correct-input');
+    feedbackElement.innerHTML = `<span class="feedback-success correct-feedback">✓ Correct!</span>`;
+    inputField.classList.add('state-correct');
   } else {
     feedbackElement.innerHTML = `
-      <span class="wrong-feedback">✗ Incorrect</span><br>
-      <span class="correct-answer-display">Réponse correcte: "${correctAnswer}"</span>
+      <span class="feedback-error wrong-feedback">✗ Incorrect</span><br>
+      <span class="feedback-info correct-answer-display">Réponse correcte: "${correctAnswer}"</span>
     `;
-    inputField.classList.add('wrong-input');
+    inputField.classList.add('state-incorrect');
 
     // Add audio emoji for Slovak correct answers
     if (isFrenchQuestion) { // Correct answer is Slovak
@@ -775,7 +775,7 @@ function showNextButton() {
 
   const nextButton = document.createElement('button');
   nextButton.textContent = 'Suivant';
-  nextButton.className   = 'next-button';
+  nextButton.className   = 'btn btn-primary next-button';
   nextButton.addEventListener('click', () => {
     // Check if current quiz type should continue or transition
     if (quizState.incorrectPairs.length > 0) {
@@ -826,7 +826,7 @@ async function showQuizCompletion() {
   completionElement.innerHTML = `
     <p>Questions Répondues: <strong>${quizState.totalQuestions}</strong></p>
     <p>Prochain Quiz: <strong>${nextQuizTypeDisplay}</strong></p>
-    <button class="next-button" id="restart-quiz-button">Commencer</button>
+    <button class="btn btn-primary next-button" id="restart-quiz-button">Commencer</button>
   `;
 
   // Add event listener for the restart button
