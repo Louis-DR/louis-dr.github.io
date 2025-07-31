@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href='http://fonts.googleapis.com/css?family=Roboto:100,500,900' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="quiz.css">
   <title>Slovaque - Maison</title>
 </head>
 <body>
@@ -262,6 +263,63 @@
   </tbody>
 </table>
 
+<div class="quiz">Loading quiz...</div>
+
 </body>
 <script src="audio.js"></script>
+<script src="quiz.js"></script>
+<script>
+const myWordList = [
+  ["Logement", "Bývanie"],
+  ["Maison", "Dom"],
+  ["Appartement", "Byt"],
+  ["Pièce", "Izba"],
+  ["Mur", "Stena"],
+  ["Toit", "Strecha"],
+  ["Sol", "Podlaha"],
+  ["Fenêtre", "Okno"],
+  ["Porte", "Dvere"],
+  ["Jardin", "Záhrada"],
+  ["Balcon", "Balkón"],
+  ["Cave", "Pivnica"],
+  ["Grenier", "Podkrovie"],
+  ["Escalier", "Schody"],
+  ["Ascenseur", "Výťah"],
+  ["Clé", "Kľúč"],
+  ["Pièce", "Izba"],
+  ["Salon", "Obývačka"],
+  ["Cuisine", "Kuchyňa"],
+  ["Chambre", "Spálňa"],
+  ["Salde bain", "Kúpeľňa"],
+  ["Les toilettes", "Záchod"],
+  ["Salà manger", "Jedáleň"],
+  ["Bureau (pièce)", "Pracovňa"],
+  ["Couloir", "Chodba"],
+  ["Entrée", "Vstup"],
+  ["Meuble", "Nábytok"],
+  ["Meubles", "<b>Kusy</b> nábytku"],
+  ["Lit", "Posteľ"],
+  ["Armoire", "Skriňa"],
+  ["Table", "Stôl"],
+  ["Chaise", "Stolička"],
+  ["Canapé", "Gauč"],
+  ["Fauteuil", "Kreslo"],
+  ["Étagère", "Polica"],
+  ["Tiroir", "Zásuvka"],
+  ["Miroir", "Zrkadlo"],
+  ["Tapis", "Koberec"],
+  ["Rideau", "Záclona"],
+  ["Commode", "Komoda"],
+  ["Lampe", "Lampa"],
+  ["Télévision", "Televízor"],
+  ["Réfrigérateur", "Chladnička"],
+  ["Four", "Rúra"],
+  ["Cuisinière", "Sporák"],
+  ["Lave-linge", "Práčka"],
+  ["Lave-vaisselle", "Umývačka riadu"],
+];
+document.addEventListener('DOMContentLoaded', () => {
+  initializeQuiz(myWordList, "Maison");
+});
+</script>
 </html>
