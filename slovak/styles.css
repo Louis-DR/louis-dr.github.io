@@ -2,7 +2,7 @@
 th:not(:last-child), td:not(:last-child) { padding-right: 15px; }
 th, td { white-space: nowrap; }
 table { width: 100%; overflow-x: auto; display: block; }
-tbody { display: table; width: max-content; }
+tbody { width: max-content; }
 h1 {
   font-size: 2.2em;
 }
