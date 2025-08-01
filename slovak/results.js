@@ -78,6 +78,8 @@ function aggregateWordPairStats(allResults) {
   // Process each quiz result
   Object.values(allResults).forEach(result => {
     if (result.words && Array.isArray(result.words)) {
+      const quizType = result.quizType || 'unknown';
+
       result.words.forEach(wordData => {
         const frenchWord = wordData.wordPair[0];
         const slovakWord = wordData.wordPair[1];
@@ -89,10 +91,20 @@ function aggregateWordPairStats(allResults) {
             slovakWord: slovakWord,
             totalQuestions: 0,
             totalErrors: 0,
-            frenchToSlovakQuestions: 0,
-            frenchToSlovakErrors: 0,
-            slovakToFrenchQuestions: 0,
-            slovakToFrenchErrors: 0,
+            // Multiple choice stats
+            frenchToSlovakMultipleChoiceQuestions: 0,
+            frenchToSlovakMultipleChoiceErrors: 0,
+            slovakToFrenchMultipleChoiceQuestions: 0,
+            slovakToFrenchMultipleChoiceErrors: 0,
+            // Typing stats
+            frenchToSlovakTypingQuestions: 0,
+            frenchToSlovakTypingErrors: 0,
+            slovakToFrenchTypingQuestions: 0,
+            slovakToFrenchTypingErrors: 0,
+            // Reorder letters stats
+            reorderLettersQuestions: 0,
+            reorderLettersErrors: 0,
+            // Matching stats
             matchingQuestions: 0,
             matchingErrors: 0
           });
@@ -100,24 +112,56 @@ function aggregateWordPairStats(allResults) {
 
         const stats = wordStats.get(wordPairKey);
 
-        // Aggregate French to Slovak stats
-        const frenchToSlovakTotal = (wordData.french_to_slovak_successes || 0) + (wordData.french_to_slovak_failures || 0);
-        stats.frenchToSlovakQuestions += frenchToSlovakTotal;
-        stats.frenchToSlovakErrors += (wordData.french_to_slovak_failures || 0);
+        // Aggregate stats based on quiz type
+        if (quizType === 'multiple_choice') {
+          // Aggregate French to Slovak multiple choice stats
+          const frenchToSlovakTotal = (wordData.french_to_slovak_successes || 0) + (wordData.french_to_slovak_failures || 0);
+          stats.frenchToSlovakMultipleChoiceQuestions += frenchToSlovakTotal;
+          stats.frenchToSlovakMultipleChoiceErrors += (wordData.french_to_slovak_failures || 0);
 
-        // Aggregate Slovak to French stats
-        const slovakToFrenchTotal = (wordData.slovak_to_french_successes || 0) + (wordData.slovak_to_french_failures || 0);
-        stats.slovakToFrenchQuestions += slovakToFrenchTotal;
-        stats.slovakToFrenchErrors += (wordData.slovak_to_french_failures || 0);
+          // Aggregate Slovak to French multiple choice stats
+          const slovakToFrenchTotal = (wordData.slovak_to_french_successes || 0) + (wordData.slovak_to_french_failures || 0);
+          stats.slovakToFrenchMultipleChoiceQuestions += slovakToFrenchTotal;
+          stats.slovakToFrenchMultipleChoiceErrors += (wordData.slovak_to_french_failures || 0);
 
-        // Aggregate Matching stats
-        const matchingTotal = (wordData.matching_successes || 0) + (wordData.matching_failures || 0);
-        stats.matchingQuestions += matchingTotal;
-        stats.matchingErrors += (wordData.matching_failures || 0);
+          // Update totals
+          stats.totalQuestions += frenchToSlovakTotal + slovakToFrenchTotal;
+          stats.totalErrors += (wordData.french_to_slovak_failures || 0) + (wordData.slovak_to_french_failures || 0);
 
-        // Update totals
-        stats.totalQuestions += frenchToSlovakTotal + slovakToFrenchTotal + matchingTotal;
-        stats.totalErrors += (wordData.french_to_slovak_failures || 0) + (wordData.slovak_to_french_failures || 0) + (wordData.matching_failures || 0);
+        } else if (quizType === 'typing') {
+          // Aggregate typing stats for both directions
+          const frenchToSlovakTotal = (wordData.french_to_slovak_successes || 0) + (wordData.french_to_slovak_failures || 0);
+          stats.frenchToSlovakTypingQuestions += frenchToSlovakTotal;
+          stats.frenchToSlovakTypingErrors += (wordData.french_to_slovak_failures || 0);
+
+          const slovakToFrenchTotal = (wordData.slovak_to_french_successes || 0) + (wordData.slovak_to_french_failures || 0);
+          stats.slovakToFrenchTypingQuestions += slovakToFrenchTotal;
+          stats.slovakToFrenchTypingErrors += (wordData.slovak_to_french_failures || 0);
+
+          // Update totals
+          stats.totalQuestions += frenchToSlovakTotal + slovakToFrenchTotal;
+          stats.totalErrors += (wordData.french_to_slovak_failures || 0) + (wordData.slovak_to_french_failures || 0);
+
+        } else if (quizType === 'reorder_letters') {
+          // Aggregate Reorder Letters stats (French to Slovak only)
+          const reorderTotal = (wordData.french_to_slovak_successes || 0) + (wordData.french_to_slovak_failures || 0);
+          stats.reorderLettersQuestions += reorderTotal;
+          stats.reorderLettersErrors += (wordData.french_to_slovak_failures || 0);
+
+          // Update totals
+          stats.totalQuestions += reorderTotal;
+          stats.totalErrors += (wordData.french_to_slovak_failures || 0);
+
+        } else if (quizType === 'matching') {
+          // Aggregate Matching stats
+          const matchingTotal = (wordData.matching_successes || 0) + (wordData.matching_failures || 0);
+          stats.matchingQuestions += matchingTotal;
+          stats.matchingErrors += (wordData.matching_failures || 0);
+
+          // Update totals
+          stats.totalQuestions += matchingTotal;
+          stats.totalErrors += (wordData.matching_failures || 0);
+        }
       });
     }
   });
@@ -129,8 +173,12 @@ function aggregateWordPairStats(allResults) {
  * Create and display the results table
  */
 function displayResultsTable(wordPairStats) {
-  // Sort by Slovak word alphabetically
-  wordPairStats.sort((a, b) => a.slovakWord.localeCompare(b.slovakWord, 'sk'));
+  // Sort by success rate (lowest first) to show most problematic words at the top
+  wordPairStats.sort((a, b) => {
+    const successRateA = a.totalQuestions > 0 ? ((a.totalQuestions - a.totalErrors) / a.totalQuestions) * 100 : 100;
+    const successRateB = b.totalQuestions > 0 ? ((b.totalQuestions - b.totalErrors) / b.totalQuestions) * 100 : 100;
+    return successRateA - successRateB; // Ascending order (lowest success rate first)
+  });
 
   // Get or create container
   let container = document.querySelector('.results-container');
@@ -154,8 +202,14 @@ function displayResultsTable(wordPairStats) {
   const table = document.createElement('table');
   table.className = 'results-table';
   table.style.width = '100%';
+  table.style.minWidth = '1000px';  // Ensure minimum width for all columns
   table.style.borderCollapse = 'collapse';
   table.style.marginBottom = '20px';
+
+  // Make table scrollable on small screens
+  const tableWrapper = document.createElement('div');
+  tableWrapper.style.overflowX = 'auto';
+  tableWrapper.style.marginBottom = '20px';
 
   // Create header
   const thead = document.createElement('thead');
@@ -164,24 +218,30 @@ function displayResultsTable(wordPairStats) {
     <th>Français</th>
     <th>Slovaque</th>
     <th>Total Questions</th>
-    <th>Total Erreurs</th>
-    <th>Taux d'Erreur</th>
-    <th>FR→SK Questions</th>
-    <th>FR→SK Erreurs</th>
-    <th>SK→FR Questions</th>
-    <th>SK→FR Erreurs</th>
-    <th>Correspondances Questions</th>
-    <th>Correspondances Erreurs</th>
+    <th>Réussite Globale</th>
+    <th>FR→SK Choix Multiple</th>
+    <th>FR→SK Réorganiser</th>
+    <th>FR→SK Saisie</th>
+    <th>SK→FR Choix Multiple</th>
+    <th>SK→FR Saisie</th>
+    <th>Correspondances</th>
   `;
 
   // Style header
-  Array.from(headerRow.children).forEach(th => {
-    th.style.padding = '12px 8px';
+  Array.from(headerRow.children).forEach((th, index) => {
+    th.style.padding = '8px 4px';
     th.style.border = '1px solid #ddd';
     th.style.backgroundColor = '#f8f9fa';
     th.style.fontWeight = 'bold';
     th.style.textAlign = 'center';
-    th.style.fontSize = '14px';
+    th.style.fontSize = '13px';
+
+    // Make first two columns wider for word text
+    if (index < 2) {
+      th.style.minWidth = '120px';
+    } else {
+      th.style.minWidth = '80px';
+    }
   });
 
   thead.appendChild(headerRow);
@@ -190,44 +250,76 @@ function displayResultsTable(wordPairStats) {
   // Create body
   const tbody = document.createElement('tbody');
 
-  wordPairStats.forEach((wordStats, index) => {
+        wordPairStats.forEach((wordStats, index) => {
     const row = document.createElement('tr');
 
-    // Calculate error rate
-    const errorRate = wordStats.totalQuestions > 0
-      ? ((wordStats.totalErrors / wordStats.totalQuestions) * 100).toFixed(1)
-      : '0.0';
+    // Calculate success rates for each exercise type
+    const globalSuccessRate = wordStats.totalQuestions > 0
+      ? (((wordStats.totalQuestions - wordStats.totalErrors) / wordStats.totalQuestions) * 100).toFixed(1)
+      : '100.0';
+
+    const frenchToSlovakMultipleChoiceSuccessRate = wordStats.frenchToSlovakMultipleChoiceQuestions > 0
+      ? (((wordStats.frenchToSlovakMultipleChoiceQuestions - wordStats.frenchToSlovakMultipleChoiceErrors) / wordStats.frenchToSlovakMultipleChoiceQuestions) * 100).toFixed(1)
+      : '-';
+
+    const reorderLettersSuccessRate = wordStats.reorderLettersQuestions > 0
+      ? (((wordStats.reorderLettersQuestions - wordStats.reorderLettersErrors) / wordStats.reorderLettersQuestions) * 100).toFixed(1)
+      : '-';
+
+    const frenchToSlovakTypingSuccessRate = wordStats.frenchToSlovakTypingQuestions > 0
+      ? (((wordStats.frenchToSlovakTypingQuestions - wordStats.frenchToSlovakTypingErrors) / wordStats.frenchToSlovakTypingQuestions) * 100).toFixed(1)
+      : '-';
+
+    const slovakToFrenchMultipleChoiceSuccessRate = wordStats.slovakToFrenchMultipleChoiceQuestions > 0
+      ? (((wordStats.slovakToFrenchMultipleChoiceQuestions - wordStats.slovakToFrenchMultipleChoiceErrors) / wordStats.slovakToFrenchMultipleChoiceQuestions) * 100).toFixed(1)
+      : '-';
+
+    const slovakToFrenchTypingSuccessRate = wordStats.slovakToFrenchTypingQuestions > 0
+      ? (((wordStats.slovakToFrenchTypingQuestions - wordStats.slovakToFrenchTypingErrors) / wordStats.slovakToFrenchTypingQuestions) * 100).toFixed(1)
+      : '-';
+
+    const matchingSuccessRate = wordStats.matchingQuestions > 0
+      ? (((wordStats.matchingQuestions - wordStats.matchingErrors) / wordStats.matchingQuestions) * 100).toFixed(1)
+      : '-';
 
     row.innerHTML = `
       <td>${wordStats.frenchWord}</td>
       <td><strong>${wordStats.slovakWord}</strong></td>
       <td>${wordStats.totalQuestions}</td>
-      <td>${wordStats.totalErrors}</td>
-      <td>${errorRate}%</td>
-      <td>${wordStats.frenchToSlovakQuestions}</td>
-      <td>${wordStats.frenchToSlovakErrors}</td>
-      <td>${wordStats.slovakToFrenchQuestions}</td>
-      <td>${wordStats.slovakToFrenchErrors}</td>
-      <td>${wordStats.matchingQuestions}</td>
-      <td>${wordStats.matchingErrors}</td>
+      <td>${globalSuccessRate}%</td>
+      <td>${frenchToSlovakMultipleChoiceSuccessRate}${frenchToSlovakMultipleChoiceSuccessRate !== '-' ? '%' : ''}</td>
+      <td>${reorderLettersSuccessRate}${reorderLettersSuccessRate !== '-' ? '%' : ''}</td>
+      <td>${frenchToSlovakTypingSuccessRate}${frenchToSlovakTypingSuccessRate !== '-' ? '%' : ''}</td>
+      <td>${slovakToFrenchMultipleChoiceSuccessRate}${slovakToFrenchMultipleChoiceSuccessRate !== '-' ? '%' : ''}</td>
+      <td>${slovakToFrenchTypingSuccessRate}${slovakToFrenchTypingSuccessRate !== '-' ? '%' : ''}</td>
+      <td>${matchingSuccessRate}${matchingSuccessRate !== '-' ? '%' : ''}</td>
     `;
 
     // Style cells
     Array.from(row.children).forEach((td, cellIndex) => {
-      td.style.padding = '8px';
+      td.style.padding = '6px 4px';
       td.style.border = '1px solid #ddd';
       td.style.textAlign = cellIndex < 2 ? 'left' : 'center';
-      td.style.fontSize = '14px';
+      td.style.fontSize = '13px';
 
-      // Highlight high error rates
-      if (cellIndex === 4) { // Error rate column
-        const rate = parseFloat(errorRate);
-        if (rate > 50) {
-          td.style.backgroundColor = '#f8d7da';
-          td.style.color = '#721c24';
-        } else if (rate > 25) {
-          td.style.backgroundColor = '#fff3cd';
-          td.style.color = '#856404';
+      // Highlight success rates (columns 3-9 are success rate columns)
+      if (cellIndex >= 3 && cellIndex <= 9) {
+        const rateText = td.textContent.replace('%', '');
+        if (rateText !== '-') {
+          const rate = parseFloat(rateText);
+          if (rate >= 80) {
+            td.style.backgroundColor = '#d4edda';
+            td.style.color = '#155724';
+            td.style.fontWeight = 'bold';
+          } else if (rate >= 50) {
+            td.style.backgroundColor = '#fff3cd';
+            td.style.color = '#856404';
+            td.style.fontWeight = 'bold';
+          } else {
+            td.style.backgroundColor = '#f8d7da';
+            td.style.color = '#721c24';
+            td.style.fontWeight = 'bold';
+          }
         }
       }
     });
@@ -241,13 +333,14 @@ function displayResultsTable(wordPairStats) {
   });
 
   table.appendChild(tbody);
-  container.appendChild(table);
+  tableWrapper.appendChild(table);
+  container.appendChild(tableWrapper);
 
-  // Add summary statistics
+    // Add summary statistics
   const totalWords = wordPairStats.length;
   const totalQuestions = wordPairStats.reduce((sum, stats) => sum + stats.totalQuestions, 0);
   const totalErrors = wordPairStats.reduce((sum, stats) => sum + stats.totalErrors, 0);
-  const overallErrorRate = totalQuestions > 0 ? ((totalErrors / totalQuestions) * 100).toFixed(1) : '0.0';
+  const overallSuccessRate = totalQuestions > 0 ? (((totalQuestions - totalErrors) / totalQuestions) * 100).toFixed(1) : '100.0';
 
   const summary = document.createElement('div');
   summary.className = 'results-summary';
@@ -262,7 +355,7 @@ function displayResultsTable(wordPairStats) {
     <p><strong>Nombre de mots uniques:</strong> ${totalWords}</p>
     <p><strong>Total questions posées:</strong> ${totalQuestions}</p>
     <p><strong>Total erreurs:</strong> ${totalErrors}</p>
-    <p><strong>Taux d'erreur global:</strong> ${overallErrorRate}%</p>
+    <p><strong>Taux de réussite global:</strong> ${overallSuccessRate}%</p>
   `;
 
   container.appendChild(summary);
