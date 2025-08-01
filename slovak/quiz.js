@@ -35,6 +35,8 @@ const maxWords = 8;
 let firebaseApp = null;
 let database    = null;
 
+// Note: Using Firebase unique keys to prevent duplicates
+
 // Utility functions to reduce code duplication
 function getQuizContainer() {
   const quizContainer = document.querySelector('.quiz');
@@ -201,7 +203,18 @@ function showStartScreen() {
 
   const startElement = document.createElement('div');
   startElement.className = 'quiz-start';
-  startElement.innerHTML = `<button class="btn btn-success btn-lg start-button" id="start-quiz-button">Commencer le Quiz "${quizState.quizName}"</button>`;
+
+  // Check for pending results
+  const pendingCount = checkPendingResultsCount();
+  let pendingNotification = '';
+  if (pendingCount > 0) {
+    pendingNotification = `<p style="color: #856404; font-size: 14px; margin-bottom: 15px; background-color: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeaa7;">⚠️ ${pendingCount} résultat(s) en attente seront envoyés lors du démarrage.</p>`;
+  }
+
+  startElement.innerHTML = `
+    ${pendingNotification}
+    <button class="btn btn-success btn-lg start-button" id="start-quiz-button">Commencer le Quiz "${quizState.quizName}"</button>
+  `;
 
   quizContainer.appendChild(startElement);
 
@@ -214,10 +227,18 @@ function showStartScreen() {
   }, 0);
 }
 
-function startQuiz() {
+async function startQuiz() {
   quizState.isInitialized = true;
   // Mark this as first quiz start to avoid transition logic
   quizState.isFirstStart = true;
+
+  // Try to upload any pending results when starting the quiz
+  try {
+    await uploadPendingResults();
+  } catch (error) {
+    console.error("Error uploading pending results on quiz start:", error);
+  }
+
   initializeQuiz();
 }
 
@@ -1136,9 +1157,18 @@ async function initializeFirebase() {
   }
 
   try {
-    // Dynamic imports to avoid CORS issues with file:// protocol
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
-    const { getDatabase }   = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+    // Dynamic imports with timeout to avoid hanging on slow networks
+    const importPromise = (async () => {
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
+      const { getDatabase }   = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+      return { initializeApp, getDatabase };
+    })();
+
+    const importTimeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Firebase import timeout')), 5000)
+    );
+
+    const { initializeApp, getDatabase } = await Promise.race([importPromise, importTimeoutPromise]);
 
     // Initialize Firebase app and database
     firebaseApp = initializeApp(firebaseConfig);
@@ -1153,32 +1183,218 @@ async function initializeFirebase() {
 
 async function pushQuizResultsToFirebase(results) {
   try {
+    // Try to upload any pending results from localStorage first
+    await uploadPendingResults();
+
     // Initialize Firebase if not already done
     await initializeFirebase();
 
     // Dynamic import for database functions
-    const { ref, push } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+    const { ref, set, get } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
 
-    // Define the reference to the 'results' node
-    const resultsRef = ref(database, 'results');
+    // Use the uniqueId as the Firebase key to prevent duplicates
+    const resultRef = ref(database, `results/${results.uniqueId}`);
 
-    // Push the quiz results. Firebase will generate a unique key for this entry.
-    const newEntryRef = await push(resultsRef, results);
-    const newKey = newEntryRef.key;
-    console.log("Quiz results pushed to Firebase successfully. Entry key:", newKey);
+    // Quick existence check with short timeout - if this fails, network is too bad
+    const checkPromise = get(resultRef);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Network too slow')), 3000)
+    );
+
+    const snapshot = await Promise.race([checkPromise, timeoutPromise]);
+    if (snapshot.exists()) {
+      console.log(`Result ${results.uniqueId} already exists in Firebase, skipping duplicate`);
+      return;
+    }
+
+    // Upload using set() with the unique key - with timeout
+    const uploadPromise = set(resultRef, results);
+    const uploadTimeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Upload failed - network timeout')), 8000)
+    );
+
+    await Promise.race([uploadPromise, uploadTimeoutPromise]);
+    console.log("Quiz results uploaded to Firebase successfully. ID:", results.uniqueId);
+
   } catch (error) {
     console.error("Error pushing quiz results to Firebase:", error);
+
+    // Store results locally for retry later
+    storeResultsLocally(results);
 
     // Show user-friendly error message
     const quizContainer = getQuizContainer();
     if (quizContainer) {
-      const errorElement  = document.createElement('p');
-      errorElement.textContent     = "Erreur d'enregistrement dans la base de donnée.";
-      errorElement.style.color     = '#dc3545';
-      errorElement.style.fontSize  = '14px';
+      const errorElement = document.createElement('p');
+      errorElement.textContent = "Pas de connexion internet. Résultats sauvegardés localement.";
+      errorElement.style.color = '#856404';
+      errorElement.style.fontSize = '14px';
       errorElement.style.marginTop = '10px';
       quizContainer.appendChild(errorElement);
     }
+  }
+}
+
+
+
+/**
+ * Manually trigger upload of pending results (useful for debugging or forcing uploads)
+ */
+async function forceUploadPendingResults() {
+  console.log("Manually triggering upload of pending results...");
+  try {
+    await uploadPendingResults();
+  } catch (error) {
+    console.error("Error in manual upload:", error);
+  }
+}
+
+/**
+ * Store quiz results locally when upload fails
+ */
+function storeResultsLocally(results) {
+  try {
+    // Get existing pending results
+    const existingResults = JSON.parse(localStorage.getItem('pendingQuizResults') || '[]');
+
+    // Check if this uniqueId already exists in localStorage to prevent duplicates
+    const existingIndex = existingResults.findIndex(result => result.uniqueId === results.uniqueId);
+    if (existingIndex !== -1) {
+      console.log(`Result with uniqueId ${results.uniqueId} already exists in localStorage, skipping duplicate`);
+      return;
+    }
+
+    // Add new results with a timestamp
+    const resultWithTimestamp = {
+      ...results,
+      localStorageTimestamp: new Date().toISOString()
+    };
+
+    existingResults.push(resultWithTimestamp);
+
+    // Store back to localStorage
+    localStorage.setItem('pendingQuizResults', JSON.stringify(existingResults));
+
+    console.log(`Stored quiz results locally. Total pending: ${existingResults.length}`);
+  } catch (error) {
+    console.error("Error storing results locally:", error);
+  }
+}
+
+/**
+ * Upload all pending results from localStorage
+ */
+async function uploadPendingResults() {
+  try {
+    const pendingResults = JSON.parse(localStorage.getItem('pendingQuizResults') || '[]');
+
+    if (pendingResults.length === 0) {
+      return; // No pending results
+    }
+
+    console.log(`Found ${pendingResults.length} pending results to upload`);
+
+    // Initialize Firebase if not already done
+    await initializeFirebase();
+
+        // Dynamic import for database functions
+    const { ref, set, get } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+
+    // Upload each pending result
+    let successCount = 0;
+    const failedResults = [];
+
+    for (const result of pendingResults) {
+      try {
+        // Remove the local storage timestamp before uploading
+        const cleanResult = { ...result };
+        delete cleanResult.localStorageTimestamp;
+
+                // Use the uniqueId as the Firebase key to prevent duplicates
+        const resultRef = ref(database, `results/${cleanResult.uniqueId}`);
+
+                // Quick existence check - if this fails, network is too bad to upload
+        const checkPromise = get(resultRef);
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Network too slow for pending upload')), 3000)
+        );
+
+        const snapshot = await Promise.race([checkPromise, timeoutPromise]);
+        if (snapshot.exists()) {
+          console.log(`Pending result ${cleanResult.uniqueId} already exists in Firebase, skipping duplicate`);
+          successCount++; // Count as success since it's already uploaded
+          continue;
+        }
+
+        // Upload using set() with timeout
+        const uploadPromise = set(resultRef, cleanResult);
+        const uploadTimeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Pending upload failed - network timeout')), 8000)
+        );
+
+        await Promise.race([uploadPromise, uploadTimeoutPromise]);
+        console.log(`Uploaded pending result. ID: ${cleanResult.uniqueId}`);
+        successCount++;
+      } catch (uploadError) {
+        console.error("Failed to upload individual pending result:", uploadError);
+        failedResults.push(result);
+      }
+    }
+
+
+
+    // Update localStorage with only the failed uploads
+    if (failedResults.length > 0) {
+      localStorage.setItem('pendingQuizResults', JSON.stringify(failedResults));
+      console.log(`${failedResults.length} results remain pending`);
+    } else {
+      // All uploaded successfully, clear localStorage
+      localStorage.removeItem('pendingQuizResults');
+      console.log('All pending results uploaded successfully');
+    }
+
+    // Only show notification if we actually uploaded some results AND there were pending results to begin with
+    if (successCount > 0 && pendingResults.length > 0) {
+      console.log(`Successfully uploaded ${successCount} pending results`);
+
+      // Only show UI notification if there's a quiz container and we're not in start screen
+      const quizContainer = getQuizContainer();
+      if (quizContainer && !quizContainer.querySelector('.quiz-start')) {
+        const notificationElement = document.createElement('p');
+        notificationElement.textContent = `${successCount} résultat(s) en attente ont été envoyés avec succès.`;
+        notificationElement.style.color = '#155724';
+        notificationElement.style.fontSize = '14px';
+        notificationElement.style.marginTop = '10px';
+        notificationElement.style.backgroundColor = '#d4edda';
+        notificationElement.style.padding = '8px';
+        notificationElement.style.borderRadius = '4px';
+        notificationElement.style.border = '1px solid #c3e6cb';
+        quizContainer.appendChild(notificationElement);
+
+        // Remove notification after 5 seconds
+        setTimeout(() => {
+          if (notificationElement.parentNode) {
+            notificationElement.parentNode.removeChild(notificationElement);
+          }
+        }, 5000);
+      }
+    }
+
+  } catch (error) {
+    console.error("Error uploading pending results:", error);
+  }
+}
+
+/**
+ * Check and display the number of pending results
+ */
+function checkPendingResultsCount() {
+  try {
+    const pendingResults = JSON.parse(localStorage.getItem('pendingQuizResults') || '[]');
+    return pendingResults.length;
+  } catch (error) {
+    console.error("Error checking pending results:", error);
+    return 0;
   }
 }
 
@@ -1231,7 +1447,11 @@ function generateQuizResults() {
     databaseQuizType = 'typing';
   }
 
+  // Generate a unique ID to prevent duplicates from race conditions
+  const uniqueId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
   return {
+    uniqueId:             uniqueId, // Add unique identifier to prevent duplicates
     completionTimestamp:  completionTimestamp,
     totalQuestions:       quizState.totalQuestions,
     wordsCount:           quizState.selectedWordPairs.length,
