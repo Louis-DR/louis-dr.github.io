@@ -14,7 +14,8 @@ let quizState = {
   matchingPairs:     {}, // Track current matching pairs
   reorderSelectedLetters: [], // Track selected letters for reorder quiz
   reorderAvailableLetters: [], // Track available letters for reorder quiz
-  isFirstStart:      false // Track if this is the first quiz start
+  isFirstStart:      false, // Track if this is the first quiz start
+  enterKeyPressed:   false // Track if Enter key is currently pressed
 };
 
 // Firebase configuration
@@ -76,6 +77,328 @@ function cleanWordForInput(word) {
   return word.replace(/\s*\([^)]*\)\s*/g, '').trim();
 }
 
+async function analyzeWordPairPerformance(originalWordPairs) {
+  try {
+    // Initialize Firebase if not already done
+    await initializeFirebase();
+
+    // Dynamic import for database functions
+    const { ref, get } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+
+    // Fetch all quiz results
+    const resultsRef = ref(database, 'results');
+    const snapshot = await get(resultsRef);
+
+    if (!snapshot.exists()) {
+      console.log("No quiz results found in database");
+      return { analysis: {}, extractedWordPairs: [] };
+    }
+
+    const allResults = snapshot.val();
+    const wordAnalysis = {};
+    const extractedWordPairs = [];
+
+    // If no original word pairs provided, extract them from database
+    if (!originalWordPairs || originalWordPairs.length === 0) {
+      console.log("No word pairs provided, extracting from database...");
+
+      // Extract unique word pairs from all quiz results
+      const uniqueWordPairs = new Map();
+
+      Object.values(allResults).forEach(result => {
+        if (result.words && Array.isArray(result.words)) {
+          result.words.forEach(wordResult => {
+            if (wordResult.wordPair && Array.isArray(wordResult.wordPair) && wordResult.wordPair.length >= 2) {
+              const frenchWord = wordResult.wordPair[0];
+              const slovakWord = wordResult.wordPair[1];
+              uniqueWordPairs.set(slovakWord, [frenchWord, slovakWord]);
+            }
+          });
+        }
+      });
+
+      originalWordPairs = Array.from(uniqueWordPairs.values());
+      extractedWordPairs.push(...originalWordPairs);
+      console.log(`Extracted ${originalWordPairs.length} unique word pairs from database`);
+    }
+
+    // Initialize analysis for all word pairs
+    originalWordPairs.forEach(pair => {
+      const slovakWord = pair[1]; // Use Slovak word as key
+      wordAnalysis[slovakWord] = {
+        wordPair: pair,
+        totalQuestions: 0,
+        totalCorrect: 0,
+        successRate: 0
+      };
+    });
+
+    // Process all quiz results
+    Object.values(allResults).forEach(result => {
+      if (result.words && Array.isArray(result.words)) {
+        result.words.forEach(wordResult => {
+          const slovakWord = wordResult.word;
+
+          if (wordAnalysis[slovakWord]) {
+            // Sum up all attempts across all quiz types
+            const frenchToSlovakTotal = (wordResult.french_to_slovak_successes || 0) + (wordResult.french_to_slovak_failures || 0);
+            const slovakToFrenchTotal = (wordResult.slovak_to_french_successes || 0) + (wordResult.slovak_to_french_failures || 0);
+            const matchingTotal = (wordResult.matching_successes || 0) + (wordResult.matching_failures || 0);
+
+            const totalAttempts = frenchToSlovakTotal + slovakToFrenchTotal + matchingTotal;
+            const totalCorrect = (wordResult.french_to_slovak_successes || 0) +
+                                (wordResult.slovak_to_french_successes || 0) +
+                                (wordResult.matching_successes || 0);
+
+            wordAnalysis[slovakWord].totalQuestions += totalAttempts;
+            wordAnalysis[slovakWord].totalCorrect += totalCorrect;
+          }
+        });
+      }
+    });
+
+    // Calculate success rates
+    Object.keys(wordAnalysis).forEach(slovakWord => {
+      const analysis = wordAnalysis[slovakWord];
+      if (analysis.totalQuestions > 0) {
+        analysis.successRate = (analysis.totalCorrect / analysis.totalQuestions) * 100;
+      }
+    });
+
+    console.log("Word pair analysis completed:", wordAnalysis);
+    return { analysis: wordAnalysis, extractedWordPairs };
+
+  } catch (error) {
+    console.error("Error analyzing word pair performance:", error);
+    return { analysis: {}, extractedWordPairs: [] };
+  }
+}
+
+function categorizeWordPairs(wordAnalysis) {
+  const categories = {
+    mastered: [],    // >90% success rate with ≥10 questions
+    learning: [],    // Between 65%-90% or <10 questions
+    struggling: []   // <65% success rate
+  };
+
+  Object.values(wordAnalysis).forEach(analysis => {
+    const { wordPair, totalQuestions, successRate } = analysis;
+
+    if (totalQuestions >= 10 && successRate >= 90) {
+      categories.mastered.push(wordPair);
+    } else if (successRate < 65) {
+      categories.struggling.push(wordPair);
+    } else {
+      // Either <10 questions (still learning) or 65-90% success rate (ongoing learning)
+      categories.learning.push(wordPair);
+    }
+  });
+
+  console.log("Word categorization:", {
+    mastered: categories.mastered.length,
+    learning: categories.learning.length,
+    struggling: categories.struggling.length
+  });
+
+  return categories;
+}
+
+function showAdaptiveQuizMenu(categories, quizName, enabledQuizTypes = null) {
+  const quizContainer = getQuizContainer();
+  if (!quizContainer) return;
+
+  quizContainer.innerHTML = ''; // Clear previous content
+
+  const menuElement = document.createElement('div');
+  menuElement.className = 'adaptive-quiz-menu';
+
+  // Check for pending results
+  const pendingCount = checkPendingResultsCount();
+  let pendingNotification = '';
+  if (pendingCount > 0) {
+    pendingNotification = `<p style="color: #856404; font-size: 14px; margin-bottom: 15px; background-color: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeaa7;">⚠️ ${pendingCount} résultat(s) en attente seront envoyés lors du démarrage.</p>`;
+  }
+
+  // Check if we're using database-extracted words
+  const isHistoryMode = quizName.includes('Historique') || quizName.includes('Adaptatif');
+  const subtitle = isHistoryMode
+    ? "Basé sur votre historique d'apprentissage complet :"
+    : "Choisissez votre mode d'entraînement :";
+
+  menuElement.innerHTML = `
+    ${pendingNotification}
+    <h2 style="color: #007bff; margin-bottom: 30px;">Quiz Adaptatif - ${quizName}</h2>
+    <p style="margin-bottom: 30px; color: #495057;">${subtitle}</p>
+
+    <div style="display: flex; flex-direction: column; gap: 15px; max-width: 500px; margin: 0 auto;">
+      <button class="btn btn-success btn-lg adaptive-option" data-mode="mastered" ${categories.mastered.length === 0 ? 'disabled' : ''}>
+        🎯 Vérifier les acquis
+        <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
+          ${categories.mastered.length} mot(s) maîtrisé(s) • Taux de réussite ≥90% et ≥10 réponses
+        </small>
+      </button>
+
+      <button class="btn btn-primary btn-lg adaptive-option" data-mode="learning" ${categories.learning.length === 0 ? 'disabled' : ''}>
+        📚 Consolider l'apprentissage
+        <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
+          ${categories.learning.length} mot(s) en apprentissage • Taux de réussite 65-90%
+        </small>
+      </button>
+
+      <button class="btn btn-danger btn-lg adaptive-option" data-mode="struggling" ${categories.struggling.length === 0 ? 'disabled' : ''}>
+        🔥 Corriger les lacunes
+        <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
+          ${categories.struggling.length} mot(s) difficile(s) • Taux de réussite <65%
+        </small>
+      </button>
+
+      <div style="border-top: 1px solid #dee2e6; margin: 20px 0; padding-top: 20px;">
+        <button class="btn btn-outline btn-lg" id="regular-quiz-button">
+          📝 Quiz classique
+          <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
+            Sélection aléatoire de tous les mots
+          </small>
+        </button>
+      </div>
+    </div>
+  `;
+
+  quizContainer.appendChild(menuElement);
+
+  // Add event listeners for adaptive quiz options
+  setTimeout(() => {
+    document.querySelectorAll('.adaptive-option').forEach(button => {
+      button.addEventListener('click', (event) => {
+        const mode = event.currentTarget.dataset.mode;
+        startAdaptiveQuiz(categories, mode, quizName, enabledQuizTypes);
+      });
+    });
+
+    // Add event listener for regular quiz
+    const regularButton = document.getElementById('regular-quiz-button');
+    if (regularButton) {
+      regularButton.addEventListener('click', () => {
+        showStartScreen();
+      });
+    }
+  }, 0);
+}
+
+async function startAdaptiveQuiz(categories, mode, quizName, enabledQuizTypes = null) {
+  let selectedWordPairs;
+  let modeDisplayName;
+
+  switch (mode) {
+    case 'mastered':
+      selectedWordPairs = categories.mastered;
+      modeDisplayName = 'Vérification des acquis';
+      break;
+    case 'learning':
+      selectedWordPairs = categories.learning;
+      modeDisplayName = 'Consolidation de l\'apprentissage';
+      break;
+    case 'struggling':
+      selectedWordPairs = categories.struggling;
+      modeDisplayName = 'Correction des lacunes';
+      break;
+    default:
+      console.error('Invalid adaptive quiz mode:', mode);
+      return;
+  }
+
+  if (selectedWordPairs.length === 0) {
+    console.error('No word pairs available for mode:', mode);
+    return;
+  }
+
+  console.log(`Starting adaptive quiz: ${modeDisplayName} with ${selectedWordPairs.length} words`);
+
+  // Set up quiz state for adaptive mode
+  quizState.isInitialized = true;
+  quizState.isFirstStart = true;
+  quizState.quizName = `${quizName} - ${modeDisplayName}`;
+
+  // Try to upload any pending results when starting the quiz
+  try {
+    await uploadPendingResults();
+  } catch (error) {
+    console.error("Error uploading pending results on adaptive quiz start:", error);
+  }
+
+  // Start the quiz with the selected word pairs
+  initializeQuiz(selectedWordPairs, undefined, enabledQuizTypes);
+}
+
+async function initializeAdaptiveQuiz(wordPairs, quizName, enabledQuizTypes = null) {
+  try {
+    // Store original word pairs for regular quiz option (if provided)
+    if (wordPairs && wordPairs.length > 0) {
+      quizState.originalWordPairs = wordPairs;
+    }
+
+    // Store quiz name with default
+    quizState.quizName = quizName || 'Quiz Adaptatif Slovaque';
+
+    // Show loading message while analyzing
+    const quizContainer = getQuizContainer();
+    if (quizContainer) {
+      const loadingMessage = wordPairs && wordPairs.length > 0
+        ? "Analyse de vos progrès..."
+        : "Récupération de votre historique d'apprentissage...";
+
+      quizContainer.innerHTML = `
+        <div style="text-align: center; padding: 40px;">
+          <h2 style="color: #007bff;">${loadingMessage}</h2>
+          <p style="color: #666;">Récupération des données depuis la base de donnée...</p>
+        </div>
+      `;
+    }
+
+    // Analyze word pair performance (will extract from database if no wordPairs provided)
+    const { analysis: wordAnalysis, extractedWordPairs } = await analyzeWordPairPerformance(quizState.originalWordPairs);
+
+    // If no word pairs were provided, use the extracted ones
+    if (!quizState.originalWordPairs || quizState.originalWordPairs.length === 0) {
+      if (extractedWordPairs.length > 0) {
+        quizState.originalWordPairs = extractedWordPairs;
+        console.log(`Using ${extractedWordPairs.length} word pairs extracted from database`);
+      } else {
+        console.log("No word pairs found in database, cannot create adaptive quiz");
+        // Show message that no data is available
+        if (quizContainer) {
+          quizContainer.innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+              <h2 style="color: #dc3545;">Aucune donnée trouvée</h2>
+              <p style="color: #666; margin-bottom: 30px;">Aucun historique de quiz trouvé dans la base de données.</p>
+              <p style="color: #666; margin-bottom: 30px;">Veuillez d'abord faire un quiz classique pour accumuler des données.</p>
+              <button class="btn btn-primary btn-lg" onclick="location.reload()">Retour</button>
+            </div>
+          `;
+        }
+        return;
+      }
+    }
+
+    // If no analysis data, fall back to regular quiz
+    if (Object.keys(wordAnalysis).length === 0) {
+      console.log("No previous quiz data found, showing regular start screen");
+      showStartScreen();
+      return;
+    }
+
+    // Categorize word pairs based on performance
+    const categories = categorizeWordPairs(wordAnalysis);
+
+    // Show adaptive quiz menu
+    showAdaptiveQuizMenu(categories, quizState.quizName, enabledQuizTypes);
+
+  } catch (error) {
+    console.error("Error initializing adaptive quiz:", error);
+    // Fall back to regular quiz on error
+    showStartScreen();
+  }
+}
+
 function createProgressElement(text) {
   const progressElement = document.createElement('p');
   progressElement.textContent = text;
@@ -87,9 +410,20 @@ function cleanupEventListeners() {
   // Clean up any remaining keyboard event listeners from previous quiz elements
   const existingButtons = document.querySelectorAll('.submit-button, .next-button');
   existingButtons.forEach(button => {
+    if (button._keyDownHandler) {
+      document.removeEventListener('keydown', button._keyDownHandler);
+    }
+    if (button._keyUpHandler) {
+      document.removeEventListener('keyup', button._keyUpHandler);
+    }
+    if (button._keyPressHandler) {
+      document.removeEventListener('keypress', button._keyPressHandler);
+    }
+    // Legacy cleanup for old handler name
     if (button._keyHandler) {
       document.removeEventListener('keypress', button._keyHandler);
     }
+    button._keyListenerActive = false;
   });
 }
 
@@ -123,7 +457,7 @@ function drawMatchingLine(button1, button2, color = '#007bff') {
   container.appendChild(line);
 }
 
-function initializeQuiz(wordPairs, quizName) {
+function initializeQuiz(wordPairs, quizName, enabledQuizTypes = null) {
   // Store original word pairs for the very first initialization
   if (wordPairs) {
     quizState.originalWordPairs = wordPairs;
@@ -134,53 +468,70 @@ function initializeQuiz(wordPairs, quizName) {
     quizState.quizName = quizName;
   }
 
+  // Store enabled quiz types (default to all if not specified)
+  if (enabledQuizTypes && Array.isArray(enabledQuizTypes)) {
+    quizState.enabledQuizTypes = enabledQuizTypes;
+  } else if (!quizState.enabledQuizTypes) {
+    // Default to all quiz types if none specified
+    quizState.enabledQuizTypes = ['matching', 'multiple_choice', 'reorder_letters', 'slovak_to_french_typing', 'french_to_slovak_typing'];
+  }
+
   // If not initialized yet, show start screen
   if (!quizState.isInitialized) {
     showStartScreen();
     return;
   }
 
-  // Determine what type of quiz to start and whether to pick new words
-  if (quizState.isFirstStart || !quizState.quizType || quizState.quizType === 'french_to_slovak_typing') {
-    // Starting a new sequence with matching and new words
-    quizState.quizType = 'matching';
-    quizState.isFirstStart = false; // Reset flag
+  // Get the next quiz type based on enabled types
+  function getNextQuizType(currentType) {
+    const quizSequence = ['matching', 'multiple_choice', 'reorder_letters', 'slovak_to_french_typing', 'french_to_slovak_typing'];
+    const enabledSequence = quizSequence.filter(type => quizState.enabledQuizTypes.includes(type));
 
-    // Select up to maxWords word pairs for the quiz
-    const maxPairs = Math.min(maxWords, quizState.originalWordPairs.length);
+    if (enabledSequence.length === 0) {
+      console.error('No enabled quiz types found, defaulting to matching');
+      return 'matching';
+    }
 
-    // Randomly select word pairs
-    const shuffledPairs = shuffleArray(quizState.originalWordPairs);
-    quizState.selectedWordPairs = shuffledPairs.slice(0, maxPairs);
-  } else if (quizState.quizType === 'matching') {
-    // Moving to multiple choice with same words
-    quizState.quizType = 'multiple_choice';
-  } else if (quizState.quizType === 'multiple_choice') {
-    // Moving from multiple choice to reorder letters
-    quizState.quizType = 'reorder_letters';
-  } else if (quizState.quizType === 'reorder_letters') {
-    // Moving from reorder letters to Slovak to French typing
-    quizState.quizType = 'slovak_to_french_typing';
-  } else if (quizState.quizType === 'slovak_to_french_typing') {
-    // Moving from Slovak to French typing to French to Slovak typing
-    quizState.quizType = 'french_to_slovak_typing';
-  } else {
-    // Moving from French to Slovak typing to new matching sequence
-    quizState.quizType = 'french_to_slovak_typing';
-    // Keep the same selectedWordPairs from the previous quiz
+    const currentIndex = enabledSequence.indexOf(currentType);
+    if (currentIndex === -1 || currentIndex === enabledSequence.length - 1) {
+      // If current type not found or it's the last type, start over
+      return enabledSequence[0];
+    } else {
+      // Move to next type in sequence
+      return enabledSequence[currentIndex + 1];
+    }
   }
 
-  // Reset quiz state for the new quiz
+  // Determine what type of quiz to start and whether to pick new words
+  if (quizState.isFirstStart || !quizState.quizType || quizState.quizType === quizState.enabledQuizTypes[quizState.enabledQuizTypes.length - 1]) {
+    // Starting a new sequence or completed the last enabled quiz type
+    quizState.quizType = quizState.enabledQuizTypes[0]; // Start with first enabled type
+    quizState.isFirstStart = false; // Reset flag
+
+    // Select up to maxWords word pairs for the quiz (only for new sequences)
+    if (quizState.isFirstStart !== false || !quizState.selectedWordPairs || quizState.selectedWordPairs.length === 0) {
+      const maxPairs = Math.min(maxWords, quizState.originalWordPairs.length);
+      // Randomly select word pairs
+      const shuffledPairs = shuffleArray(quizState.originalWordPairs);
+      quizState.selectedWordPairs = shuffledPairs.slice(0, maxPairs);
+    }
+  } else {
+    // Move to next quiz type in enabled sequence
+    quizState.quizType = getNextQuizType(quizState.quizType);
+  }
+
+    // Reset quiz state for the new quiz
   // Create a shuffled queue for word pairs to avoid immediate repetition
   quizState.wordQueue = shuffleArray([...quizState.selectedWordPairs]);
   quizState.incorrectPairs = []; // Keep track for completion checking
   quizState.totalQuestions = 0;
   quizState.correctAnswers = 0;
-    quizState.results = {};
+  quizState.results = {};
   quizState.matchingSelections = {};
   quizState.matchingPairs = {};
   quizState.reorderSelectedLetters = [];
   quizState.reorderAvailableLetters = [];
+  quizState.enterKeyPressed = false; // Reset Enter key state
 
   // Also reset wordQueue for initialization
   if (!quizState.wordQueue) {
@@ -343,7 +694,7 @@ function generateMatchingQuestion() {
 
   // Store the handler for cleanup
   submitButton.dataset.keyHandler = 'matching';
-  submitButton._keyHandler = matchingKeyHandler;
+  submitButton._keyPressHandler = matchingKeyHandler;
 
   quizContainer.appendChild(submitButton);
 
@@ -719,8 +1070,9 @@ function generateTypingQuestion(forceFrenchQuestion = null) {
   inputContainer.appendChild(submitButton);
   quizContainer.appendChild(inputContainer);
 
-  // Focus on input field
+  // Focus on input field and reset Enter key state
   inputField.focus();
+  quizState.enterKeyPressed = false;
 
   quizState.totalQuestions++;
 }
@@ -818,7 +1170,7 @@ function generateReorderQuestion() {
 
   // Store the handler for cleanup
   submitButton.dataset.keyHandler = 'reorder';
-  submitButton._keyHandler = reorderKeyHandler;
+  submitButton._keyPressHandler = reorderKeyHandler;
 
   quizContainer.appendChild(submitButton);
 
@@ -1060,6 +1412,13 @@ function handleTypingSubmit(inputField, correctAnswer, questionPair, isFrenchQue
 
   if (isCorrect) {
     feedbackElement.innerHTML = `<span class="feedback-success correct-feedback">✓ Correct!</span>`;
+
+    // Add audio emoji for Slovak correct answers in French to Slovak typing
+    if (isFrenchQuestion) { // Correct answer is Slovak
+      const audioEmoji = createAudioEmoji(originalCorrectAnswer, '10px');
+      feedbackElement.appendChild(audioEmoji);
+    }
+
     inputField.classList.add('state-correct');
   } else {
     feedbackElement.innerHTML = `
@@ -1124,9 +1483,16 @@ function showNextButton() {
 
   if (existingNextButton) {
     // Clean up existing next button event listeners
-    if (existingNextButton._keyHandler) {
-      document.removeEventListener('keypress', existingNextButton._keyHandler);
+    if (existingNextButton._keyDownHandler) {
+      document.removeEventListener('keydown', existingNextButton._keyDownHandler);
     }
+    if (existingNextButton._keyUpHandler) {
+      document.removeEventListener('keyup', existingNextButton._keyUpHandler);
+    }
+    if (existingNextButton._keyPressHandler) {
+      document.removeEventListener('keypress', existingNextButton._keyPressHandler);
+    }
+    existingNextButton._keyListenerActive = false;
     existingNextButton.remove();
   }
 
@@ -1156,26 +1522,61 @@ function showNextButton() {
     }
   };
 
-  nextButton.addEventListener('click', nextButtonHandler);
+    nextButton.addEventListener('click', nextButtonHandler);
 
-  // Add Enter key support for the next button
-  const keyHandler = (event) => {
-    if (event.key === 'Enter' && nextButton.parentNode) {
+  // Add Enter key support for the next button with proper key state tracking
+  const keyDownHandler = (event) => {
+    if (event.key === 'Enter') {
+      quizState.enterKeyPressed = true;
+    }
+  };
+
+  const keyUpHandler = (event) => {
+    if (event.key === 'Enter') {
+      quizState.enterKeyPressed = false;
+    }
+  };
+
+  const keyPressHandler = (event) => {
+    if (event.key === 'Enter' && nextButton.parentNode && nextButton._keyListenerActive && !quizState.enterKeyPressed) {
       event.preventDefault();
       nextButtonHandler();
     }
   };
 
-    document.addEventListener('keypress', keyHandler);
+  document.addEventListener('keydown', keyDownHandler);
+  document.addEventListener('keyup', keyUpHandler);
+  document.addEventListener('keypress', keyPressHandler);
 
-  // Store the handler for cleanup
-  nextButton._keyHandler = keyHandler;
+  // Store the handlers for cleanup
+  nextButton._keyDownHandler = keyDownHandler;
+  nextButton._keyUpHandler = keyUpHandler;
+  nextButton._keyPressHandler = keyPressHandler;
+
+  // Activate the key listener after ensuring Enter key is released
+  const activateListener = () => {
+    if (!quizState.enterKeyPressed) {
+      nextButton._keyListenerActive = true;
+    } else {
+      // Check again in a short time if Enter is still pressed
+      setTimeout(activateListener, 50);
+    }
+  };
+
+  setTimeout(activateListener, 100);
 
   if (existingSubmitButton) {
-    // Clean up any existing submit button event listeners
-    if (existingSubmitButton._keyHandler) {
-      document.removeEventListener('keypress', existingSubmitButton._keyHandler);
+        // Clean up any existing submit button event listeners
+    if (existingSubmitButton._keyDownHandler) {
+      document.removeEventListener('keydown', existingSubmitButton._keyDownHandler);
     }
+    if (existingSubmitButton._keyUpHandler) {
+      document.removeEventListener('keyup', existingSubmitButton._keyUpHandler);
+    }
+    if (existingSubmitButton._keyPressHandler) {
+      document.removeEventListener('keypress', existingSubmitButton._keyPressHandler);
+    }
+    existingSubmitButton._keyListenerActive = false;
 
     // Replace the submit button with the next button
     existingSubmitButton.parentNode.replaceChild(nextButton, existingSubmitButton);
@@ -1201,19 +1602,28 @@ async function showQuizCompletion() {
   const completionElement = document.createElement('div');
   completionElement.className = 'quiz-completion';
 
-  // Determine next quiz type display
-  let nextQuizTypeDisplay;
-  if (quizState.quizType === 'matching') {
-    nextQuizTypeDisplay = 'Choix Multiple';
-  } else if (quizState.quizType === 'multiple_choice') {
-    nextQuizTypeDisplay = 'Réorganiser Lettres';
-  } else if (quizState.quizType === 'reorder_letters') {
-    nextQuizTypeDisplay = 'Saisie SK→FR';
-  } else if (quizState.quizType === 'slovak_to_french_typing') {
-    nextQuizTypeDisplay = 'Saisie FR→SK';
-  } else {
-    nextQuizTypeDisplay = 'Correspondances';
+  // Determine next quiz type display based on enabled types
+  function getNextQuizTypeDisplay(currentType) {
+    const quizSequence = ['matching', 'multiple_choice', 'reorder_letters', 'slovak_to_french_typing', 'french_to_slovak_typing'];
+    const enabledSequence = quizSequence.filter(type => quizState.enabledQuizTypes.includes(type));
+
+    const currentIndex = enabledSequence.indexOf(currentType);
+    const nextType = (currentIndex === -1 || currentIndex === enabledSequence.length - 1)
+      ? enabledSequence[0]
+      : enabledSequence[currentIndex + 1];
+
+    const typeDisplayNames = {
+      'matching': 'Correspondances',
+      'multiple_choice': 'Choix Multiple',
+      'reorder_letters': 'Réorganiser Lettres',
+      'slovak_to_french_typing': 'Saisie SK→FR',
+      'french_to_slovak_typing': 'Saisie FR→SK'
+    };
+
+    return typeDisplayNames[nextType] || 'Quiz Suivant';
   }
+
+  const nextQuizTypeDisplay = getNextQuizTypeDisplay(quizState.quizType);
 
   completionElement.innerHTML = `
     <p>Questions Répondues: <strong>${quizState.totalQuestions}</strong></p>
@@ -1555,9 +1965,25 @@ function clearQuizResults() {
 }
 
 function restartQuiz() {
-  // Only set isFirstStart to true if we're starting a completely new sequence (after French to Slovak typing)
-  if (quizState.quizType === 'french_to_slovak_typing') {
+  // Only set isFirstStart to true if we're starting a completely new sequence (after the last enabled quiz type)
+  const lastEnabledType = quizState.enabledQuizTypes[quizState.enabledQuizTypes.length - 1];
+  if (quizState.quizType === lastEnabledType) {
     quizState.isFirstStart = true; // Reset to first start for new sequence
   }
   initializeQuiz();
+}
+
+// Direct function for database-based adaptive quiz (no word list needed)
+function startAdaptiveQuizFromHistory(quizName = 'Quiz Adaptatif - Historique Complet') {
+  initializeAdaptiveQuiz(null, quizName, ['slovak_to_french_typing', 'french_to_slovak_typing']);
+}
+
+// Backward compatibility wrapper
+function generateQuizExercise(wordPairs, quizName, enabledQuizTypes) {
+  // If no arguments provided, extract everything from database
+  if (!wordPairs && !quizName) {
+    startAdaptiveQuizFromHistory();
+  } else {
+    initializeAdaptiveQuiz(wordPairs, quizName || 'Slovak Language Quiz', enabledQuizTypes);
+  }
 }

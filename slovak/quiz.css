@@ -103,13 +103,13 @@
 }
 
 .state-correct {
-  color: hsl(120, 65%, 25%);
+  color: hsl(120, 65%, 25%) !important;
   background-color: hsl(120, 50%, 90%) !important;
   border-color: hsl(120, 60%, 50%) !important;
 }
 
 .state-incorrect {
-  color: hsl(0, 65%, 25%);
+  color: hsl(0, 65%, 25%) !important;
   background-color: hsl(0, 50%, 90%) !important;
   border-color: hsl(0, 60%, 50%) !important;
 }
@@ -264,6 +264,46 @@
   font-size: 16px;
   color: #495057;
   line-height: 1.5;
+}
+
+.adaptive-quiz-menu {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.adaptive-quiz-menu h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.adaptive-quiz-menu .adaptive-option {
+  text-align: left;
+  position: relative;
+  padding: 20px 24px;
+  line-height: 1.4;
+}
+
+.adaptive-quiz-menu .adaptive-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.adaptive-quiz-menu .adaptive-option small {
+  font-weight: normal;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.btn-danger {
+  color: white;
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #c82333;
+  border-color: #bd2130;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .audio-emoji {
@@ -537,5 +577,9 @@
   .reorder-letter-slot.filled:hover:not(:disabled) {
     background-color: hsl(210, 100%, 35%);
     border-color: hsl(210, 100%, 50%);
+  }
+
+  .adaptive-quiz-menu .adaptive-option small {
+    color: rgba(255, 255, 255, 0.7);
   }
 }

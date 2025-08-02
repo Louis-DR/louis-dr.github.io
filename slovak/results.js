@@ -1,3 +1,4 @@
+// Results display functionality - uses dynamic imports to avoid CORS issues
 // Firebase configuration (same as quiz.js)
 const firebaseConfig = {
   apiKey:            "AIzaSyA7ad7v3U1TatATrOrwzYYWcXk2gfKt78g",
@@ -364,6 +365,551 @@ function displayResultsTable(wordPairStats) {
 }
 
 /**
+ * Extract and prepare daily progression data for charts
+ */
+function prepareProgressionData(allResults) {
+  // Collect all quiz results with timestamps
+  const timelineData = [];
+
+  Object.values(allResults).forEach(result => {
+    if (result.completionTimestamp && result.words && Array.isArray(result.words)) {
+      const date = new Date(result.completionTimestamp);
+      const dayKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+      timelineData.push({
+        date: dayKey,
+        timestamp: date.getTime(),
+        quizType: result.quizType || 'unknown',
+        words: result.words
+      });
+    }
+  });
+
+  // Sort by timestamp
+  timelineData.sort((a, b) => a.timestamp - b.timestamp);
+
+  if (timelineData.length === 0) {
+    return { dailyStats: [], labels: [] };
+  }
+
+  // Get all unique word pairs
+  const allWordPairs = new Set();
+  timelineData.forEach(entry => {
+    entry.words.forEach(wordData => {
+      if (wordData.wordPair && wordData.wordPair.length >= 2) {
+        const wordPairKey = `${wordData.wordPair[0]}|${wordData.wordPair[1]}`;
+        allWordPairs.add(wordPairKey);
+      }
+    });
+  });
+
+  // Create date range from first to last day
+  const firstDay = timelineData[0].date;
+  const lastDay = timelineData[timelineData.length - 1].date;
+
+  const dateRange = [];
+  const currentDate = new Date(firstDay);
+  const endDate = new Date(lastDay);
+
+  while (currentDate <= endDate) {
+    dateRange.push(currentDate.toISOString().split('T')[0]);
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  // Calculate cumulative word stats for each day
+  const dailyStats = [];
+
+  dateRange.forEach(day => {
+    // Get all quiz results up to and including this day
+    const resultsUpToThisDay = timelineData.filter(entry => entry.date <= day);
+
+    // Track only words that have actually appeared by this day
+    const cumulativeWordStats = new Map();
+
+    // Process all results up to this day to find which words have been seen
+    resultsUpToThisDay.forEach(entry => {
+      entry.words.forEach(wordData => {
+        if (wordData.wordPair && wordData.wordPair.length >= 2) {
+          const wordPairKey = `${wordData.wordPair[0]}|${wordData.wordPair[1]}`;
+
+          // Initialize word stats if we haven't seen this word before
+          if (!cumulativeWordStats.has(wordPairKey)) {
+            cumulativeWordStats.set(wordPairKey, {
+              totalQuestions: 0,
+              totalCorrect: 0,
+              successRate: 0
+            });
+          }
+
+          const stats = cumulativeWordStats.get(wordPairKey);
+
+          // Sum up all attempts across all quiz types
+          const frenchToSlovakTotal = (wordData.french_to_slovak_successes || 0) + (wordData.french_to_slovak_failures || 0);
+          const slovakToFrenchTotal = (wordData.slovak_to_french_successes || 0) + (wordData.slovak_to_french_failures || 0);
+          const matchingTotal = (wordData.matching_successes || 0) + (wordData.matching_failures || 0);
+
+          const totalAttempts = frenchToSlovakTotal + slovakToFrenchTotal + matchingTotal;
+          const totalCorrect = (wordData.french_to_slovak_successes || 0) +
+                              (wordData.slovak_to_french_successes || 0) +
+                              (wordData.matching_successes || 0);
+
+          stats.totalQuestions += totalAttempts;
+          stats.totalCorrect += totalCorrect;
+        }
+      });
+    });
+
+    // Calculate success rates and categorize words (only words that have been seen)
+    let masteredCount = 0;
+    let learningCount = 0;
+    let strugglingCount = 0;
+
+    cumulativeWordStats.forEach(stats => {
+      if (stats.totalQuestions > 0) {
+        stats.successRate = (stats.totalCorrect / stats.totalQuestions) * 100;
+
+        // Apply the same categorization logic as the adaptive quiz
+        if (stats.totalQuestions >= 10 && stats.successRate >= 90) {
+          masteredCount++;
+        } else if (stats.successRate < 65) {
+          strugglingCount++;
+        } else {
+          learningCount++;
+        }
+      } else {
+        // This shouldn't happen since we only add words that have been quizzed
+        learningCount++;
+      }
+    });
+
+    dailyStats.push({
+      date: day,
+      mastered: masteredCount,
+      learning: learningCount,
+      struggling: strugglingCount,
+      total: masteredCount + learningCount + strugglingCount
+    });
+  });
+
+    return {
+    dailyStats,
+    labels: dateRange.map(date => {
+      const d = new Date(date);
+      // Show month/day for shorter labels
+      return `${d.getDate()}/${d.getMonth() + 1}`;
+    }),
+    dateRange: dateRange // Keep original dates for debugging
+  };
+}
+
+/**
+ * Create and display the progression chart
+ */
+function displayProgressionChart(progressionData) {
+  // Create chart container
+  const chartContainer = document.createElement('div');
+  chartContainer.className = 'chart-container';
+  chartContainer.style.marginBottom = '40px';
+  chartContainer.style.padding = '20px';
+  chartContainer.style.backgroundColor = '#f8f9fa';
+  chartContainer.style.border = '1px solid #ddd';
+  chartContainer.style.borderRadius = '5px';
+
+  const chartTitle = document.createElement('h3');
+  chartTitle.textContent = 'Progression de l\'Apprentissage dans le Temps';
+  chartTitle.style.textAlign = 'center';
+  chartTitle.style.marginBottom = '20px';
+  chartContainer.appendChild(chartTitle);
+
+  // Create canvas for chart
+  const canvas = document.createElement('canvas');
+  canvas.id = 'progressionChart';
+  canvas.style.maxHeight = '400px';
+  chartContainer.appendChild(canvas);
+
+  // Insert chart before the table
+  const resultsContainer = document.querySelector('.results-container');
+  if (resultsContainer) {
+    const tableWrapper = resultsContainer.querySelector('div[style*="overflowX"]');
+    if (tableWrapper) {
+      resultsContainer.insertBefore(chartContainer, tableWrapper);
+    } else {
+      resultsContainer.appendChild(chartContainer);
+    }
+  } else {
+    document.body.appendChild(chartContainer);
+  }
+
+  // Prepare chart data for stacked area chart
+  const chartData = {
+    labels: progressionData.labels,
+    datasets: [
+      {
+        label: 'Mots Maîtrisés',
+        data: progressionData.dailyStats.map(day => day.mastered),
+        backgroundColor: 'rgba(40, 167, 69, 0.8)',
+        borderColor: 'rgba(40, 167, 69, 1)',
+        borderWidth: 1.5,
+        fill: true,
+        stepped: true // For step effect
+      },
+      {
+        label: 'Mots en Apprentissage',
+        data: progressionData.dailyStats.map(day => day.learning),
+        backgroundColor: 'rgba(0, 123, 255, 0.8)',
+        borderColor: 'rgba(0, 123, 255, 1)',
+        borderWidth: 1.5,
+        fill: true,
+        stepped: true // For step effect
+      },
+      {
+        label: 'Mots Difficiles',
+        data: progressionData.dailyStats.map(day => day.struggling),
+        backgroundColor: 'rgba(220, 53, 69, 0.8)',
+        borderColor: 'rgba(220, 53, 69, 1)',
+        borderWidth: 1.5,
+        fill: true,
+        stepped: true // For step effect
+      }
+    ]
+  };
+
+  // Chart configuration for stacked area chart (Chart.js v3 compatible)
+  const chartConfig = {
+    type: 'line',
+    data: chartData,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false,
+      },
+      scales: {
+        x: {
+          display: true,
+          title: {
+            display: true,
+            text: 'Date'
+          }
+        },
+        y: {
+          display: true,
+          title: {
+            display: true,
+            text: 'Nombre de Mots'
+          },
+          stacked: true,
+          beginAtZero: true
+        }
+      },
+      elements: {
+        point: {
+          radius: 3,
+          hoverRadius: 5
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            afterLabel: function(context) {
+              const dayData = progressionData.dailyStats[context.dataIndex];
+              return `Total: ${dayData.total} mots`;
+            }
+          }
+        }
+      }
+    }
+  };
+
+  // Load Chart.js dynamically and create chart (or use if already loaded)
+  if (typeof Chart === 'undefined') {
+    // Check if Chart.js is already being loaded by another chart
+    const existingScript = document.querySelector('script[src*="chart.min.js"]');
+    if (existingScript) {
+      // Wait for existing script to load
+      console.log('Waiting for Chart.js to load for progression chart...');
+      existingScript.addEventListener('load', () => {
+        if (typeof Chart !== 'undefined') {
+          new Chart(canvas, chartConfig);
+        }
+      });
+    } else {
+      // Load Chart.js for the first time
+      console.log('Loading Chart.js library for progression chart...');
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
+      script.onload = () => {
+        console.log('Chart.js loaded successfully for progression chart');
+        if (typeof Chart !== 'undefined') {
+          new Chart(canvas, chartConfig);
+        } else {
+          console.error('Chart.js failed to load properly');
+        }
+      };
+      script.onerror = () => {
+        console.error('Failed to load Chart.js from CDN');
+      };
+      document.head.appendChild(script);
+    }
+  } else {
+    console.log('Chart.js already available for progression chart');
+    new Chart(canvas, chartConfig);
+  }
+
+  console.log('Progression chart displayed with', progressionData.dailyStats.length, 'data points');
+}
+
+/**
+ * Extract and prepare daily activity data for bar chart
+ */
+function prepareDailyActivityData(allResults) {
+  // Collect all quiz results with timestamps
+  const timelineData = [];
+
+  Object.values(allResults).forEach(result => {
+    if (result.completionTimestamp && result.words && Array.isArray(result.words)) {
+      const date = new Date(result.completionTimestamp);
+      const dayKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+      timelineData.push({
+        date: dayKey,
+        timestamp: date.getTime(),
+        words: result.words
+      });
+    }
+  });
+
+  // Sort by timestamp
+  timelineData.sort((a, b) => a.timestamp - b.timestamp);
+
+  if (timelineData.length === 0) {
+    return { dailyActivity: [], labels: [] };
+  }
+
+  // Create date range from first to last day
+  const firstDay = timelineData[0].date;
+  const lastDay = timelineData[timelineData.length - 1].date;
+
+  const dateRange = [];
+  const currentDate = new Date(firstDay);
+  const endDate = new Date(lastDay);
+
+  while (currentDate <= endDate) {
+    dateRange.push(currentDate.toISOString().split('T')[0]);
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  // Calculate daily activity stats
+  const dailyActivity = [];
+
+  dateRange.forEach(day => {
+    // Get quiz results for this specific day
+    const dayResults = timelineData.filter(entry => entry.date === day);
+
+    let correctAnswers = 0;
+    let incorrectAnswers = 0;
+
+    // Process all quiz results for this day
+    dayResults.forEach(entry => {
+      entry.words.forEach(wordData => {
+        // Count all attempts across all quiz types
+        const frenchToSlovakCorrect = wordData.french_to_slovak_successes || 0;
+        const frenchToSlovakIncorrect = wordData.french_to_slovak_failures || 0;
+        const slovakToFrenchCorrect = wordData.slovak_to_french_successes || 0;
+        const slovakToFrenchIncorrect = wordData.slovak_to_french_failures || 0;
+        const matchingCorrect = wordData.matching_successes || 0;
+        const matchingIncorrect = wordData.matching_failures || 0;
+
+        correctAnswers += frenchToSlovakCorrect + slovakToFrenchCorrect + matchingCorrect;
+        incorrectAnswers += frenchToSlovakIncorrect + slovakToFrenchIncorrect + matchingIncorrect;
+      });
+    });
+
+    dailyActivity.push({
+      date: day,
+      correct: correctAnswers,
+      incorrect: incorrectAnswers,
+      total: correctAnswers + incorrectAnswers
+    });
+  });
+
+  return {
+    dailyActivity,
+    labels: dateRange.map(date => {
+      const d = new Date(date);
+      return `${d.getDate()}/${d.getMonth() + 1}`;
+    }),
+    dateRange: dateRange
+  };
+}
+
+/**
+ * Create and display the daily activity chart
+ */
+function displayDailyActivityChart(activityData) {
+  // Create chart container
+  const chartContainer = document.createElement('div');
+  chartContainer.className = 'chart-container activity-chart';
+  chartContainer.style.marginBottom = '40px';
+  chartContainer.style.padding = '20px';
+  chartContainer.style.backgroundColor = '#f8f9fa';
+  chartContainer.style.border = '1px solid #ddd';
+  chartContainer.style.borderRadius = '5px';
+
+  const chartTitle = document.createElement('h3');
+  chartTitle.textContent = 'Activité Quotidienne des Quiz';
+  chartTitle.style.textAlign = 'center';
+  chartTitle.style.marginBottom = '20px';
+  chartContainer.appendChild(chartTitle);
+
+  // Create canvas for chart
+  const canvas = document.createElement('canvas');
+  canvas.id = 'activityChart';
+  canvas.style.maxHeight = '300px';
+  chartContainer.appendChild(canvas);
+
+  // Insert chart after the progression chart
+  const resultsContainer = document.querySelector('.results-container');
+  if (resultsContainer) {
+    const existingChart = resultsContainer.querySelector('.chart-container:not(.activity-chart)');
+    if (existingChart && existingChart.nextSibling) {
+      resultsContainer.insertBefore(chartContainer, existingChart.nextSibling);
+    } else {
+      const tableWrapper = resultsContainer.querySelector('div[style*="overflowX"]');
+      if (tableWrapper) {
+        resultsContainer.insertBefore(chartContainer, tableWrapper);
+      } else {
+        resultsContainer.appendChild(chartContainer);
+      }
+    }
+  } else {
+    document.body.appendChild(chartContainer);
+  }
+
+  // Prepare chart data for stacked bar chart
+  const chartData = {
+    labels: activityData.labels,
+    datasets: [
+      {
+        label: 'Réponses Correctes',
+        data: activityData.dailyActivity.map(day => day.correct),
+        backgroundColor: 'rgba(40, 167, 69, 0.8)',
+        borderColor: 'rgba(40, 167, 69, 1)',
+        borderWidth: 1
+      },
+      {
+        label: 'Réponses Incorrectes',
+        data: activityData.dailyActivity.map(day => day.incorrect),
+        backgroundColor: 'rgba(220, 53, 69, 0.8)',
+        borderColor: 'rgba(220, 53, 69, 1)',
+        borderWidth: 1
+      }
+    ]
+  };
+
+  // Chart configuration for stacked bar chart (Chart.js v3 compatible)
+  const chartConfig = {
+    type: 'bar',
+    data: chartData,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false,
+      },
+      scales: {
+        x: {
+          display: true,
+          title: {
+            display: true,
+            text: 'Date'
+          },
+          stacked: true
+        },
+        y: {
+          display: true,
+          title: {
+            display: true,
+            text: 'Nombre de Réponses'
+          },
+          stacked: true,
+          beginAtZero: true
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            footer: function(tooltipItems) {
+              const dataIndex = tooltipItems[0].dataIndex;
+              const dayData = activityData.dailyActivity[dataIndex];
+              const successRate = dayData.total > 0 ? Math.round((dayData.correct / dayData.total) * 100) : 0;
+              return `Total: ${dayData.total} réponses (${successRate}% de réussite)`;
+            }
+          }
+        }
+      }
+    }
+  };
+
+  // Load Chart.js dynamically and create chart (or use if already loaded)
+  if (typeof Chart === 'undefined') {
+    // Check if Chart.js is already being loaded by another chart
+    const existingScript = document.querySelector('script[src*="chart.min.js"]');
+    if (existingScript) {
+      // Wait for existing script to load
+      console.log('Waiting for Chart.js to load for activity chart...');
+      existingScript.addEventListener('load', () => {
+        if (typeof Chart !== 'undefined') {
+          new Chart(canvas, chartConfig);
+        }
+      });
+    } else {
+      // Load Chart.js for the first time
+      console.log('Loading Chart.js library for activity chart...');
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
+      script.onload = () => {
+        console.log('Chart.js loaded successfully for activity chart');
+        if (typeof Chart !== 'undefined') {
+          new Chart(canvas, chartConfig);
+        } else {
+          console.error('Chart.js failed to load properly for activity chart');
+        }
+      };
+      script.onerror = () => {
+        console.error('Failed to load Chart.js from CDN for activity chart');
+      };
+      document.head.appendChild(script);
+    }
+  } else {
+    console.log('Chart.js already available for activity chart');
+    new Chart(canvas, chartConfig);
+  }
+
+  console.log('Activity chart displayed with', activityData.dailyActivity.length, 'data points');
+}
+
+/**
+ * Test function to verify results.js is loaded correctly
+ */
+function testResultsFunction() {
+  console.log('Results.js loaded successfully!');
+  return true;
+}
+
+/**
  * Main function to load and display all results
  */
 async function loadAndDisplayResults() {
@@ -382,6 +928,22 @@ async function loadAndDisplayResults() {
 
     // Display the table
     displayResultsTable(wordPairStats);
+
+    // Prepare and display progression chart
+    const progressionData = prepareProgressionData(allResults);
+    if (progressionData.dailyStats.length > 0) {
+      displayProgressionChart(progressionData);
+    } else {
+      console.log('No progression data available for chart');
+    }
+
+    // Prepare and display daily activity chart
+    const activityData = prepareDailyActivityData(allResults);
+    if (activityData.dailyActivity.length > 0) {
+      displayDailyActivityChart(activityData);
+    } else {
+      console.log('No activity data available for chart');
+    }
 
   } catch (error) {
     console.error("Error loading and displaying results:", error);
