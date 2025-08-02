@@ -1,0 +1,343 @@
+/* Results page styling - consistent with main stylesheet */
+
+/* Container and layout */
+.results-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #333;
+  font-family: 'Roboto', sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  .results-container {
+    background-color: black;
+    color: #CCC;
+  }
+}
+
+/* Table styling */
+.results-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 30px;
+  border: 1px solid hsl(0, 0%, 85%);
+  border-radius: 8px;
+  background-color: hsl(0, 0%, 98%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .results-table-wrapper {
+    border-color: hsl(0, 0%, 25%);
+    background-color: hsl(0, 0%, 8%);
+  }
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 800px;
+}
+
+.results-table th {
+  background-color: hsl(220, 45%, 95%);
+  color: hsl(220, 40%, 25%);
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 600;
+  border-bottom: 2px solid hsl(220, 45%, 85%);
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.results-table th:first-child,
+.results-table th:nth-child(2) {
+  text-align: left;
+  min-width: 120px;
+}
+
+.results-table th:nth-child(n+3) {
+  min-width: 80px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .results-table th {
+    background-color: hsl(220, 45%, 15%);
+    color: hsl(220, 45%, 85%);
+    border-bottom-color: hsl(220, 45%, 25%);
+  }
+}
+
+.results-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid hsl(0, 0%, 90%);
+  white-space: nowrap;
+  text-align: center;
+  font-size: 13px;
+}
+
+.results-table td:first-child,
+.results-table td:nth-child(2) {
+  text-align: left;
+}
+
+@media (prefers-color-scheme: dark) {
+  .results-table td {
+    border-bottom-color: hsl(0, 0%, 20%);
+  }
+}
+
+.results-table tbody tr:hover {
+  background-color: hsl(220, 45%, 98%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .results-table tbody tr:hover {
+    background-color: hsl(220, 45%, 12%);
+  }
+}
+
+/* Word pair styling - consistent with main stylesheet */
+.word-slovak {
+  color: hsl(0, 45%, 65%);
+  font-weight: 500;
+}
+
+@media (prefers-color-scheme: dark) {
+  .word-slovak {
+    color: hsl(0, 40%, 55%);
+  }
+}
+
+.word-french {
+  color: hsl(220, 45%, 65%);
+  font-weight: 500;
+}
+
+@media (prefers-color-scheme: dark) {
+  .word-french {
+    color: hsl(220, 40%, 55%);
+  }
+}
+
+/* Success rate colors */
+.success-rate-high {
+  color: hsl(120, 60%, 25%);
+  background-color: hsl(120, 50%, 90%);
+  font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+  .success-rate-high {
+    color: hsl(120, 50%, 80%);
+    background-color: hsl(120, 50%, 20%);
+  }
+}
+
+.success-rate-medium {
+  color: hsl(45, 60%, 25%);
+  background-color: hsl(45, 70%, 90%);
+  font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+  .success-rate-medium {
+    color: hsl(45, 70%, 80%);
+    background-color: hsl(45, 50%, 20%);
+  }
+}
+
+.success-rate-low {
+  color: hsl(0, 60%, 25%);
+  background-color: hsl(0, 50%, 90%);
+  font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+  .success-rate-low {
+    color: hsl(0, 50%, 80%);
+    background-color: hsl(0, 50%, 20%);
+  }
+}
+
+/* Summary section */
+.results-summary {
+  text-align: center;
+  padding: 25px;
+  background-color: hsl(220, 45%, 98%);
+  border: 1px solid hsl(220, 45%, 85%);
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .results-summary {
+    background-color: hsl(220, 45%, 8%);
+    border-color: hsl(220, 45%, 20%);
+  }
+}
+
+.results-summary h3 {
+  color: hsl(220, 45%, 35%);
+  margin-bottom: 20px;
+  font-size: 1.4em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .results-summary h3 {
+    color: hsl(220, 45%, 75%);
+  }
+}
+
+.results-summary p {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.results-summary strong {
+  color: hsl(220, 45%, 25%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .results-summary strong {
+    color: hsl(220, 45%, 85%);
+  }
+}
+
+/* Chart containers */
+.chart-container {
+  margin-bottom: 40px;
+  padding: 25px;
+  background-color: hsl(0, 0%, 98%);
+  border: 1px solid hsl(0, 0%, 85%);
+  border-radius: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .chart-container {
+    background-color: hsl(0, 0%, 8%);
+    border-color: hsl(0, 0%, 20%);
+  }
+}
+
+.chart-container h3 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: hsl(220, 45%, 35%);
+  font-size: 1.3em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .chart-container h3 {
+    color: hsl(220, 45%, 75%);
+  }
+}
+
+.chart-canvas {
+  max-height: 400px;
+}
+
+.activity-chart .chart-canvas {
+  max-height: 300px;
+}
+
+/* Messages */
+.loading-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: hsl(220, 45%, 45%);
+  font-size: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .loading-message {
+    color: hsl(220, 45%, 65%);
+  }
+}
+
+.error-message {
+  text-align: center;
+  padding: 30px 20px;
+  background-color: hsl(0, 50%, 95%);
+  border: 1px solid hsl(0, 50%, 80%);
+  border-radius: 8px;
+  margin: 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .error-message {
+    background-color: hsl(0, 50%, 8%);
+    border-color: hsl(0, 50%, 25%);
+  }
+}
+
+.error-message h3 {
+  color: hsl(0, 60%, 45%);
+  margin-bottom: 15px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .error-message h3 {
+    color: hsl(0, 50%, 65%);
+  }
+}
+
+.error-message p {
+  color: hsl(0, 45%, 35%);
+  margin: 8px 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .error-message p {
+    color: hsl(0, 45%, 75%);
+  }
+}
+
+.error-message .error-details {
+  font-size: 14px;
+  color: hsl(0, 0%, 45%);
+  font-style: italic;
+}
+
+@media (prefers-color-scheme: dark) {
+  .error-message .error-details {
+    color: hsl(0, 0%, 65%);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .results-container {
+    padding: 10px;
+  }
+
+  .chart-container {
+    padding: 15px;
+  }
+
+  .results-summary {
+    padding: 20px;
+  }
+
+  .results-table {
+    font-size: 12px;
+    min-width: 600px;
+  }
+
+  .results-table th,
+  .results-table td {
+    padding: 8px 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .results-table {
+    font-size: 11px;
+    min-width: 500px;
+  }
+
+  .results-table th,
+  .results-table td {
+    padding: 6px 3px;
+  }
+}

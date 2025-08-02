@@ -194,23 +194,18 @@ function displayResultsTable(wordPairStats) {
 
   // Create title
   const title = document.createElement('h2');
-  title.textContent        = 'Statistiques des Mots';
-  title.style.textAlign    = 'center';
+  title.textContent = 'Statistiques des Mots';
+  title.style.textAlign = 'center';
   title.style.marginBottom = '20px';
   container.appendChild(title);
 
+  // Create table wrapper for horizontal scrolling
+  const tableWrapper = document.createElement('div');
+  tableWrapper.className = 'results-table-wrapper';
+
   // Create table
   const table = document.createElement('table');
-  table.className            = 'results-table';
-  table.style.width          = '100%';
-  table.style.minWidth       = '1000px';  // Ensure minimum width for all columns
-  table.style.borderCollapse = 'collapse';
-  table.style.marginBottom   = '20px';
-
-  // Make table scrollable on small screens
-  const tableWrapper = document.createElement('div');
-  tableWrapper.style.overflowX    = 'auto';
-  tableWrapper.style.marginBottom = '20px';
+  table.className = 'results-table';
 
   // Create header
   const thead = document.createElement('thead');
@@ -228,22 +223,7 @@ function displayResultsTable(wordPairStats) {
     <th>FR→SK Saisie</th>
   `;
 
-  // Style header
-  Array.from(headerRow.children).forEach((th, index) => {
-    th.style.padding         = '8px 4px';
-    th.style.border          = '1px solid #ddd';
-    th.style.backgroundColor = '#f8f9fa';
-    th.style.fontWeight      = 'bold';
-    th.style.textAlign       = 'center';
-    th.style.fontSize        = '13px';
-
-    // Make first two columns wider for word text
-    if (index < 2) {
-      th.style.minWidth = '120px';
-    } else {
-      th.style.minWidth = '80px';
-    }
-  });
+  // Table header styling is handled by CSS classes
 
   thead.appendChild(headerRow);
   table.appendChild(thead);
@@ -296,12 +276,14 @@ function displayResultsTable(wordPairStats) {
       <td>${frenchToSlovakTypingSuccessRate}${frenchToSlovakTypingSuccessRate !== '-' ? '%' : ''}</td>
     `;
 
-    // Style cells
+    // Apply success rate colors (columns 3-9 are success rate columns)
     Array.from(row.children).forEach((td, cellIndex) => {
-      td.style.padding   = '6px 4px';
-      td.style.border    = '1px solid #ddd';
-      td.style.textAlign = cellIndex < 2 ? 'left' : 'center';
-      td.style.fontSize  = '13px';
+      // Add word coloring for first two columns
+      if (cellIndex === 0) {
+        td.innerHTML = `<span class="word-french">${td.textContent}</span>`;
+      } else if (cellIndex === 1) {
+        td.innerHTML = `<span class="word-slovak">${td.textContent}</span>`;
+      }
 
       // Highlight success rates (columns 3-9 are success rate columns)
       if (cellIndex >= 3 && cellIndex <= 9) {
@@ -309,26 +291,15 @@ function displayResultsTable(wordPairStats) {
         if (rateText !== '-') {
           const rate = parseFloat(rateText);
           if (rate >= 80) {
-            td.style.backgroundColor = '#d4edda';
-            td.style.color           = '#155724';
-            td.style.fontWeight      = 'bold';
+            td.classList.add('success-rate-high');
           } else if (rate >= 50) {
-            td.style.backgroundColor = '#fff3cd';
-            td.style.color           = '#856404';
-            td.style.fontWeight      = 'bold';
+            td.classList.add('success-rate-medium');
           } else {
-            td.style.backgroundColor = '#f8d7da';
-            td.style.color           = '#721c24';
-            td.style.fontWeight      = 'bold';
+            td.classList.add('success-rate-low');
           }
         }
       }
     });
-
-    // Alternate row colors
-    if (index % 2 === 1) {
-      row.style.backgroundColor = '#f8f9fa';
-    }
 
     tbody.appendChild(row);
   });
@@ -344,12 +315,7 @@ function displayResultsTable(wordPairStats) {
   const overallSuccessRate = totalQuestions > 0 ? (((totalQuestions - totalErrors) / totalQuestions) * 100).toFixed(1) : '100.0';
 
   const summary = document.createElement('div');
-  summary.className             = 'results-summary';
-  summary.style.textAlign       = 'center';
-  summary.style.padding         = '20px';
-  summary.style.backgroundColor = '#f8f9fa';
-  summary.style.border          = '1px solid #ddd';
-  summary.style.borderRadius    = '5px';
+  summary.className = 'results-summary';
 
   summary.innerHTML = `
     <h3>Résumé Global</h3>
@@ -509,22 +475,15 @@ function displayProgressionChart(progressionData) {
   // Create chart container
   const chartContainer = document.createElement('div');
   chartContainer.className = 'chart-container';
-  chartContainer.style.marginBottom = '40px';
-  chartContainer.style.padding = '20px';
-  chartContainer.style.backgroundColor = '#f8f9fa';
-  chartContainer.style.border = '1px solid #ddd';
-  chartContainer.style.borderRadius = '5px';
 
   const chartTitle = document.createElement('h3');
   chartTitle.textContent = 'Progression de l\'Apprentissage dans le Temps';
-  chartTitle.style.textAlign = 'center';
-  chartTitle.style.marginBottom = '20px';
   chartContainer.appendChild(chartTitle);
 
   // Create canvas for chart
   const canvas = document.createElement('canvas');
   canvas.id = 'progressionChart';
-  canvas.style.maxHeight = '400px';
+  canvas.className = 'chart-canvas';
   chartContainer.appendChild(canvas);
 
   // Insert chart before the table
@@ -756,22 +715,15 @@ function displayDailyActivityChart(activityData) {
   // Create chart container
   const chartContainer = document.createElement('div');
   chartContainer.className = 'chart-container activity-chart';
-  chartContainer.style.marginBottom = '40px';
-  chartContainer.style.padding = '20px';
-  chartContainer.style.backgroundColor = '#f8f9fa';
-  chartContainer.style.border = '1px solid #ddd';
-  chartContainer.style.borderRadius = '5px';
 
   const chartTitle = document.createElement('h3');
   chartTitle.textContent = 'Activité Quotidienne des Quiz';
-  chartTitle.style.textAlign = 'center';
-  chartTitle.style.marginBottom = '20px';
   chartContainer.appendChild(chartTitle);
 
   // Create canvas for chart
   const canvas = document.createElement('canvas');
   canvas.id = 'activityChart';
-  canvas.style.maxHeight = '300px';
+  canvas.className = 'chart-canvas';
   chartContainer.appendChild(canvas);
 
   // Insert chart after the progression chart
@@ -918,7 +870,7 @@ async function loadAndDisplayResults() {
 
     // Show loading message
     const container = document.querySelector('.results-container') || document.body;
-    container.innerHTML = '<div style="text-align: center; padding: 20px;">Chargement des résultats...</div>';
+    container.innerHTML = '<div class="loading-message">Chargement des résultats...</div>';
 
     // Fetch all results
     const allResults = await fetchAllResults();
@@ -951,10 +903,10 @@ async function loadAndDisplayResults() {
     // Show error message
     const container = document.querySelector('.results-container') || document.body;
     container.innerHTML = `
-      <div style="text-align: center; padding: 20px; color: #dc3545;">
+      <div class="error-message">
         <h3>Erreur de Chargement</h3>
         <p>Impossible de charger les résultats depuis Firebase.</p>
-        <p style="font-size: 14px; color: #6c757d;">${error.message}</p>
+        <p class="error-details">${error.message}</p>
       </div>
     `;
   }
