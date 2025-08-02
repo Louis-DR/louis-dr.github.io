@@ -343,7 +343,7 @@
 }
 
 .matching-word.selected {
-  color: hsl(210, 75%, 35%);
+  color: hsl(210, 75%, 35%) !important;
   background-color: hsl(210, 100%, 95%) !important;
   border-color: hsl(210, 100%, 60%) !important;
   font-weight: bold;
@@ -495,7 +495,7 @@
   }
 
   .matching-word.selected {
-    color: hsl(210, 90%, 90%);
+    color: hsl(210, 90%, 90%)  !important;
     background-color: hsl(210, 100%, 40%) !important;
     border-color: hsl(210, 100%, 30%) !important;
   }
@@ -512,13 +512,13 @@
   }
 
   .state-correct {
-    color: hsl(120, 85%, 80%);
+    color: hsl(120, 85%, 80%)  !important;
     background-color: hsl(120, 80%, 20%) !important;
     border-color: hsl(120, 70%, 30%) !important;
   }
 
   .state-incorrect {
-    color: hsl(0, 85%, 80%);
+    color: hsl(0, 85%, 80%)  !important;
     background-color: hsl(0, 80%, 20%) !important;
     border-color: hsl(0, 70%, 30%) !important;
   }

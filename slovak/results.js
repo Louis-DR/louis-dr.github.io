@@ -193,22 +193,22 @@ function displayResultsTable(wordPairStats) {
 
   // Create title
   const title = document.createElement('h2');
-  title.textContent = 'Statistiques des Mots';
-  title.style.textAlign = 'center';
+  title.textContent        = 'Statistiques des Mots';
+  title.style.textAlign    = 'center';
   title.style.marginBottom = '20px';
   container.appendChild(title);
 
   // Create table
   const table = document.createElement('table');
-  table.className = 'results-table';
-  table.style.width = '100%';
-  table.style.minWidth = '1000px';  // Ensure minimum width for all columns
+  table.className            = 'results-table';
+  table.style.width          = '100%';
+  table.style.minWidth       = '1000px';  // Ensure minimum width for all columns
   table.style.borderCollapse = 'collapse';
-  table.style.marginBottom = '20px';
+  table.style.marginBottom   = '20px';
 
   // Make table scrollable on small screens
   const tableWrapper = document.createElement('div');
-  tableWrapper.style.overflowX = 'auto';
+  tableWrapper.style.overflowX    = 'auto';
   tableWrapper.style.marginBottom = '20px';
 
   // Create header
@@ -219,22 +219,22 @@ function displayResultsTable(wordPairStats) {
     <th>Slovaque</th>
     <th>Total Questions</th>
     <th>Réussite Globale</th>
+    <th>Correspondances</th>
+    <th>SK→FR Choix Multiple</th>
     <th>FR→SK Choix Multiple</th>
     <th>FR→SK Réorganiser</th>
-    <th>FR→SK Saisie</th>
-    <th>SK→FR Choix Multiple</th>
     <th>SK→FR Saisie</th>
-    <th>Correspondances</th>
+    <th>FR→SK Saisie</th>
   `;
 
   // Style header
   Array.from(headerRow.children).forEach((th, index) => {
-    th.style.padding = '8px 4px';
-    th.style.border = '1px solid #ddd';
+    th.style.padding         = '8px 4px';
+    th.style.border          = '1px solid #ddd';
     th.style.backgroundColor = '#f8f9fa';
-    th.style.fontWeight = 'bold';
-    th.style.textAlign = 'center';
-    th.style.fontSize = '13px';
+    th.style.fontWeight      = 'bold';
+    th.style.textAlign       = 'center';
+    th.style.fontSize        = '13px';
 
     // Make first two columns wider for word text
     if (index < 2) {
@@ -258,6 +258,14 @@ function displayResultsTable(wordPairStats) {
       ? (((wordStats.totalQuestions - wordStats.totalErrors) / wordStats.totalQuestions) * 100).toFixed(1)
       : '100.0';
 
+    const matchingSuccessRate = wordStats.matchingQuestions > 0
+      ? (((wordStats.matchingQuestions - wordStats.matchingErrors) / wordStats.matchingQuestions) * 100).toFixed(1)
+      : '-';
+
+    const slovakToFrenchMultipleChoiceSuccessRate = wordStats.slovakToFrenchMultipleChoiceQuestions > 0
+      ? (((wordStats.slovakToFrenchMultipleChoiceQuestions - wordStats.slovakToFrenchMultipleChoiceErrors) / wordStats.slovakToFrenchMultipleChoiceQuestions) * 100).toFixed(1)
+      : '-';
+
     const frenchToSlovakMultipleChoiceSuccessRate = wordStats.frenchToSlovakMultipleChoiceQuestions > 0
       ? (((wordStats.frenchToSlovakMultipleChoiceQuestions - wordStats.frenchToSlovakMultipleChoiceErrors) / wordStats.frenchToSlovakMultipleChoiceQuestions) * 100).toFixed(1)
       : '-';
@@ -266,20 +274,12 @@ function displayResultsTable(wordPairStats) {
       ? (((wordStats.reorderLettersQuestions - wordStats.reorderLettersErrors) / wordStats.reorderLettersQuestions) * 100).toFixed(1)
       : '-';
 
-    const frenchToSlovakTypingSuccessRate = wordStats.frenchToSlovakTypingQuestions > 0
-      ? (((wordStats.frenchToSlovakTypingQuestions - wordStats.frenchToSlovakTypingErrors) / wordStats.frenchToSlovakTypingQuestions) * 100).toFixed(1)
-      : '-';
-
-    const slovakToFrenchMultipleChoiceSuccessRate = wordStats.slovakToFrenchMultipleChoiceQuestions > 0
-      ? (((wordStats.slovakToFrenchMultipleChoiceQuestions - wordStats.slovakToFrenchMultipleChoiceErrors) / wordStats.slovakToFrenchMultipleChoiceQuestions) * 100).toFixed(1)
-      : '-';
-
     const slovakToFrenchTypingSuccessRate = wordStats.slovakToFrenchTypingQuestions > 0
       ? (((wordStats.slovakToFrenchTypingQuestions - wordStats.slovakToFrenchTypingErrors) / wordStats.slovakToFrenchTypingQuestions) * 100).toFixed(1)
       : '-';
 
-    const matchingSuccessRate = wordStats.matchingQuestions > 0
-      ? (((wordStats.matchingQuestions - wordStats.matchingErrors) / wordStats.matchingQuestions) * 100).toFixed(1)
+    const frenchToSlovakTypingSuccessRate = wordStats.frenchToSlovakTypingQuestions > 0
+      ? (((wordStats.frenchToSlovakTypingQuestions - wordStats.frenchToSlovakTypingErrors) / wordStats.frenchToSlovakTypingQuestions) * 100).toFixed(1)
       : '-';
 
     row.innerHTML = `
@@ -287,20 +287,20 @@ function displayResultsTable(wordPairStats) {
       <td><strong>${wordStats.slovakWord}</strong></td>
       <td>${wordStats.totalQuestions}</td>
       <td>${globalSuccessRate}%</td>
+      <td>${matchingSuccessRate}${matchingSuccessRate !== '-' ? '%' : ''}</td>
+      <td>${slovakToFrenchMultipleChoiceSuccessRate}${slovakToFrenchMultipleChoiceSuccessRate !== '-' ? '%' : ''}</td>
       <td>${frenchToSlovakMultipleChoiceSuccessRate}${frenchToSlovakMultipleChoiceSuccessRate !== '-' ? '%' : ''}</td>
       <td>${reorderLettersSuccessRate}${reorderLettersSuccessRate !== '-' ? '%' : ''}</td>
-      <td>${frenchToSlovakTypingSuccessRate}${frenchToSlovakTypingSuccessRate !== '-' ? '%' : ''}</td>
-      <td>${slovakToFrenchMultipleChoiceSuccessRate}${slovakToFrenchMultipleChoiceSuccessRate !== '-' ? '%' : ''}</td>
       <td>${slovakToFrenchTypingSuccessRate}${slovakToFrenchTypingSuccessRate !== '-' ? '%' : ''}</td>
-      <td>${matchingSuccessRate}${matchingSuccessRate !== '-' ? '%' : ''}</td>
+      <td>${frenchToSlovakTypingSuccessRate}${frenchToSlovakTypingSuccessRate !== '-' ? '%' : ''}</td>
     `;
 
     // Style cells
     Array.from(row.children).forEach((td, cellIndex) => {
-      td.style.padding = '6px 4px';
-      td.style.border = '1px solid #ddd';
+      td.style.padding   = '6px 4px';
+      td.style.border    = '1px solid #ddd';
       td.style.textAlign = cellIndex < 2 ? 'left' : 'center';
-      td.style.fontSize = '13px';
+      td.style.fontSize  = '13px';
 
       // Highlight success rates (columns 3-9 are success rate columns)
       if (cellIndex >= 3 && cellIndex <= 9) {
@@ -309,16 +309,16 @@ function displayResultsTable(wordPairStats) {
           const rate = parseFloat(rateText);
           if (rate >= 80) {
             td.style.backgroundColor = '#d4edda';
-            td.style.color = '#155724';
-            td.style.fontWeight = 'bold';
+            td.style.color           = '#155724';
+            td.style.fontWeight      = 'bold';
           } else if (rate >= 50) {
             td.style.backgroundColor = '#fff3cd';
-            td.style.color = '#856404';
-            td.style.fontWeight = 'bold';
+            td.style.color           = '#856404';
+            td.style.fontWeight      = 'bold';
           } else {
             td.style.backgroundColor = '#f8d7da';
-            td.style.color = '#721c24';
-            td.style.fontWeight = 'bold';
+            td.style.color           = '#721c24';
+            td.style.fontWeight      = 'bold';
           }
         }
       }
@@ -337,18 +337,18 @@ function displayResultsTable(wordPairStats) {
   container.appendChild(tableWrapper);
 
     // Add summary statistics
-  const totalWords = wordPairStats.length;
-  const totalQuestions = wordPairStats.reduce((sum, stats) => sum + stats.totalQuestions, 0);
-  const totalErrors = wordPairStats.reduce((sum, stats) => sum + stats.totalErrors, 0);
+  const totalWords         = wordPairStats.length;
+  const totalQuestions     = wordPairStats.reduce((sum, stats) => sum + stats.totalQuestions, 0);
+  const totalErrors        = wordPairStats.reduce((sum, stats) => sum + stats.totalErrors, 0);
   const overallSuccessRate = totalQuestions > 0 ? (((totalQuestions - totalErrors) / totalQuestions) * 100).toFixed(1) : '100.0';
 
   const summary = document.createElement('div');
-  summary.className = 'results-summary';
-  summary.style.textAlign = 'center';
-  summary.style.padding = '20px';
+  summary.className             = 'results-summary';
+  summary.style.textAlign       = 'center';
+  summary.style.padding         = '20px';
   summary.style.backgroundColor = '#f8f9fa';
-  summary.style.border = '1px solid #ddd';
-  summary.style.borderRadius = '5px';
+  summary.style.border          = '1px solid #ddd';
+  summary.style.borderRadius    = '5px';
 
   summary.innerHTML = `
     <h3>Résumé Global</h3>

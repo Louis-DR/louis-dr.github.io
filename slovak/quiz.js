@@ -71,11 +71,26 @@ function createAudioEmoji(word, marginLeft = '10px') {
   return audioEmoji;
 }
 
+function cleanWordForInput(word) {
+  // Remove everything in parentheses and trim whitespace
+  return word.replace(/\s*\([^)]*\)\s*/g, '').trim();
+}
+
 function createProgressElement(text) {
   const progressElement = document.createElement('p');
   progressElement.textContent = text;
   progressElement.className   = 'progress';
   return progressElement;
+}
+
+function cleanupEventListeners() {
+  // Clean up any remaining keyboard event listeners from previous quiz elements
+  const existingButtons = document.querySelectorAll('.submit-button, .next-button');
+  existingButtons.forEach(button => {
+    if (button._keyHandler) {
+      document.removeEventListener('keypress', button._keyHandler);
+    }
+  });
 }
 
 function drawMatchingLine(button1, button2, color = '#007bff') {
@@ -247,6 +262,7 @@ function generateMatchingQuestion() {
   const quizContainer = getQuizContainer();
   if (!quizContainer) return;
 
+  cleanupEventListeners(); // Clean up any stale event listeners
   quizContainer.innerHTML = ''; // Clear previous content
 
   // Add progress indicator
@@ -315,6 +331,20 @@ function generateMatchingQuestion() {
   submitButton.className   = 'btn btn-primary submit-button';
   submitButton.disabled    = true;
   submitButton.addEventListener('click', handleMatchingSubmit);
+
+  // Add Enter key support for matching quiz submission
+  const matchingKeyHandler = (event) => {
+    if (event.key === 'Enter' && !submitButton.disabled && submitButton.parentNode) {
+      event.preventDefault();
+      handleMatchingSubmit();
+    }
+  };
+  document.addEventListener('keypress', matchingKeyHandler);
+
+  // Store the handler for cleanup
+  submitButton.dataset.keyHandler = 'matching';
+  submitButton._keyHandler = matchingKeyHandler;
+
   quizContainer.appendChild(submitButton);
 
   quizState.totalQuestions = 1; // Matching is one comprehensive question
@@ -553,6 +583,7 @@ function generateNextQuestion() {
   const quizContainer = getQuizContainer();
   if (!quizContainer) return;
 
+  cleanupEventListeners(); // Clean up any stale event listeners
   quizContainer.innerHTML = ''; // Clear previous content
 
   // Add progress indicator
@@ -603,12 +634,13 @@ function generateTypingQuestion(forceFrenchQuestion = null) {
   // Use forced direction if provided, otherwise decide randomly
   const isFrenchQuestion = forceFrenchQuestion !== null ? forceFrenchQuestion : Math.random() < 0.5;
   const questionText     = isFrenchQuestion ? questionPair[0] : questionPair[1];
-  const correctAnswer    = isFrenchQuestion ? questionPair[1] : questionPair[0];
+  const correctAnswer    = cleanWordForInput(isFrenchQuestion ? questionPair[1] : questionPair[0]);
 
   // Get the quiz container element
   const quizContainer = getQuizContainer();
   if (!quizContainer) return;
 
+  cleanupEventListeners(); // Clean up any stale event listeners
   quizContainer.innerHTML = ''; // Clear previous content
 
   // Add progress indicator with typing direction
@@ -705,10 +737,10 @@ function generateReorderQuestion() {
 
   // Always French to Slovak for reorder quiz
   const frenchWord = questionPair[0];
-  const slovakWord = questionPair[1];
+  const slovakWord = cleanWordForInput(questionPair[1]);
 
-  // Split Slovak word into letters
-  const correctLetters = slovakWord.split('');
+  // Split Slovak word into lowercase letters
+  const correctLetters = slovakWord.toLowerCase().split('');
 
     // Add some random letters to make it challenging
   // More regular alphabet letters, fewer special Slovak characters for better balance
@@ -725,8 +757,8 @@ function generateReorderQuestion() {
     const letterPool = useSpecialLetter ? slovakSpecialLetters : regularLetters;
     const randomLetter = letterPool[Math.floor(Math.random() * letterPool.length)];
 
-    if (!correctLetters.includes(randomLetter) && !randomLetters.includes(randomLetter)) {
-      randomLetters.push(randomLetter);
+    if (!correctLetters.includes(randomLetter.toLowerCase()) && !randomLetters.includes(randomLetter.toLowerCase())) {
+      randomLetters.push(randomLetter.toLowerCase());
     }
   }
 
@@ -739,6 +771,7 @@ function generateReorderQuestion() {
   const quizContainer = getQuizContainer();
   if (!quizContainer) return;
 
+  cleanupEventListeners(); // Clean up any stale event listeners
   quizContainer.innerHTML = ''; // Clear previous content
 
   // Add progress indicator
@@ -773,6 +806,20 @@ function generateReorderQuestion() {
   submitButton.className = 'btn btn-primary submit-button';
   submitButton.disabled = true;
   submitButton.addEventListener('click', () => handleReorderSubmit(slovakWord, questionPair));
+
+  // Add Enter key support for reorder quiz submission
+  const reorderKeyHandler = (event) => {
+    if (event.key === 'Enter' && !submitButton.disabled && submitButton.parentNode) {
+      event.preventDefault();
+      handleReorderSubmit(slovakWord, questionPair);
+    }
+  };
+  document.addEventListener('keypress', reorderKeyHandler);
+
+  // Store the handler for cleanup
+  submitButton.dataset.keyHandler = 'reorder';
+  submitButton._keyHandler = reorderKeyHandler;
+
   quizContainer.appendChild(submitButton);
 
   // Initialize the display
@@ -803,7 +850,7 @@ function updateReorderDisplay() {
 
   // Create empty slots for remaining letters (based on correct word length)
   const questionPair = quizState.wordQueue[0];
-  const slovakWord = questionPair[1];
+  const slovakWord = cleanWordForInput(questionPair[1]);
   const remainingSlots = slovakWord.length - quizState.reorderSelectedLetters.length;
 
   for (let slotIndex = 0; slotIndex < remainingSlots; slotIndex++) {
@@ -848,6 +895,7 @@ function removeLetterFromWord(letterIndex) {
 function handleReorderSubmit(correctAnswer, questionPair) {
   const userAnswer = quizState.reorderSelectedLetters.join('');
   const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+  const originalCorrectAnswer = questionPair[1]; // Original with parentheses for display
 
   // Disable submit button
   const submitButton = document.querySelector('.submit-button');
@@ -868,6 +916,10 @@ function handleReorderSubmit(correctAnswer, questionPair) {
   if (isCorrect) {
     feedbackElement.innerHTML = `<span class="feedback-success">✓ Correct!</span>`;
 
+    // Add audio emoji for Slovak correct answer
+    const audioEmoji = createAudioEmoji(originalCorrectAnswer, '10px');
+    feedbackElement.appendChild(audioEmoji);
+
     // Highlight correct letters
     document.querySelectorAll('.reorder-letter-slot.filled').forEach(slot => {
       slot.classList.add('state-correct');
@@ -875,7 +927,7 @@ function handleReorderSubmit(correctAnswer, questionPair) {
   } else {
     feedbackElement.innerHTML = `
       <span class="feedback-error">✗ Incorrect</span><br>
-      <span class="feedback-info">Réponse correcte: "${correctAnswer}"</span>
+      <span class="feedback-info">Réponse correcte: "${originalCorrectAnswer}"</span>
     `;
 
     // Highlight incorrect letters
@@ -884,7 +936,7 @@ function handleReorderSubmit(correctAnswer, questionPair) {
     });
 
     // Add audio emoji for Slovak correct answer
-    const audioEmoji = createAudioEmoji(correctAnswer);
+    const audioEmoji = createAudioEmoji(originalCorrectAnswer);
     feedbackElement.querySelector('.feedback-info').appendChild(audioEmoji);
   }
 
@@ -989,9 +1041,10 @@ function handleAnswerClick(clickedButton, selectedAnswer, correctAnswer, allButt
 }
 
 function handleTypingSubmit(inputField, correctAnswer, questionPair, isFrenchQuestion) {
-  const userAnswer = inputField.value.trim();
+  const userAnswer = cleanWordForInput(inputField.value.trim());
   const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase(); // Case-insensitive comparison
   const direction = isFrenchQuestion ? 'french_to_slovak' : 'slovak_to_french';
+  const originalCorrectAnswer = isFrenchQuestion ? questionPair[1] : questionPair[0]; // Original with parentheses for display
 
   // Disable input and submit button
   inputField.disabled = true;
@@ -1011,13 +1064,13 @@ function handleTypingSubmit(inputField, correctAnswer, questionPair, isFrenchQue
   } else {
     feedbackElement.innerHTML = `
       <span class="feedback-error wrong-feedback">✗ Incorrect</span><br>
-      <span class="feedback-info correct-answer-display">Réponse correcte: "${correctAnswer}"</span>
+      <span class="feedback-info correct-answer-display">Réponse correcte: "${originalCorrectAnswer}"</span>
     `;
     inputField.classList.add('state-incorrect');
 
     // Add audio emoji for Slovak correct answers
     if (isFrenchQuestion) { // Correct answer is Slovak
-      const audioEmoji = createAudioEmoji(correctAnswer);
+      const audioEmoji = createAudioEmoji(originalCorrectAnswer);
       feedbackElement.querySelector('.correct-answer-display').appendChild(audioEmoji);
     }
   }
@@ -1065,16 +1118,23 @@ function showNextButton() {
   const quizContainer = getQuizContainer();
   if (!quizContainer) return;
 
-  // Remove existing next button if any
+    // Find existing submit button to replace, or existing next button to remove
+  const existingSubmitButton = quizContainer.querySelector('.submit-button');
   const existingNextButton = quizContainer.querySelector('.next-button');
+
   if (existingNextButton) {
+    // Clean up existing next button event listeners
+    if (existingNextButton._keyHandler) {
+      document.removeEventListener('keypress', existingNextButton._keyHandler);
+    }
     existingNextButton.remove();
   }
 
   const nextButton = document.createElement('button');
   nextButton.textContent = 'Suivant';
   nextButton.className   = 'btn btn-primary next-button';
-  nextButton.addEventListener('click', () => {
+
+  const nextButtonHandler = () => {
     // Check if current quiz type should continue or transition
     if (quizState.wordQueue.length > 0) {
       // Continue with current quiz type until all words are mastered
@@ -1094,9 +1154,35 @@ function showNextButton() {
       // All words mastered, show completion screen (which uploads to database)
       showQuizCompletion();
     }
-  });
+  };
 
-  quizContainer.appendChild(nextButton);
+  nextButton.addEventListener('click', nextButtonHandler);
+
+  // Add Enter key support for the next button
+  const keyHandler = (event) => {
+    if (event.key === 'Enter' && nextButton.parentNode) {
+      event.preventDefault();
+      nextButtonHandler();
+    }
+  };
+
+    document.addEventListener('keypress', keyHandler);
+
+  // Store the handler for cleanup
+  nextButton._keyHandler = keyHandler;
+
+  if (existingSubmitButton) {
+    // Clean up any existing submit button event listeners
+    if (existingSubmitButton._keyHandler) {
+      document.removeEventListener('keypress', existingSubmitButton._keyHandler);
+    }
+
+    // Replace the submit button with the next button
+    existingSubmitButton.parentNode.replaceChild(nextButton, existingSubmitButton);
+  } else {
+    // No submit button to replace (e.g., multiple choice), just append
+    quizContainer.appendChild(nextButton);
+  }
 }
 
 async function showQuizCompletion() {
