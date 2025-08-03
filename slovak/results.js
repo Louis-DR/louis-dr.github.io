@@ -14,6 +14,8 @@ const firebaseConfig = {
 // Firebase app and database - will be initialized when needed
 let firebaseApp = null;
 let database    = null;
+let auth = null;
+let currentUser = null;
 
 /**
  * Initialize Firebase if not already done
@@ -27,10 +29,12 @@ async function initializeFirebase() {
     // Dynamic imports to avoid CORS issues with file:// protocol
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
     const { getDatabase }   = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+    const { getAuth } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js");
 
     // Initialize Firebase app and database
     firebaseApp = initializeApp(firebaseConfig);
     database    = getDatabase(firebaseApp);
+    auth = getAuth(firebaseApp);
 
     console.log("Firebase initialized successfully for results");
   } catch (error) {
@@ -47,21 +51,26 @@ async function fetchAllResults() {
     // Initialize Firebase if not already done
     await initializeFirebase();
 
+    if (!currentUser) {
+      console.log("No user logged in, cannot fetch results.");
+      return {};
+    }
+
     // Dynamic import for database functions
     const { ref, get } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
 
-    // Get reference to the results node
-    const resultsRef = ref(database, 'results');
+    // Get reference to the results node for the current user
+    const resultsRef = ref(database, `results/${currentUser.uid}`);
 
     // Fetch all data
     const snapshot = await get(resultsRef);
 
     if (snapshot.exists()) {
       const data = snapshot.val();
-      console.log("Fetched results from Firebase:", data);
+      console.log(`Fetched results for user ${currentUser.uid}:`, data);
       return data;
     } else {
-      console.log("No results found in Firebase");
+      console.log(`No results found for user ${currentUser.uid}`);
       return {};
     }
   } catch (error) {
@@ -870,6 +879,84 @@ function testResultsFunction() {
 }
 
 /**
+ * Handle authentication state changes
+ */
+function handleAuthentication() {
+  const { onAuthStateChanged } = auth; // Assumes auth is initialized
+
+  onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    renderAuthStatusFooter();
+    if (user) {
+      console.log("User is signed in:", user.displayName);
+      loadAndDisplayResults();
+    } else {
+      console.log("User is signed out.");
+      renderLoginScreen();
+    }
+  });
+}
+
+/**
+ * Render login screen
+ */
+function renderLoginScreen() {
+  const container = document.querySelector('.results-container') || document.body;
+  container.innerHTML = `
+    <div class="login-container" style="text-align: center; padding: 50px;">
+      <h2 style="color: #007bff; margin-bottom: 20px;">Authentification Requise</h2>
+      <p style="margin-bottom: 30px;">Veuillez vous connecter avec Google pour voir vos résultats.</p>
+      <button id="google-login-button" class="btn btn-primary btn-lg">Se connecter avec Google</button>
+    </div>
+  `;
+  document.getElementById('google-login-button').addEventListener('click', signInWithGoogle);
+}
+
+/**
+ * Sign in with Google
+ */
+async function signInWithGoogle() {
+  try {
+    const { GoogleAuthProvider, signInWithPopup } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js");
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+    // onAuthStateChanged will handle the UI update
+  } catch (error) {
+    console.error("Error during Google sign-in:", error);
+    const container = document.querySelector('.results-container') || document.body;
+    container.innerHTML = `<div class="error-message">La connexion a échoué: ${error.message}</div>`;
+  }
+}
+
+/**
+ * Render authentication status footer
+ */
+function renderAuthStatusFooter() {
+  let footer = document.getElementById('auth-status-footer');
+  if (!footer) {
+    footer = document.createElement('div');
+    footer.id = 'auth-status-footer';
+    footer.style.cssText = 'position: fixed; bottom: 10px; right: 10px; font-size: 12px; color: #666; background-color: rgba(240, 240, 240, 0.8); padding: 5px 10px; border-radius: 5px; z-index: 1000;';
+    document.body.appendChild(footer);
+  }
+
+  if (currentUser) {
+    footer.innerHTML = `Connecté: <strong>${currentUser.displayName || currentUser.email}</strong> | <a href="#" id="logout-link" style="color: #007bff;">Se déconnecter</a>`;
+    footer.querySelector('#logout-link').addEventListener('click', async (e) => {
+      e.preventDefault();
+      const { signOut } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js");
+      await signOut(auth);
+    });
+  } else {
+    footer.innerHTML = `<a href="#" id="login-link" style="color: #007bff;">Se connecter</a>`;
+    footer.querySelector('#login-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      signInWithGoogle();
+    });
+  }
+}
+
+/**
  * Main function to load and display all results
  */
 async function loadAndDisplayResults() {
@@ -919,3 +1006,43 @@ async function loadAndDisplayResults() {
     `;
   }
 }
+
+/**
+ * Initialize and authenticate the user on page load
+ */
+async function initializeAndAuthenticate() {
+  if (auth) return; // Already initialized
+
+  try {
+    console.log("Initializing Firebase and Auth for results...");
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
+    const { getDatabase } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+    const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js");
+
+    if (!firebaseApp) {
+      firebaseApp = initializeApp(firebaseConfig);
+      database = getDatabase(firebaseApp);
+      auth = getAuth(firebaseApp);
+      console.log("Firebase with Auth initialized successfully for results");
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      renderAuthStatusFooter();
+      if (user) {
+        console.log("User is signed in for results:", user.displayName);
+        loadAndDisplayResults();
+      } else {
+        console.log("User is signed out for results.");
+        renderLoginScreen();
+      }
+    });
+  } catch (error) {
+    console.error("Failed to initialize Firebase for results page:", error);
+    const container = document.querySelector('.results-container') || document.body;
+    container.innerHTML = `<div class="error-message">Impossible d'initialiser Firebase.</div>`;
+  }
+}
+
+// Start the process
+initializeAndAuthenticate();

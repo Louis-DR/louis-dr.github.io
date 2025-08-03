@@ -36,6 +36,7 @@ const maxWords = 8;
 // Firebase globals
 let firebaseApp = null;
 let database = null;
+let auth = null;
 
 // Main Quiz State Machine
 class QuizStateMachine {
@@ -52,6 +53,7 @@ class QuizStateMachine {
     this.results = {};
     this.currentQuestion = null;
     this.feedbackData = null;
+    this.user = null;
 
     // UI state
     this.matchingSelections = {};
@@ -100,10 +102,48 @@ class QuizStateMachine {
     this.quizName = quizName || 'Slovak Language Quiz';
     this.enabledQuizTypes = enabledQuizTypes || [QuizTypes.MATCHING, QuizTypes.MULTIPLE_CHOICE, QuizTypes.REORDER_LETTERS, QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
 
-    if (this.wordPairs.length === 0) {
-      await this.initializeAdaptiveQuiz();
-    } else {
-      await this.transition(QuizStates.START_SCREEN);
+    try {
+      await this.initializeFirebaseAndAuth();
+    } catch (error) {
+      this.renderError("Failed to initialize Firebase authentication.");
+    }
+  }
+
+  async initializeFirebaseAndAuth() {
+    if (auth) return; // Already initialized
+
+    try {
+      console.log("Initializing Firebase and Auth...");
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
+      const { getDatabase } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+      const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js");
+
+      if (!firebaseApp) {
+        firebaseApp = initializeApp(firebaseConfig);
+        database = getDatabase(firebaseApp);
+        auth = getAuth(firebaseApp);
+        console.log("Firebase with Auth initialized successfully");
+      }
+
+      onAuthStateChanged(auth, async (user) => {
+        this.user = user;
+        this.renderAuthStatusFooter();
+
+        if (user) {
+          console.log("User is signed in:", user.displayName);
+          if (this.wordPairs.length === 0) {
+            await this.initializeAdaptiveQuiz();
+          } else {
+            await this.transition(QuizStates.START_SCREEN);
+          }
+        } else {
+          console.log("User is signed out.");
+          this.renderLoginScreen();
+        }
+      });
+    } catch (error) {
+      console.error("Error during Firebase initialization and auth setup:", error);
+      throw error;
     }
   }
 
@@ -137,7 +177,7 @@ class QuizStateMachine {
     // Select words for this quiz session
     if (selectedWordPairs) {
       this.selectedWordPairs = selectedWordPairs;
-    } else {
+  } else {
       const maxPairs = Math.min(maxWords, this.wordPairs.length);
       const shuffledPairs = this.shuffleArray([...this.wordPairs]);
       this.selectedWordPairs = shuffledPairs.slice(0, maxPairs);
@@ -155,10 +195,10 @@ class QuizStateMachine {
     this.selectedWordPairs.forEach(pair => {
       const wordKey = pair[1];
       this.results[wordKey] = {
-        wordPair: pair,
-        attempts: []
-      };
-    });
+      wordPair: pair,
+      attempts: []
+    };
+  });
 
     await this.transition(QuizStates.QUIZ_ACTIVE);
   }
@@ -268,6 +308,69 @@ class QuizStateMachine {
     console.log('restart() called');
     this.currentQuizTypeIndex = 0;
     await this.startQuiz(); // This will select new random words
+  }
+
+  renderLoginScreen() {
+    this.container = this.getQuizContainer();
+    if (!this.container) return;
+    this.cleanup();
+    this.container.innerHTML = `
+      <div class="login-container" style="text-align: center; padding: 50px;">
+        <h2 style="color: #007bff; margin-bottom: 20px;">Authentification Requise</h2>
+        <p style="margin-bottom: 30px;">Veuillez vous connecter avec Google pour commencer le quiz et sauvegarder vos progrès.</p>
+        <button id="google-login-button" class="btn btn-primary btn-lg">Se connecter avec Google</button>
+      </div>
+    `;
+    document.getElementById('google-login-button').addEventListener('click', () => this.signInWithGoogle());
+  }
+
+  async signInWithGoogle() {
+    try {
+      const { GoogleAuthProvider, signInWithPopup } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js");
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      // onAuthStateChanged will handle the UI update
+    } catch (error) {
+      console.error("Error during Google sign-in:", error);
+      this.renderError("La connexion avec Google a échoué. Veuillez réessayer.", error.message);
+    }
+  }
+
+  renderAuthStatusFooter() {
+    let footer = document.getElementById('auth-status-footer');
+    if (!footer) {
+      footer = document.createElement('div');
+      footer.id = 'auth-status-footer';
+      footer.style.cssText = 'position: fixed; bottom: 10px; right: 10px; font-size: 12px; color: #666; background-color: rgba(240, 240, 240, 0.8); padding: 5px 10px; border-radius: 5px; z-index: 1000;';
+      document.body.appendChild(footer);
+    }
+
+    if (this.user) {
+      footer.innerHTML = `Connecté: <strong>${this.user.displayName || this.user.email}</strong> | <a href="#" id="logout-link" style="color: #007bff;">Se déconnecter</a>`;
+      footer.querySelector('#logout-link').addEventListener('click', async (e) => {
+        e.preventDefault();
+        const { signOut } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js");
+        await signOut(auth);
+      });
+    } else {
+      footer.innerHTML = `<a href="#" id="login-link" style="color: #007bff;">Se connecter avec Google</a>`;
+      footer.querySelector('#login-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        this.signInWithGoogle();
+      });
+    }
+  }
+
+  renderError(message, details = '') {
+    this.container = this.getQuizContainer();
+    if (!this.container) return;
+    this.container.innerHTML = `
+      <div class="error-message" style="padding: 20px; text-align: center; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px;">
+        <h3>Erreur</h3>
+        <p>${message}</p>
+        <p style="font-size: 12px; color: #6c757d;">${details}</p>
+      </div>
+    `;
   }
 
   // Rendering methods
@@ -442,7 +545,7 @@ class QuizStateMachine {
     const slovakWords = this.shuffleArray(this.selectedWordPairs.map(pair => pair[1]));
 
     frenchWords.forEach(word => {
-      const button = document.createElement('button');
+    const button = document.createElement('button');
       button.textContent = word;
       button.className = 'matching-word french-word';
       button.dataset.word = word;
@@ -475,11 +578,11 @@ class QuizStateMachine {
     if (this.wordQueue.length === 0) {
       console.log('Multiple choice: wordQueue is empty, calling continue()');
       await this.continue();
-      return;
-    }
+    return;
+  }
 
     const questionPair = this.wordQueue[0];
-    const isFrenchQuestion = Math.random() < 0.5;
+  const isFrenchQuestion = Math.random() < 0.5;
     const questionText = isFrenchQuestion ? questionPair[0] : questionPair[1];
     const correctAnswer = isFrenchQuestion ? questionPair[1] : questionPair[0];
 
@@ -579,8 +682,8 @@ class QuizStateMachine {
     if (!isFrenchQuestion) {
       const questionElement = this.container.querySelector('.question');
       const audioEmoji = this.createAudioEmoji(questionText);
-      questionElement.appendChild(audioEmoji);
-    }
+    questionElement.appendChild(audioEmoji);
+  }
 
     const inputField = this.container.querySelector('.typing-input');
     const submitButton = this.container.querySelector('.submit-button');
@@ -622,14 +725,14 @@ class QuizStateMachine {
     };
 
     submitButton.addEventListener('click', handleSubmit);
-    inputField.addEventListener('keypress', (event) => {
-      if (event.key === 'Enter') {
+  inputField.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
         event.preventDefault();
         handleSubmit();
-      }
-    });
+    }
+  });
 
-    inputField.focus();
+  inputField.focus();
   }
 
   async renderReorderQuiz() {
@@ -738,7 +841,7 @@ class QuizStateMachine {
       nextButton.textContent = 'Suivant';
       nextButton.addEventListener('click', async () => await this.continue());
       submitButton.parentNode.replaceChild(nextButton, submitButton);
-    } else {
+  } else {
       // No submit button found, append next button to container
       const nextButton = document.createElement('button');
       nextButton.className = 'btn btn-primary next-button';
@@ -803,13 +906,13 @@ class QuizStateMachine {
     const feedbackDiv = document.createElement('div');
     feedbackDiv.className = 'feedback reorder-feedback';
 
-    if (isCorrect) {
+  if (isCorrect) {
       feedbackDiv.innerHTML = `<span class="feedback-success">✓ Correct!</span>`;
 
       // Add audio for correct answers
       const audioEmoji = this.createAudioEmoji(this.currentQuestion.originalCorrectAnswer, '10px');
       feedbackDiv.appendChild(audioEmoji);
-    } else {
+  } else {
       feedbackDiv.innerHTML = `
         <span class="feedback-error">✗ Incorrect</span><br>
         <span class="feedback-info">Réponse correcte: "${this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer}"</span>
@@ -879,14 +982,14 @@ class QuizStateMachine {
   }
 
   createAudioEmoji(word, marginLeft = '10px') {
-    const audioEmoji = document.createElement('span');
+      const audioEmoji = document.createElement('span');
     audioEmoji.textContent = ' 🔊';
     audioEmoji.className = 'audio-emoji';
     audioEmoji.style.cursor = 'pointer';
     audioEmoji.style.marginLeft = marginLeft;
     audioEmoji.addEventListener('click', (event) => {
       event.stopPropagation();
-      if (typeof playAudio === 'function') {
+        if (typeof playAudio === 'function') {
         playAudio(word);
       }
     });
@@ -1058,7 +1161,7 @@ class QuizStateMachine {
         let lineColor;
         if (frenchButton.classList.contains('state-correct') && slovakButton.classList.contains('state-correct') && !slovakButton.classList.contains('show-correct')) {
           lineColor = '#28a745';
-        } else {
+    } else {
           lineColor = '#dc3545';
         }
         this.drawMatchingLine(frenchButton, slovakButton, lineColor);
@@ -1198,7 +1301,7 @@ class QuizStateMachine {
       });
 
       return { analysis: wordAnalysis, extractedWordPairs };
-    } catch (error) {
+  } catch (error) {
       console.error("Error analyzing word pair performance:", error);
       return { analysis: {}, extractedWordPairs: [] };
     }
@@ -1227,33 +1330,33 @@ class QuizStateMachine {
   }
 
   generateQuizResults(specificQuizType = null) {
-    const completionTimestamp = new Date().toISOString();
-    const wordResults = [];
+  const completionTimestamp = new Date().toISOString();
+  const wordResults = [];
     let totalErrors = 0;
 
     Object.keys(this.results).forEach(wordKey => {
       const wordData = this.results[wordKey];
-      const attempts = wordData.attempts;
+    const attempts = wordData.attempts;
 
-      const stats = {
-        french_to_slovak: { successes: 0, failures: 0 },
+    const stats = {
+      french_to_slovak: { successes: 0, failures: 0 },
         slovak_to_french: { successes: 0, failures: 0 },
         matching: { successes: 0, failures: 0 }
-      };
+    };
 
-      let wordErrors = 0;
-      attempts.forEach(attempt => {
-        if (attempt.isCorrect) {
-          stats[attempt.direction].successes++;
-        } else {
-          stats[attempt.direction].failures++;
-          wordErrors++;
-        }
-      });
+    let wordErrors = 0;
+    attempts.forEach(attempt => {
+      if (attempt.isCorrect) {
+        stats[attempt.direction].successes++;
+      } else {
+        stats[attempt.direction].failures++;
+        wordErrors++;
+      }
+    });
 
-      totalErrors += wordErrors;
+    totalErrors += wordErrors;
 
-      wordResults.push({
+    wordResults.push({
         word: wordKey,
         wordPair: wordData.wordPair,
         french_to_slovak_successes: stats.french_to_slovak.successes,
@@ -1264,8 +1367,8 @@ class QuizStateMachine {
         matching_failures: stats.matching.failures,
         totalAttempts: attempts.length,
         totalErrors: wordErrors
-      });
     });
+  });
 
     // Use the specific quiz type passed in, or determine from current state
     let databaseQuizType = specificQuizType || this.getCurrentQuizType();
@@ -1279,7 +1382,7 @@ class QuizStateMachine {
 
     const uniqueId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    return {
+  return {
       uniqueId: uniqueId,
       completionTimestamp: completionTimestamp,
       totalQuestions: this.totalQuestions,
@@ -1295,22 +1398,17 @@ class QuizStateMachine {
     if (firebaseApp) return;
 
     try {
-      const importPromise = (async () => {
-        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
-        const { getDatabase } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
-        return { initializeApp, getDatabase };
-      })();
+      console.log("Initializing Firebase...");
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
+      const { getDatabase } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+      const { getAuth } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js");
 
-      const importTimeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Firebase import timeout')), 5000)
-      );
-
-      const { initializeApp, getDatabase } = await Promise.race([importPromise, importTimeoutPromise]);
-
-      firebaseApp = initializeApp(firebaseConfig);
-      database = getDatabase(firebaseApp);
-
-      console.log("Firebase initialized successfully");
+      if (!firebaseApp) {
+        firebaseApp = initializeApp(firebaseConfig);
+        database = getDatabase(firebaseApp);
+        auth = getAuth(firebaseApp);
+        console.log("Firebase with Auth initialized successfully");
+      }
     } catch (error) {
       console.error("Error initializing Firebase:", error);
       throw error;
@@ -1318,13 +1416,20 @@ class QuizStateMachine {
   }
 
   async pushQuizResultsToFirebase(results) {
+    if (!this.user) {
+      console.log("User not logged in, storing results locally.");
+      this.storeResultsLocally(results);
+      return;
+    }
+
     try {
       await this.uploadPendingResults();
       await this.initializeFirebase();
 
       const { ref, set, get } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
 
-      const resultRef = ref(database, `results/${results.uniqueId}`);
+      // Store results under the user's UID
+      const resultRef = ref(database, `results/${this.user.uid}/${results.uniqueId}`);
 
       const checkPromise = get(resultRef);
       const timeoutPromise = new Promise((_, reject) =>
@@ -1333,7 +1438,7 @@ class QuizStateMachine {
 
       const snapshot = await Promise.race([checkPromise, timeoutPromise]);
       if (snapshot.exists()) {
-        console.log(`Result ${results.uniqueId} already exists in Firebase, skipping duplicate`);
+        console.log(`Result ${results.uniqueId} already exists in Firebase for user ${this.user.uid}, skipping duplicate`);
         return;
       }
 
