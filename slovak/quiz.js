@@ -317,7 +317,6 @@ class QuizStateMachine {
     this.container.innerHTML = `
       <div class="login-container" style="text-align: center; padding: 50px;">
         <h2 style="color: #007bff; margin-bottom: 20px;">Authentification Requise</h2>
-        <p style="margin-bottom: 30px;">Veuillez vous connecter avec Google pour commencer le quiz et sauvegarder vos progrès.</p>
         <button id="google-login-button" class="btn btn-primary btn-lg">Se connecter avec Google</button>
       </div>
     `;
