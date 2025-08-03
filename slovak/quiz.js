@@ -1,21 +1,22 @@
-// Quiz state management
-let quizState = {
-  selectedWordPairs: [],
-  incorrectPairs:    [],
-  wordQueue:         [], // FIFO queue for word pairs to avoid immediate repetition
-  totalQuestions:    0,
-  correctAnswers:    0,
-  results:           {}, // Track detailed results for each word pair
-  quizType:          'matching', // 'matching', 'multiple_choice', 'reorder_letters', 'slovak_to_french_typing', or 'french_to_slovak_typing'
-  originalWordPairs: [], // Store original word pairs for restarting
-  isInitialized:     false, // Track if quiz has been started
-  quizName:          'Slovak Language Quiz', // Default quiz name
-  matchingSelections: {}, // Track matching quiz selections
-  matchingPairs:     {}, // Track current matching pairs
-  reorderSelectedLetters: [], // Track selected letters for reorder quiz
-  reorderAvailableLetters: [], // Track available letters for reorder quiz
-  isFirstStart:      false, // Track if this is the first quiz start
-  enterKeyPressed:   false // Track if Enter key is currently pressed
+// Finite State Machine Quiz System
+// Clean architecture without hacks and bandaids
+
+// Quiz States
+const QuizStates = {
+  INITIAL: 'initial',
+  START_SCREEN: 'start_screen',
+  ADAPTIVE_MENU: 'adaptive_menu',
+  QUIZ_ACTIVE: 'quiz_active',
+  QUIZ_COMPLETE: 'quiz_complete'
+};
+
+// Quiz Types
+const QuizTypes = {
+  MATCHING: 'matching',
+  MULTIPLE_CHOICE: 'multiple_choice',
+  REORDER_LETTERS: 'reorder_letters',
+  SLOVAK_TO_FRENCH_TYPING: 'slovak_to_french_typing',
+  FRENCH_TO_SLOVAK_TYPING: 'french_to_slovak_typing'
 };
 
 // Firebase configuration
@@ -32,1958 +33,1434 @@ const firebaseConfig = {
 
 const maxWords = 8;
 
-// Firebase app and database - will be initialized when needed
+// Firebase globals
 let firebaseApp = null;
-let database    = null;
+let database = null;
 
-// Note: Using Firebase unique keys to prevent duplicates
+// Main Quiz State Machine
+class QuizStateMachine {
+  constructor() {
+    this.state = QuizStates.INITIAL;
+    this.wordPairs = [];
+    this.quizName = 'Slovak Language Quiz';
+    this.enabledQuizTypes = [QuizTypes.MATCHING, QuizTypes.MULTIPLE_CHOICE, QuizTypes.REORDER_LETTERS, QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
+    this.currentQuizTypeIndex = 0;
+    this.selectedWordPairs = [];
+    this.wordQueue = [];
+    this.correctAnswers = 0;
+    this.totalQuestions = 0;
+    this.results = {};
+    this.currentQuestion = null;
+    this.feedbackData = null;
 
-// Utility functions to reduce code duplication
-function getQuizContainer() {
-  const quizContainer = document.querySelector('.quiz');
-  if (!quizContainer) {
-    console.error("Error: Element with class 'quiz' not found.");
-    return null;
+    // UI state
+    this.matchingSelections = {};
+    this.matchingPairs = {};
+    this.reorderSelectedLetters = [];
+    this.reorderAvailableLetters = [];
+
+    // Initialize
+    this.container = null;
+    this.bindEvents();
   }
-  return quizContainer;
-}
 
-function shuffleArray(array) {
-  const shuffled = [...array];
-  for (let arrayIndex = shuffled.length - 1; arrayIndex > 0; arrayIndex--) {
-    const randomArrayIndex = Math.floor(Math.random() * (arrayIndex + 1));
-    [shuffled[arrayIndex], shuffled[randomArrayIndex]] = [shuffled[randomArrayIndex], shuffled[arrayIndex]];
+  // State machine core
+  async transition(newState, data = {}) {
+    console.log(`State transition: ${this.state} -> ${newState}`);
+    this.state = newState;
+    await this.render(data);
   }
-  return shuffled;
-}
 
-function createAudioEmoji(word, marginLeft = '10px') {
-  const audioEmoji = document.createElement('span');
-  audioEmoji.textContent      = ' 🔊';
-  audioEmoji.className        = 'audio-emoji';
-  audioEmoji.style.cursor     = 'pointer';
-  audioEmoji.style.marginLeft = marginLeft;
-  audioEmoji.addEventListener('click', (event) => {
-    event.stopPropagation();
-    if (typeof playAudio === 'function') {
-      playAudio(word);
+  async render(data = {}) {
+    this.container = this.getQuizContainer();
+    if (!this.container) return;
+
+    this.cleanup();
+    this.container.innerHTML = '';
+
+    switch (this.state) {
+      case QuizStates.START_SCREEN:
+        this.renderStartScreen();
+        break;
+      case QuizStates.ADAPTIVE_MENU:
+        this.renderAdaptiveMenu(data.categories);
+        break;
+      case QuizStates.QUIZ_ACTIVE:
+        await this.renderActiveQuiz();
+        break;
+      case QuizStates.QUIZ_COMPLETE:
+        this.renderCompletion();
+        break;
     }
-  });
-  return audioEmoji;
-}
+  }
 
-function cleanWordForInput(word) {
-  // Remove everything in parentheses and trim whitespace
-  return word.replace(/\s*\([^)]*\)\s*/g, '').trim();
-}
+  // Initialization methods
+  async initialize(wordPairs, quizName, enabledQuizTypes) {
+    this.wordPairs = wordPairs || [];
+    this.quizName = quizName || 'Slovak Language Quiz';
+    this.enabledQuizTypes = enabledQuizTypes || [QuizTypes.MATCHING, QuizTypes.MULTIPLE_CHOICE, QuizTypes.REORDER_LETTERS, QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
 
-async function analyzeWordPairPerformance(originalWordPairs) {
-  try {
-    // Initialize Firebase if not already done
-    await initializeFirebase();
+    if (this.wordPairs.length === 0) {
+      await this.initializeAdaptiveQuiz();
+    } else {
+      await this.transition(QuizStates.START_SCREEN);
+    }
+  }
 
-    // Dynamic import for database functions
-    const { ref, get } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+  async initializeAdaptiveQuiz() {
+    try {
+      this.container = this.getQuizContainer();
+      if (this.container) {
+        this.container.innerHTML = '<div class="loading-message">Récupération de votre historique d\'apprentissage...</div>';
+      }
 
-    // Fetch all quiz results
-    const resultsRef = ref(database, 'results');
-    const snapshot = await get(resultsRef);
+      const { analysis: wordAnalysis, extractedWordPairs } = await this.analyzeWordPairPerformance(this.wordPairs);
 
-    if (!snapshot.exists()) {
-      console.log("No quiz results found in database");
-      return { analysis: {}, extractedWordPairs: [] };
+      if (extractedWordPairs.length > 0) {
+        this.wordPairs = extractedWordPairs;
+      }
+
+      if (Object.keys(wordAnalysis).length === 0) {
+        await this.transition(QuizStates.START_SCREEN);
+        return;
+      }
+
+      const categories = this.categorizeWordPairs(wordAnalysis);
+      await this.transition(QuizStates.ADAPTIVE_MENU, { categories });
+    } catch (error) {
+      console.error("Error initializing adaptive quiz:", error);
+      await this.transition(QuizStates.START_SCREEN);
+    }
+  }
+
+  async startQuiz(selectedWordPairs = null) {
+    // Select words for this quiz session
+    if (selectedWordPairs) {
+      this.selectedWordPairs = selectedWordPairs;
+    } else {
+      const maxPairs = Math.min(maxWords, this.wordPairs.length);
+      const shuffledPairs = this.shuffleArray([...this.wordPairs]);
+      this.selectedWordPairs = shuffledPairs.slice(0, maxPairs);
     }
 
-    const allResults = snapshot.val();
-    const wordAnalysis = {};
-    const extractedWordPairs = [];
+    // Reset quiz state
+    this.currentQuizTypeIndex = 0;
+    this.lastCompletedQuizType = null;
+    this.wordQueue = this.shuffleArray([...this.selectedWordPairs]);
+    this.correctAnswers = 0;
+    this.totalQuestions = 0;
+    this.results = {};
 
-    // If no original word pairs provided, extract them from database
-    if (!originalWordPairs || originalWordPairs.length === 0) {
-      console.log("No word pairs provided, extracting from database...");
+    // Initialize results tracking
+    this.selectedWordPairs.forEach(pair => {
+      const wordKey = pair[1];
+      this.results[wordKey] = {
+        wordPair: pair,
+        attempts: []
+      };
+    });
 
-      // Extract unique word pairs from all quiz results
-      const uniqueWordPairs = new Map();
+    await this.transition(QuizStates.QUIZ_ACTIVE);
+  }
+
+  getCurrentQuizType() {
+    return this.enabledQuizTypes[this.currentQuizTypeIndex];
+  }
+
+  // Event handlers
+  bindEvents() {
+    // Global keyboard handler
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        this.handleEnterKey(event);
+      }
+    });
+  }
+
+  async handleEnterKey(event) {
+    // Handle Enter key for continue button when feedback is shown
+    if (this.state === QuizStates.QUIZ_ACTIVE) {
+      const nextButton = document.querySelector('.next-button');
+      if (nextButton && !nextButton.disabled) {
+        event.preventDefault();
+        await this.continue();
+      }
+    }
+  }
+
+  submitAnswer(answer, isCorrect) {
+    // Record attempt
+    const wordKey = this.currentQuestion.pair[1];
+    this.results[wordKey].attempts.push({
+      direction: this.currentQuestion.direction,
+      isCorrect: isCorrect,
+      timestamp: new Date().toISOString()
+    });
+
+    this.totalQuestions++;
+
+    if (isCorrect) {
+      this.correctAnswers++;
+      this.wordQueue.shift(); // Remove from queue
+    } else {
+      // Move to back of queue
+      const incorrectPair = this.wordQueue.shift();
+      this.wordQueue.push(incorrectPair);
+    }
+
+    // Show inline feedback based on quiz type
+    this.showInlineFeedback(answer, isCorrect);
+  }
+
+  async continue() {
+    console.log(`Continue called - wordQueue length: ${this.wordQueue.length}, currentQuizTypeIndex: ${this.currentQuizTypeIndex}, enabledQuizTypes length: ${this.enabledQuizTypes.length}`);
+
+        if (this.wordQueue.length > 0) {
+      // Continue current quiz type
+      console.log('Continuing current quiz type');
+      await this.transition(QuizStates.QUIZ_ACTIVE);
+    } else {
+      // Move to next quiz type or complete
+      this.currentQuizTypeIndex++;
+      console.log(`Moving to next quiz type - new index: ${this.currentQuizTypeIndex}`);
+
+      if (this.currentQuizTypeIndex >= this.enabledQuizTypes.length) {
+        console.log('All quiz types completed - showing completion screen');
+        await this.transition(QuizStates.QUIZ_COMPLETE);
+      } else {
+        console.log('Quiz type completed - uploading results for:', this.enabledQuizTypes[this.currentQuizTypeIndex - 1]);
+        // Upload results for the just-completed quiz type
+        await this.uploadCurrentQuizTypeResults();
+
+        console.log('Resetting for next quiz type');
+        // Reset word queue for next quiz type
+        this.wordQueue = this.shuffleArray([...this.selectedWordPairs]);
+        console.log('Reset wordQueue to:', this.wordQueue.length, 'words from selectedWordPairs:', this.selectedWordPairs.length);
+        this.correctAnswers = 0; // Reset for new quiz type
+        await this.transition(QuizStates.QUIZ_ACTIVE);
+      }
+    }
+  }
+
+  async uploadCurrentQuizTypeResults() {
+    const justCompletedQuizType = this.enabledQuizTypes[this.currentQuizTypeIndex - 1];
+    console.log('uploadCurrentQuizTypeResults() called for:', justCompletedQuizType);
+
+    const results = this.generateQuizResults(justCompletedQuizType);
+    console.log('Quiz Results for', justCompletedQuizType, ':', results);
+    console.log('Pushing results to Firebase...');
+    await this.pushQuizResultsToFirebase(results);
+    console.log('Results pushed for', justCompletedQuizType);
+
+    // Clear results for next quiz type
+    this.resetResultsForNextQuizType();
+  }
+
+  resetResultsForNextQuizType() {
+    // Clear attempts from all words but keep the word structure
+    Object.keys(this.results).forEach(wordKey => {
+      this.results[wordKey].attempts = [];
+    });
+    this.totalQuestions = 0;
+  }
+
+  async restart() {
+    console.log('restart() called');
+    this.currentQuizTypeIndex = 0;
+    await this.startQuiz(); // This will select new random words
+  }
+
+  // Rendering methods
+  renderStartScreen() {
+    const pendingCount = this.checkPendingResultsCount();
+    let pendingNotification = '';
+    if (pendingCount > 0) {
+      pendingNotification = `<p style="color: #856404; font-size: 14px; margin-bottom: 15px; background-color: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeaa7;">⚠️ ${pendingCount} résultat(s) en attente seront envoyés lors du démarrage.</p>`;
+    }
+
+    this.container.innerHTML = `
+      <div class="quiz-start">
+        ${pendingNotification}
+        <button class="btn btn-success btn-lg start-button" id="start-quiz-button">
+          Commencer le Quiz "${this.quizName}"
+        </button>
+      </div>
+    `;
+
+    document.getElementById('start-quiz-button').addEventListener('click', async () => {
+      try {
+        await this.uploadPendingResults();
+      } catch (error) {
+        console.error("Error uploading pending results:", error);
+      }
+      await this.startQuiz();
+    });
+  }
+
+  renderAdaptiveMenu(categories) {
+    const pendingCount = this.checkPendingResultsCount();
+    let pendingNotification = '';
+    if (pendingCount > 0) {
+      pendingNotification = `<p style="color: #856404; font-size: 14px; margin-bottom: 15px; background-color: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeaa7;">⚠️ ${pendingCount} résultat(s) en attente seront envoyés lors du démarrage.</p>`;
+    }
+
+    const isHistoryMode = this.quizName.includes('Historique') || this.quizName.includes('Adaptatif');
+    const subtitle = isHistoryMode
+      ? "Basé sur votre historique d'apprentissage complet :"
+      : "Choisissez votre mode d'entraînement :";
+
+    this.container.innerHTML = `
+      <div class="adaptive-quiz-menu">
+        ${pendingNotification}
+        <h2 style="color: #007bff; margin-bottom: 30px;">Quiz Adaptatif - ${this.quizName}</h2>
+        <p style="margin-bottom: 30px; color: #495057;">${subtitle}</p>
+
+        <div style="display: flex; flex-direction: column; gap: 15px; max-width: 500px; margin: 0 auto;">
+          <button class="btn btn-success btn-lg adaptive-option" data-mode="mastered" ${categories.mastered.length === 0 ? 'disabled' : ''}>
+            🎯 Vérifier les acquis
+            <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
+              ${categories.mastered.length} mot(s) maîtrisé(s) • Taux de réussite ≥90% et ≥10 réponses
+            </small>
+          </button>
+
+          <button class="btn btn-primary btn-lg adaptive-option" data-mode="learning" ${categories.learning.length === 0 ? 'disabled' : ''}>
+            📚 Consolider l'apprentissage
+            <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
+              ${categories.learning.length} mot(s) en apprentissage • Taux de réussite 65-90%
+            </small>
+          </button>
+
+          <button class="btn btn-danger btn-lg adaptive-option" data-mode="struggling" ${categories.struggling.length === 0 ? 'disabled' : ''}>
+            🔥 Corriger les lacunes
+            <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
+              ${categories.struggling.length} mot(s) difficile(s) • Taux de réussite <65%
+            </small>
+          </button>
+
+          <div style="border-top: 1px solid #dee2e6; margin: 20px 0; padding-top: 20px;">
+            <button class="btn btn-outline btn-lg" id="regular-quiz-button">
+              📝 Quiz classique
+              <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
+                Sélection aléatoire de tous les mots
+              </small>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Bind adaptive quiz buttons
+    document.querySelectorAll('.adaptive-option').forEach(button => {
+      button.addEventListener('click', async (event) => {
+        const mode = event.currentTarget.dataset.mode;
+        let selectedWordPairs;
+        let enabledQuizTypes;
+
+        switch (mode) {
+          case 'mastered':
+            // Limit to maxWords and use only typing quizzes for mastered words
+            const shuffledMastered = this.shuffleArray([...categories.mastered]);
+            selectedWordPairs = shuffledMastered.slice(0, Math.min(maxWords, categories.mastered.length));
+            enabledQuizTypes = [QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
+            this.quizName = `${this.quizName} - Vérification des acquis`;
+            break;
+          case 'learning':
+            // Limit to maxWords and use all quiz types for learning words
+            const shuffledLearning = this.shuffleArray([...categories.learning]);
+            selectedWordPairs = shuffledLearning.slice(0, Math.min(maxWords, categories.learning.length));
+            enabledQuizTypes = this.enabledQuizTypes; // Use default enabled quiz types
+            this.quizName = `${this.quizName} - Consolidation de l'apprentissage`;
+            break;
+          case 'struggling':
+            // Limit to maxWords and use all quiz types for struggling words
+            const shuffledStruggling = this.shuffleArray([...categories.struggling]);
+            selectedWordPairs = shuffledStruggling.slice(0, Math.min(maxWords, categories.struggling.length));
+            enabledQuizTypes = this.enabledQuizTypes; // Use default enabled quiz types
+            this.quizName = `${this.quizName} - Correction des lacunes`;
+            break;
+        }
+
+        console.log(`Adaptive quiz: Selected ${selectedWordPairs.length} words for ${mode} mode with quiz types:`, enabledQuizTypes);
+
+        try {
+          await this.uploadPendingResults();
+        } catch (error) {
+          console.error("Error uploading pending results:", error);
+        }
+
+        // Update enabled quiz types for this session
+        this.enabledQuizTypes = enabledQuizTypes;
+        await this.startQuiz(selectedWordPairs);
+      });
+    });
+
+    document.getElementById('regular-quiz-button').addEventListener('click', async () => {
+      await this.transition(QuizStates.START_SCREEN);
+    });
+  }
+
+  async renderActiveQuiz() {
+    const quizType = this.getCurrentQuizType();
+    console.log('renderActiveQuiz called - quizType:', quizType, 'wordQueue length:', this.wordQueue.length, 'currentQuizTypeIndex:', this.currentQuizTypeIndex);
+
+    switch (quizType) {
+      case QuizTypes.MATCHING:
+        this.renderMatchingQuiz();
+        break;
+      case QuizTypes.MULTIPLE_CHOICE:
+        await this.renderMultipleChoiceQuiz();
+        break;
+      case QuizTypes.REORDER_LETTERS:
+        await this.renderReorderQuiz();
+        break;
+      case QuizTypes.SLOVAK_TO_FRENCH_TYPING:
+        await this.renderTypingQuiz(false);
+        break;
+      case QuizTypes.FRENCH_TO_SLOVAK_TYPING:
+        await this.renderTypingQuiz(true);
+        break;
+    }
+  }
+
+  renderMatchingQuiz() {
+    this.container.innerHTML = `
+      <p class="progress">Progrès: Correspondances</p>
+      <p class="instruction">Associez les mots français aux mots slovaques</p>
+      <div class="matching-container">
+        <div class="matching-column left-column"></div>
+        <div class="matching-column right-column"></div>
+      </div>
+      <button class="btn btn-primary submit-button" disabled>Soumettre</button>
+    `;
+
+    const leftColumn = this.container.querySelector('.left-column');
+    const rightColumn = this.container.querySelector('.right-column');
+    const submitButton = this.container.querySelector('.submit-button');
+
+    // Create word buttons
+    const frenchWords = this.shuffleArray(this.selectedWordPairs.map(pair => pair[0]));
+    const slovakWords = this.shuffleArray(this.selectedWordPairs.map(pair => pair[1]));
+
+    frenchWords.forEach(word => {
+      const button = document.createElement('button');
+      button.textContent = word;
+      button.className = 'matching-word french-word';
+      button.dataset.word = word;
+      button.dataset.language = 'french';
+      button.addEventListener('click', () => this.handleMatchingClick(button));
+      leftColumn.appendChild(button);
+    });
+
+    slovakWords.forEach(word => {
+      const button = document.createElement('button');
+      button.textContent = word;
+      button.className = 'matching-word slovak-word';
+      button.dataset.word = word;
+      button.dataset.language = 'slovak';
+      button.addEventListener('click', () => this.handleMatchingClick(button));
+
+      const audioEmoji = this.createAudioEmoji(word);
+      button.appendChild(audioEmoji);
+      rightColumn.appendChild(button);
+    });
+
+    submitButton.addEventListener('click', () => this.handleMatchingSubmit());
+
+    this.matchingSelections = {};
+    this.matchingPairs = {};
+  }
+
+  async renderMultipleChoiceQuiz() {
+    console.log('renderMultipleChoiceQuiz called - wordQueue length:', this.wordQueue.length);
+    if (this.wordQueue.length === 0) {
+      console.log('Multiple choice: wordQueue is empty, calling continue()');
+      await this.continue();
+      return;
+    }
+
+    const questionPair = this.wordQueue[0];
+    const isFrenchQuestion = Math.random() < 0.5;
+    const questionText = isFrenchQuestion ? questionPair[0] : questionPair[1];
+    const correctAnswer = isFrenchQuestion ? questionPair[1] : questionPair[0];
+
+    // Generate wrong answers
+    const wrongAnswers = [];
+    while (wrongAnswers.length < 3) {
+      const randomPair = this.selectedWordPairs[Math.floor(Math.random() * this.selectedWordPairs.length)];
+      const potentialWrong = isFrenchQuestion ? randomPair[1] : randomPair[0];
+      if (potentialWrong !== correctAnswer && !wrongAnswers.includes(potentialWrong)) {
+        wrongAnswers.push(potentialWrong);
+      }
+    }
+
+    const allChoices = this.shuffleArray([correctAnswer, ...wrongAnswers]);
+
+    this.currentQuestion = {
+      pair: questionPair,
+      direction: isFrenchQuestion ? 'french_to_slovak' : 'slovak_to_french',
+      correctAnswer: correctAnswer
+    };
+
+    this.container.innerHTML = `
+      <p class="progress">Progrès: ${this.correctAnswers}/${this.selectedWordPairs.length} mots maîtrisés</p>
+      <p class="question">${questionText}${!isFrenchQuestion ? '' : ''}</p>
+      <div class="choices"></div>
+    `;
+
+    if (!isFrenchQuestion) {
+      const questionElement = this.container.querySelector('.question');
+      const audioEmoji = this.createAudioEmoji(questionText);
+      questionElement.appendChild(audioEmoji);
+    }
+
+    const choicesContainer = this.container.querySelector('.choices');
+    allChoices.forEach(choice => {
+      const button = document.createElement('button');
+      button.textContent = choice;
+      button.className = 'btn btn-outline btn-block choice-button';
+      button.addEventListener('click', () => {
+        const isCorrect = choice === correctAnswer;
+
+        // Disable all buttons
+        choicesContainer.querySelectorAll('button').forEach(btn => btn.disabled = true);
+
+        // Highlight correct answer
+        choicesContainer.querySelectorAll('button').forEach(btn => {
+          if (btn.textContent === correctAnswer) {
+            btn.classList.add('state-correct');
+            if (isFrenchQuestion) {
+              const audioEmoji = this.createAudioEmoji(correctAnswer);
+              btn.appendChild(audioEmoji);
+            }
+          }
+        });
+
+        if (!isCorrect) {
+          button.classList.add('state-incorrect');
+        }
+
+        this.submitAnswer(choice, isCorrect);
+      });
+      choicesContainer.appendChild(button);
+    });
+  }
+
+  async renderTypingQuiz(isFrenchQuestion) {
+    console.log('renderTypingQuiz called - wordQueue length:', this.wordQueue.length, 'isFrenchQuestion:', isFrenchQuestion);
+    if (this.wordQueue.length === 0) {
+      console.log('Typing quiz: wordQueue is empty, calling continue()');
+      await this.continue();
+      return;
+    }
+
+    const questionPair = this.wordQueue[0];
+    const questionText = isFrenchQuestion ? questionPair[0] : questionPair[1];
+    const correctAnswer = this.cleanWordForInput(isFrenchQuestion ? questionPair[1] : questionPair[0]);
+
+    const directionText = isFrenchQuestion ? ' (FR→SK)' : ' (SK→FR)';
+
+    this.currentQuestion = {
+      pair: questionPair,
+      direction: isFrenchQuestion ? 'french_to_slovak' : 'slovak_to_french',
+      correctAnswer: correctAnswer,
+      originalCorrectAnswer: isFrenchQuestion ? questionPair[1] : questionPair[0]
+    };
+
+    this.container.innerHTML = `
+      <p class="progress">Progrès: ${this.correctAnswers}/${this.selectedWordPairs.length} mots maîtrisés${directionText}</p>
+      <p class="question">${questionText}</p>
+      <div class="typing-container">
+        <input type="text" class="form-input typing-input" placeholder="Type your answer here..." autocomplete="off">
+        <div class="special-chars-container"></div>
+        <button class="btn btn-primary submit-button">Soumettre</button>
+      </div>
+    `;
+
+    if (!isFrenchQuestion) {
+      const questionElement = this.container.querySelector('.question');
+      const audioEmoji = this.createAudioEmoji(questionText);
+      questionElement.appendChild(audioEmoji);
+    }
+
+    const inputField = this.container.querySelector('.typing-input');
+    const submitButton = this.container.querySelector('.submit-button');
+    const specialCharsContainer = this.container.querySelector('.special-chars-container');
+
+    // Add special characters
+    const specialChars = ['á', 'ä', 'č', 'ď', 'dž', 'é', 'í', 'ĺ', 'ľ', 'ň', 'ó', 'ô', 'ŕ', 'š', 'ť', 'ú', 'ý', 'ž'];
+    specialChars.forEach(char => {
+      const charButton = document.createElement('button');
+      charButton.type = 'button';
+      charButton.textContent = char;
+      charButton.className = 'btn btn-secondary btn-sm special-char-button';
+      charButton.addEventListener('click', () => {
+        const cursorPosition = inputField.selectionStart;
+        const textBefore = inputField.value.substring(0, cursorPosition);
+        const textAfter = inputField.value.substring(inputField.selectionEnd);
+        inputField.value = textBefore + char + textAfter;
+        const newCursorPosition = cursorPosition + char.length;
+        inputField.focus();
+        inputField.setSelectionRange(newCursorPosition, newCursorPosition);
+      });
+      specialCharsContainer.appendChild(charButton);
+    });
+
+    const handleSubmit = () => {
+      const userAnswer = this.cleanWordForInput(inputField.value.trim());
+      const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+
+      inputField.disabled = true;
+      submitButton.disabled = true;
+
+      if (isCorrect) {
+        inputField.classList.add('state-correct');
+      } else {
+        inputField.classList.add('state-incorrect');
+      }
+
+      this.submitAnswer(userAnswer, isCorrect);
+    };
+
+    submitButton.addEventListener('click', handleSubmit);
+    inputField.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        handleSubmit();
+      }
+    });
+
+    inputField.focus();
+  }
+
+  async renderReorderQuiz() {
+    console.log('renderReorderQuiz called - wordQueue length:', this.wordQueue.length);
+    if (this.wordQueue.length === 0) {
+      console.log('Reorder quiz: wordQueue is empty, calling continue()');
+      await this.continue();
+      return;
+    }
+
+    const questionPair = this.wordQueue[0];
+    const frenchWord = questionPair[0];
+    const slovakWord = this.cleanWordForInput(questionPair[1]);
+    const correctLetters = slovakWord.toLowerCase().split('');
+
+    // Generate random letters
+    const regularLetters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+    const slovakSpecialLetters = ['á', 'ä', 'č', 'ď', 'é', 'í', 'ĺ', 'ľ', 'ň', 'ó', 'ô', 'ŕ', 'š', 'ť', 'ú', 'ý', 'ž'];
+
+    const randomLetters = [];
+    const numRandomLetters = Math.min(5, Math.max(3, Math.floor(correctLetters.length * 0.8)));
+
+    while (randomLetters.length < numRandomLetters) {
+      const useSpecialLetter = Math.random() < 0.3;
+      const letterPool = useSpecialLetter ? slovakSpecialLetters : regularLetters;
+      const randomLetter = letterPool[Math.floor(Math.random() * letterPool.length)];
+
+      if (!correctLetters.includes(randomLetter.toLowerCase()) && !randomLetters.includes(randomLetter.toLowerCase())) {
+        randomLetters.push(randomLetter.toLowerCase());
+      }
+    }
+
+    const allLetters = [...correctLetters, ...randomLetters];
+    this.reorderAvailableLetters = this.shuffleArray(allLetters);
+    this.reorderSelectedLetters = [];
+
+    this.currentQuestion = {
+      pair: questionPair,
+      direction: 'french_to_slovak',
+      correctAnswer: slovakWord,
+      originalCorrectAnswer: questionPair[1]
+    };
+
+    this.container.innerHTML = `
+      <p class="progress">Progrès: ${this.correctAnswers}/${this.selectedWordPairs.length} mots maîtrisés (Réorganiser)</p>
+      <p class="question">${frenchWord}</p>
+      <p class="instruction">Cliquez sur les lettres pour former le mot slovaque</p>
+      <div class="reorder-word-container"></div>
+      <div class="reorder-letters-container"></div>
+      <button class="btn btn-primary submit-button" disabled>Vérifier</button>
+    `;
+
+    this.updateReorderDisplay();
+
+    const submitButton = this.container.querySelector('.submit-button');
+    submitButton.addEventListener('click', () => {
+      const userAnswer = this.reorderSelectedLetters.join('');
+      const isCorrect = userAnswer.toLowerCase() === slovakWord.toLowerCase();
+
+      submitButton.disabled = true;
+      document.querySelectorAll('.reorder-letter-button, .reorder-letter-slot.filled').forEach(btn => btn.disabled = true);
+
+      this.submitAnswer(userAnswer, isCorrect);
+    });
+  }
+
+  showInlineFeedback(answer, isCorrect) {
+    const quizType = this.getCurrentQuizType();
+    console.log('showInlineFeedback called - quizType:', quizType, 'isCorrect:', isCorrect);
+
+    // Add feedback display and next button based on quiz type
+    switch (quizType) {
+      case QuizTypes.MULTIPLE_CHOICE:
+        this.showMultipleChoiceFeedback(answer, isCorrect);
+        break;
+      case QuizTypes.SLOVAK_TO_FRENCH_TYPING:
+      case QuizTypes.FRENCH_TO_SLOVAK_TYPING:
+        this.showTypingFeedback(answer, isCorrect);
+        break;
+      case QuizTypes.REORDER_LETTERS:
+        this.showReorderFeedback(answer, isCorrect);
+        break;
+      case QuizTypes.MATCHING:
+        this.showMatchingFeedback(answer, isCorrect);
+        break;
+    }
+
+    // Add next button
+    this.addNextButton();
+  }
+
+  addNextButton() {
+    console.log('addNextButton called - wordQueue length:', this.wordQueue.length, 'currentQuizTypeIndex:', this.currentQuizTypeIndex);
+
+    // Check if next button already exists
+    if (this.container.querySelector('.next-button')) {
+      console.log('Next button already exists, returning');
+      return;
+    }
+
+    const submitButton = this.container.querySelector('.submit-button');
+    if (submitButton) {
+      // Replace submit button with next button
+      const nextButton = document.createElement('button');
+      nextButton.className = 'btn btn-primary next-button';
+      nextButton.textContent = 'Suivant';
+      nextButton.addEventListener('click', async () => await this.continue());
+      submitButton.parentNode.replaceChild(nextButton, submitButton);
+    } else {
+      // No submit button found, append next button to container
+      const nextButton = document.createElement('button');
+      nextButton.className = 'btn btn-primary next-button';
+      nextButton.textContent = 'Suivant';
+      nextButton.style.marginTop = '20px';
+      nextButton.addEventListener('click', async () => await this.continue());
+      this.container.appendChild(nextButton);
+    }
+  }
+
+  showMultipleChoiceFeedback(answer, isCorrect) {
+    // Feedback is already shown by the button highlighting in renderMultipleChoiceQuiz
+    // Just add audio emoji for correct Slovak answers
+    if (isCorrect && this.currentQuestion.direction === 'french_to_slovak') {
+      const choicesContainer = this.container.querySelector('.choices');
+      const correctButton = Array.from(choicesContainer.querySelectorAll('button')).find(btn =>
+        btn.textContent.includes(this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer)
+      );
+      if (correctButton && !correctButton.querySelector('.audio-emoji')) {
+        const audioEmoji = this.createAudioEmoji(this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer);
+        correctButton.appendChild(audioEmoji);
+      }
+    }
+  }
+
+  showTypingFeedback(answer, isCorrect) {
+    const inputField = this.container.querySelector('.typing-input');
+
+    // Add feedback message below the input
+    const feedbackDiv = document.createElement('div');
+    feedbackDiv.className = 'feedback typing-feedback';
+
+    if (isCorrect) {
+      feedbackDiv.innerHTML = `<span class="feedback-success">✓ Correct!</span>`;
+
+      // Add audio for correct Slovak answers
+      if (this.currentQuestion.direction === 'french_to_slovak') {
+        const audioEmoji = this.createAudioEmoji(this.currentQuestion.originalCorrectAnswer, '10px');
+        feedbackDiv.appendChild(audioEmoji);
+      }
+    } else {
+      feedbackDiv.innerHTML = `
+        <span class="feedback-error">✗ Incorrect</span><br>
+        <span class="feedback-info">Votre réponse: "${answer}"</span><br>
+        <span class="feedback-info">Réponse correcte: "${this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer}"</span>
+      `;
+
+      // Add audio for incorrect Slovak answers
+      if (this.currentQuestion.direction === 'french_to_slovak') {
+        const audioEmoji = this.createAudioEmoji(this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer);
+        feedbackDiv.appendChild(audioEmoji);
+      }
+    }
+
+    inputField.parentNode.insertBefore(feedbackDiv, inputField.parentNode.querySelector('.submit-button'));
+  }
+
+  showReorderFeedback(answer, isCorrect) {
+    const submitButton = this.container.querySelector('.submit-button');
+
+    // Add feedback message above the submit button
+    const feedbackDiv = document.createElement('div');
+    feedbackDiv.className = 'feedback reorder-feedback';
+
+    if (isCorrect) {
+      feedbackDiv.innerHTML = `<span class="feedback-success">✓ Correct!</span>`;
+
+      // Add audio for correct answers
+      const audioEmoji = this.createAudioEmoji(this.currentQuestion.originalCorrectAnswer, '10px');
+      feedbackDiv.appendChild(audioEmoji);
+    } else {
+      feedbackDiv.innerHTML = `
+        <span class="feedback-error">✗ Incorrect</span><br>
+        <span class="feedback-info">Réponse correcte: "${this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer}"</span>
+      `;
+
+      // Add audio for incorrect answers
+      const audioEmoji = this.createAudioEmoji(this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer);
+      feedbackDiv.appendChild(audioEmoji);
+    }
+
+    submitButton.parentNode.insertBefore(feedbackDiv, submitButton);
+  }
+
+  showMatchingFeedback(answer, isCorrect) {
+    console.log('showMatchingFeedback called with isCorrect:', isCorrect);
+    // Feedback is already shown by the line colors and button states in handleMatchingSubmit
+    // No additional feedback needed
+  }
+
+  renderCompletion() {
+    const nextQuizType = this.getNextQuizTypeDisplay();
+
+    this.container.innerHTML = `
+      <div class="quiz-completion">
+        <p>Questions Répondues: <strong>${this.totalQuestions}</strong></p>
+        <p>Prochain Quiz: <strong>${nextQuizType}</strong></p>
+        <button class="btn btn-primary next-button" id="restart-quiz-button">Commencer</button>
+      </div>
+    `;
+
+    document.getElementById('restart-quiz-button').addEventListener('click', async () => await this.restart());
+  }
+
+  getNextQuizTypeDisplay() {
+    const typeDisplayNames = {
+      [QuizTypes.MATCHING]: 'Correspondances',
+      [QuizTypes.MULTIPLE_CHOICE]: 'Choix Multiple',
+      [QuizTypes.REORDER_LETTERS]: 'Réorganiser Lettres',
+      [QuizTypes.SLOVAK_TO_FRENCH_TYPING]: 'Saisie SK→FR',
+      [QuizTypes.FRENCH_TO_SLOVAK_TYPING]: 'Saisie FR→SK'
+    };
+
+    const currentIndex = this.currentQuizTypeIndex;
+    const nextIndex = (currentIndex === -1 || currentIndex === this.enabledQuizTypes.length - 1) ? 0 : currentIndex + 1;
+    const nextType = this.enabledQuizTypes[nextIndex];
+
+    return typeDisplayNames[nextType] || 'Quiz Suivant';
+  }
+
+  // Utility methods
+  getQuizContainer() {
+    const container = document.querySelector('.quiz');
+    if (!container) {
+      console.error("Error: Element with class 'quiz' not found.");
+      return null;
+    }
+    return container;
+  }
+
+  shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+
+  createAudioEmoji(word, marginLeft = '10px') {
+    const audioEmoji = document.createElement('span');
+    audioEmoji.textContent = ' 🔊';
+    audioEmoji.className = 'audio-emoji';
+    audioEmoji.style.cursor = 'pointer';
+    audioEmoji.style.marginLeft = marginLeft;
+    audioEmoji.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (typeof playAudio === 'function') {
+        playAudio(word);
+      }
+    });
+    return audioEmoji;
+  }
+
+  cleanWordForInput(word) {
+    return word.replace(/\s*\([^)]*\)\s*/g, '').trim();
+  }
+
+  cleanup() {
+    // Remove all event listeners on the container
+    if (this.container) {
+      const newContainer = this.container.cloneNode(false);
+      this.container.parentNode.replaceChild(newContainer, this.container);
+      this.container = newContainer;
+    }
+  }
+
+  // Matching quiz specific methods
+  handleMatchingClick(clickedButton) {
+    const word = clickedButton.dataset.word;
+    const language = clickedButton.dataset.language;
+
+    if (this.matchingSelections[language] === word) {
+      delete this.matchingSelections[language];
+      clickedButton.classList.remove('selected');
+      this.updateMatchingDisplay();
+      return;
+    }
+
+    if (this.matchingSelections[language]) {
+      const previousButton = document.querySelector(`[data-word="${this.matchingSelections[language]}"][data-language="${language}"]`);
+      if (previousButton) {
+        previousButton.classList.remove('selected');
+      }
+    }
+
+    this.matchingSelections[language] = word;
+    clickedButton.classList.add('selected');
+
+    if (this.matchingSelections.french && this.matchingSelections.slovak) {
+      const frenchWord = this.matchingSelections.french;
+      const slovakWord = this.matchingSelections.slovak;
+
+      Object.keys(this.matchingPairs).forEach(key => {
+        if (this.matchingPairs[key] === slovakWord || key === frenchWord) {
+          delete this.matchingPairs[key];
+        }
+      });
+
+      this.matchingPairs[frenchWord] = slovakWord;
+      delete this.matchingSelections.french;
+      delete this.matchingSelections.slovak;
+
+      document.querySelectorAll('.matching-word').forEach(button => {
+        button.classList.remove('selected');
+      });
+    }
+
+    this.updateMatchingDisplay();
+  }
+
+  updateMatchingDisplay() {
+    document.querySelectorAll('.matching-line').forEach(line => line.remove());
+    document.querySelectorAll('.matching-word').forEach(button => {
+      button.classList.remove('paired');
+    });
+
+    Object.keys(this.matchingPairs).forEach(frenchWord => {
+      const slovakWord = this.matchingPairs[frenchWord];
+      const frenchButton = document.querySelector(`[data-word="${frenchWord}"][data-language="french"]`);
+      const slovakButton = document.querySelector(`[data-word="${slovakWord}"][data-language="slovak"]`);
+
+      if (frenchButton && slovakButton) {
+        frenchButton.classList.add('paired');
+        slovakButton.classList.add('paired');
+        this.drawMatchingLine(frenchButton, slovakButton);
+      }
+    });
+
+    const submitButton = document.querySelector('.submit-button');
+    if (submitButton) {
+      const totalPairs = Object.keys(this.matchingPairs).length;
+      const expectedPairs = this.selectedWordPairs.length;
+      submitButton.disabled = totalPairs !== expectedPairs;
+    }
+  }
+
+  drawMatchingLine(button1, button2, color = '#007bff') {
+    const container = this.container.querySelector('.matching-container');
+    const rect1 = button1.getBoundingClientRect();
+    const rect2 = button2.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+
+    const line = document.createElement('div');
+    line.className = 'matching-line';
+
+    const x1 = rect1.right - containerRect.left - 2;
+    const y1 = rect1.top + rect1.height / 2 - containerRect.top;
+    const x2 = rect2.left - containerRect.left + 2;
+    const y2 = rect2.top + rect2.height / 2 - containerRect.top;
+
+    const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+    const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+    line.style.position = 'absolute';
+    line.style.left = `${x1}px`;
+    line.style.top = `${y1}px`;
+    line.style.width = `${length}px`;
+    line.style.height = '2px';
+    line.style.backgroundColor = color;
+    line.style.transformOrigin = '0 0';
+    line.style.transform = `rotate(${angle}deg)`;
+    line.style.zIndex = '-1';
+
+    container.appendChild(line);
+  }
+
+  handleMatchingSubmit() {
+    let correctPairs = 0;
+
+    this.selectedWordPairs.forEach(correctPair => {
+      const frenchWord = correctPair[0];
+      const slovakWord = correctPair[1];
+      const userSlovakWord = this.matchingPairs[frenchWord];
+
+      const frenchButton = document.querySelector(`[data-word="${frenchWord}"][data-language="french"]`);
+      const slovakButton = document.querySelector(`[data-word="${slovakWord}"][data-language="slovak"]`);
+      const userSlovakButton = userSlovakWord ? document.querySelector(`[data-word="${userSlovakWord}"][data-language="slovak"]`) : null;
+
+      const isCorrect = userSlovakWord === slovakWord;
+
+      const wordKey = slovakWord;
+      this.results[wordKey].attempts.push({
+        direction: 'matching',
+        isCorrect: isCorrect,
+        timestamp: new Date().toISOString()
+      });
+
+      if (isCorrect) {
+        frenchButton.classList.add('state-correct');
+        slovakButton.classList.add('state-correct');
+        correctPairs++;
+      } else {
+        frenchButton.classList.add('state-incorrect');
+        if (userSlovakButton) {
+          userSlovakButton.classList.add('state-incorrect');
+        }
+        slovakButton.classList.add('state-correct');
+      }
+    });
+
+    this.totalQuestions = 1;
+    this.correctAnswers = correctPairs;
+
+    // Matching quiz is always a single round, regardless of correctness
+    console.log('Matching quiz: Completed with', correctPairs, 'out of', this.selectedWordPairs.length, 'correct pairs');
+    console.log('Matching quiz: Setting wordQueue to empty (single round only)');
+    this.wordQueue = [];
+
+    document.querySelectorAll('.matching-line').forEach(line => line.remove());
+    Object.keys(this.matchingPairs).forEach(frenchWord => {
+      const slovakWord = this.matchingPairs[frenchWord];
+      const frenchButton = document.querySelector(`[data-word="${frenchWord}"][data-language="french"]`);
+      const slovakButton = document.querySelector(`[data-word="${slovakWord}"][data-language="slovak"]`);
+
+      if (frenchButton && slovakButton) {
+        let lineColor;
+        if (frenchButton.classList.contains('state-correct') && slovakButton.classList.contains('state-correct') && !slovakButton.classList.contains('show-correct')) {
+          lineColor = '#28a745';
+        } else {
+          lineColor = '#dc3545';
+        }
+        this.drawMatchingLine(frenchButton, slovakButton, lineColor);
+      }
+    });
+
+    // Since matching quiz completes immediately, trigger the completion logic
+    console.log('Matching quiz: calling showInlineFeedback with isCorrect:', correctPairs === this.selectedWordPairs.length);
+    console.log('Matching quiz: currentQuizTypeIndex:', this.currentQuizTypeIndex, 'enabledQuizTypes:', this.enabledQuizTypes);
+    this.showInlineFeedback(null, correctPairs === this.selectedWordPairs.length);
+  }
+
+  // Reorder quiz specific methods
+  updateReorderDisplay() {
+    const wordContainer = this.container.querySelector('.reorder-word-container');
+    const lettersContainer = this.container.querySelector('.reorder-letters-container');
+    const submitButton = this.container.querySelector('.submit-button');
+
+    if (!wordContainer || !lettersContainer || !submitButton) return;
+
+    wordContainer.innerHTML = '';
+    lettersContainer.innerHTML = '';
+
+    this.reorderSelectedLetters.forEach((letter, index) => {
+      const letterSlot = document.createElement('button');
+      letterSlot.textContent = letter;
+      letterSlot.className = 'reorder-letter-slot filled';
+      letterSlot.addEventListener('click', () => this.removeLetterFromWord(index));
+      wordContainer.appendChild(letterSlot);
+    });
+
+    const questionPair = this.wordQueue[0];
+    const slovakWord = this.cleanWordForInput(questionPair[1]);
+    const remainingSlots = slovakWord.length - this.reorderSelectedLetters.length;
+
+    for (let i = 0; i < remainingSlots; i++) {
+      const emptySlot = document.createElement('div');
+      emptySlot.className = 'reorder-letter-slot empty';
+      wordContainer.appendChild(emptySlot);
+    }
+
+    this.reorderAvailableLetters.forEach((letter, index) => {
+      const letterButton = document.createElement('button');
+      letterButton.textContent = letter;
+      letterButton.className = 'btn btn-secondary btn-sm reorder-letter-button';
+      letterButton.addEventListener('click', () => this.addLetterToWord(index));
+      lettersContainer.appendChild(letterButton);
+    });
+
+    submitButton.disabled = this.reorderSelectedLetters.length !== slovakWord.length;
+  }
+
+  addLetterToWord(letterIndex) {
+    const letter = this.reorderAvailableLetters[letterIndex];
+    this.reorderSelectedLetters.push(letter);
+    this.reorderAvailableLetters.splice(letterIndex, 1);
+    this.updateReorderDisplay();
+  }
+
+  removeLetterFromWord(letterIndex) {
+    const letter = this.reorderSelectedLetters[letterIndex];
+    this.reorderAvailableLetters.push(letter);
+    this.reorderSelectedLetters.splice(letterIndex, 1);
+    this.updateReorderDisplay();
+  }
+
+  // Firebase and data methods
+  async analyzeWordPairPerformance(originalWordPairs) {
+    try {
+      await this.initializeFirebase();
+      const { ref, get } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+
+      const resultsRef = ref(database, 'results');
+      const snapshot = await get(resultsRef);
+
+      if (!snapshot.exists()) {
+        return { analysis: {}, extractedWordPairs: [] };
+      }
+
+      const allResults = snapshot.val();
+      const wordAnalysis = {};
+      const extractedWordPairs = [];
+
+      if (!originalWordPairs || originalWordPairs.length === 0) {
+        const uniqueWordPairs = new Map();
+        Object.values(allResults).forEach(result => {
+          if (result.words && Array.isArray(result.words)) {
+            result.words.forEach(wordResult => {
+              if (wordResult.wordPair && Array.isArray(wordResult.wordPair) && wordResult.wordPair.length >= 2) {
+                const frenchWord = wordResult.wordPair[0];
+                const slovakWord = wordResult.wordPair[1];
+                uniqueWordPairs.set(slovakWord, [frenchWord, slovakWord]);
+              }
+            });
+          }
+        });
+        originalWordPairs = Array.from(uniqueWordPairs.values());
+        extractedWordPairs.push(...originalWordPairs);
+      }
+
+      originalWordPairs.forEach(pair => {
+        const slovakWord = pair[1];
+        wordAnalysis[slovakWord] = {
+          wordPair: pair,
+          totalQuestions: 0,
+          totalCorrect: 0,
+          successRate: 0
+        };
+      });
 
       Object.values(allResults).forEach(result => {
         if (result.words && Array.isArray(result.words)) {
           result.words.forEach(wordResult => {
-            if (wordResult.wordPair && Array.isArray(wordResult.wordPair) && wordResult.wordPair.length >= 2) {
-              const frenchWord = wordResult.wordPair[0];
-              const slovakWord = wordResult.wordPair[1];
-              uniqueWordPairs.set(slovakWord, [frenchWord, slovakWord]);
+            const slovakWord = wordResult.word;
+            if (wordAnalysis[slovakWord]) {
+              const frenchToSlovakTotal = (wordResult.french_to_slovak_successes || 0) + (wordResult.french_to_slovak_failures || 0);
+              const slovakToFrenchTotal = (wordResult.slovak_to_french_successes || 0) + (wordResult.slovak_to_french_failures || 0);
+              const matchingTotal = (wordResult.matching_successes || 0) + (wordResult.matching_failures || 0);
+
+              const totalAttempts = frenchToSlovakTotal + slovakToFrenchTotal + matchingTotal;
+              const totalCorrect = (wordResult.french_to_slovak_successes || 0) +
+                                  (wordResult.slovak_to_french_successes || 0) +
+                                  (wordResult.matching_successes || 0);
+
+              wordAnalysis[slovakWord].totalQuestions += totalAttempts;
+              wordAnalysis[slovakWord].totalCorrect += totalCorrect;
             }
           });
         }
       });
 
-      originalWordPairs = Array.from(uniqueWordPairs.values());
-      extractedWordPairs.push(...originalWordPairs);
-      console.log(`Extracted ${originalWordPairs.length} unique word pairs from database`);
-    }
-
-    // Initialize analysis for all word pairs
-    originalWordPairs.forEach(pair => {
-      const slovakWord = pair[1]; // Use Slovak word as key
-      wordAnalysis[slovakWord] = {
-        wordPair: pair,
-        totalQuestions: 0,
-        totalCorrect: 0,
-        successRate: 0
-      };
-    });
-
-    // Process all quiz results
-    Object.values(allResults).forEach(result => {
-      if (result.words && Array.isArray(result.words)) {
-        result.words.forEach(wordResult => {
-          const slovakWord = wordResult.word;
-
-          if (wordAnalysis[slovakWord]) {
-            // Sum up all attempts across all quiz types
-            const frenchToSlovakTotal = (wordResult.french_to_slovak_successes || 0) + (wordResult.french_to_slovak_failures || 0);
-            const slovakToFrenchTotal = (wordResult.slovak_to_french_successes || 0) + (wordResult.slovak_to_french_failures || 0);
-            const matchingTotal = (wordResult.matching_successes || 0) + (wordResult.matching_failures || 0);
-
-            const totalAttempts = frenchToSlovakTotal + slovakToFrenchTotal + matchingTotal;
-            const totalCorrect = (wordResult.french_to_slovak_successes || 0) +
-                                (wordResult.slovak_to_french_successes || 0) +
-                                (wordResult.matching_successes || 0);
-
-            wordAnalysis[slovakWord].totalQuestions += totalAttempts;
-            wordAnalysis[slovakWord].totalCorrect += totalCorrect;
-          }
-        });
-      }
-    });
-
-    // Calculate success rates
-    Object.keys(wordAnalysis).forEach(slovakWord => {
-      const analysis = wordAnalysis[slovakWord];
-      if (analysis.totalQuestions > 0) {
-        analysis.successRate = (analysis.totalCorrect / analysis.totalQuestions) * 100;
-      }
-    });
-
-    console.log("Word pair analysis completed:", wordAnalysis);
-    return { analysis: wordAnalysis, extractedWordPairs };
-
-  } catch (error) {
-    console.error("Error analyzing word pair performance:", error);
-    return { analysis: {}, extractedWordPairs: [] };
-  }
-}
-
-function categorizeWordPairs(wordAnalysis) {
-  const categories = {
-    mastered: [],    // >90% success rate with ≥10 questions
-    learning: [],    // Between 65%-90% or <10 questions
-    struggling: []   // <65% success rate
-  };
-
-  Object.values(wordAnalysis).forEach(analysis => {
-    const { wordPair, totalQuestions, successRate } = analysis;
-
-    if (totalQuestions >= 10 && successRate >= 90) {
-      categories.mastered.push(wordPair);
-    } else if (successRate < 65) {
-      categories.struggling.push(wordPair);
-    } else {
-      // Either <10 questions (still learning) or 65-90% success rate (ongoing learning)
-      categories.learning.push(wordPair);
-    }
-  });
-
-  console.log("Word categorization:", {
-    mastered: categories.mastered.length,
-    learning: categories.learning.length,
-    struggling: categories.struggling.length
-  });
-
-  return categories;
-}
-
-function showAdaptiveQuizMenu(categories, quizName, enabledQuizTypes = null) {
-  const quizContainer = getQuizContainer();
-  if (!quizContainer) return;
-
-  quizContainer.innerHTML = ''; // Clear previous content
-
-  const menuElement = document.createElement('div');
-  menuElement.className = 'adaptive-quiz-menu';
-
-  // Check for pending results
-  const pendingCount = checkPendingResultsCount();
-  let pendingNotification = '';
-  if (pendingCount > 0) {
-    pendingNotification = `<p style="color: #856404; font-size: 14px; margin-bottom: 15px; background-color: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeaa7;">⚠️ ${pendingCount} résultat(s) en attente seront envoyés lors du démarrage.</p>`;
-  }
-
-  // Check if we're using database-extracted words
-  const isHistoryMode = quizName.includes('Historique') || quizName.includes('Adaptatif');
-  const subtitle = isHistoryMode
-    ? "Basé sur votre historique d'apprentissage complet :"
-    : "Choisissez votre mode d'entraînement :";
-
-  menuElement.innerHTML = `
-    ${pendingNotification}
-    <h2 style="color: #007bff; margin-bottom: 30px;">Quiz Adaptatif - ${quizName}</h2>
-    <p style="margin-bottom: 30px; color: #495057;">${subtitle}</p>
-
-    <div style="display: flex; flex-direction: column; gap: 15px; max-width: 500px; margin: 0 auto;">
-      <button class="btn btn-success btn-lg adaptive-option" data-mode="mastered" ${categories.mastered.length === 0 ? 'disabled' : ''}>
-        🎯 Vérifier les acquis
-        <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
-          ${categories.mastered.length} mot(s) maîtrisé(s) • Taux de réussite ≥90% et ≥10 réponses
-        </small>
-      </button>
-
-      <button class="btn btn-primary btn-lg adaptive-option" data-mode="learning" ${categories.learning.length === 0 ? 'disabled' : ''}>
-        📚 Consolider l'apprentissage
-        <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
-          ${categories.learning.length} mot(s) en apprentissage • Taux de réussite 65-90%
-        </small>
-      </button>
-
-      <button class="btn btn-danger btn-lg adaptive-option" data-mode="struggling" ${categories.struggling.length === 0 ? 'disabled' : ''}>
-        🔥 Corriger les lacunes
-        <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
-          ${categories.struggling.length} mot(s) difficile(s) • Taux de réussite <65%
-        </small>
-      </button>
-
-      <div style="border-top: 1px solid #dee2e6; margin: 20px 0; padding-top: 20px;">
-        <button class="btn btn-outline btn-lg" id="regular-quiz-button">
-          📝 Quiz classique
-          <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
-            Sélection aléatoire de tous les mots
-          </small>
-        </button>
-      </div>
-    </div>
-  `;
-
-  quizContainer.appendChild(menuElement);
-
-  // Add event listeners for adaptive quiz options
-  setTimeout(() => {
-    document.querySelectorAll('.adaptive-option').forEach(button => {
-      button.addEventListener('click', (event) => {
-        const mode = event.currentTarget.dataset.mode;
-        startAdaptiveQuiz(categories, mode, quizName, enabledQuizTypes);
-      });
-    });
-
-    // Add event listener for regular quiz
-    const regularButton = document.getElementById('regular-quiz-button');
-    if (regularButton) {
-      regularButton.addEventListener('click', () => {
-        showStartScreen();
-      });
-    }
-  }, 0);
-}
-
-async function startAdaptiveQuiz(categories, mode, quizName, enabledQuizTypes = null) {
-  let selectedWordPairs;
-  let modeDisplayName;
-
-  switch (mode) {
-    case 'mastered':
-      selectedWordPairs = categories.mastered;
-      modeDisplayName = 'Vérification des acquis';
-      break;
-    case 'learning':
-      selectedWordPairs = categories.learning;
-      modeDisplayName = 'Consolidation de l\'apprentissage';
-      break;
-    case 'struggling':
-      selectedWordPairs = categories.struggling;
-      modeDisplayName = 'Correction des lacunes';
-      break;
-    default:
-      console.error('Invalid adaptive quiz mode:', mode);
-      return;
-  }
-
-  if (selectedWordPairs.length === 0) {
-    console.error('No word pairs available for mode:', mode);
-    return;
-  }
-
-  console.log(`Starting adaptive quiz: ${modeDisplayName} with ${selectedWordPairs.length} words`);
-
-  // Set up quiz state for adaptive mode
-  quizState.isInitialized = true;
-  quizState.isFirstStart = true;
-  quizState.quizName = `${quizName} - ${modeDisplayName}`;
-
-  // Try to upload any pending results when starting the quiz
-  try {
-    await uploadPendingResults();
-  } catch (error) {
-    console.error("Error uploading pending results on adaptive quiz start:", error);
-  }
-
-  // Start the quiz with the selected word pairs
-  initializeQuiz(selectedWordPairs, undefined, enabledQuizTypes);
-}
-
-async function initializeAdaptiveQuiz(wordPairs, quizName, enabledQuizTypes = null) {
-  try {
-    // Store original word pairs for regular quiz option (if provided)
-    if (wordPairs && wordPairs.length > 0) {
-      quizState.originalWordPairs = wordPairs;
-    }
-
-    // Store quiz name with default
-    quizState.quizName = quizName || 'Quiz Adaptatif Slovaque';
-
-    // Show loading message while analyzing
-    const quizContainer = getQuizContainer();
-    if (quizContainer) {
-      const loadingMessage = wordPairs && wordPairs.length > 0
-        ? "Analyse de vos progrès..."
-        : "Récupération de votre historique d'apprentissage...";
-
-      quizContainer.innerHTML = `
-        <div style="text-align: center; padding: 40px;">
-          <h2 style="color: #007bff;">${loadingMessage}</h2>
-          <p style="color: #666;">Récupération des données depuis la base de donnée...</p>
-        </div>
-      `;
-    }
-
-    // Analyze word pair performance (will extract from database if no wordPairs provided)
-    const { analysis: wordAnalysis, extractedWordPairs } = await analyzeWordPairPerformance(quizState.originalWordPairs);
-
-    // If no word pairs were provided, use the extracted ones
-    if (!quizState.originalWordPairs || quizState.originalWordPairs.length === 0) {
-      if (extractedWordPairs.length > 0) {
-        quizState.originalWordPairs = extractedWordPairs;
-        console.log(`Using ${extractedWordPairs.length} word pairs extracted from database`);
-      } else {
-        console.log("No word pairs found in database, cannot create adaptive quiz");
-        // Show message that no data is available
-        if (quizContainer) {
-          quizContainer.innerHTML = `
-            <div style="text-align: center; padding: 40px;">
-              <h2 style="color: #dc3545;">Aucune donnée trouvée</h2>
-              <p style="color: #666; margin-bottom: 30px;">Aucun historique de quiz trouvé dans la base de données.</p>
-              <p style="color: #666; margin-bottom: 30px;">Veuillez d'abord faire un quiz classique pour accumuler des données.</p>
-              <button class="btn btn-primary btn-lg" onclick="location.reload()">Retour</button>
-            </div>
-          `;
+      Object.keys(wordAnalysis).forEach(slovakWord => {
+        const analysis = wordAnalysis[slovakWord];
+        if (analysis.totalQuestions > 0) {
+          analysis.successRate = (analysis.totalCorrect / analysis.totalQuestions) * 100;
         }
+      });
+
+      return { analysis: wordAnalysis, extractedWordPairs };
+    } catch (error) {
+      console.error("Error analyzing word pair performance:", error);
+      return { analysis: {}, extractedWordPairs: [] };
+    }
+  }
+
+  categorizeWordPairs(wordAnalysis) {
+    const categories = {
+      mastered: [],
+      learning: [],
+      struggling: []
+    };
+
+    Object.values(wordAnalysis).forEach(analysis => {
+      const { wordPair, totalQuestions, successRate } = analysis;
+
+      if (totalQuestions >= 10 && successRate >= 90) {
+        categories.mastered.push(wordPair);
+      } else if (successRate < 65) {
+        categories.struggling.push(wordPair);
+      } else {
+        categories.learning.push(wordPair);
+      }
+    });
+
+    return categories;
+  }
+
+  generateQuizResults(specificQuizType = null) {
+    const completionTimestamp = new Date().toISOString();
+    const wordResults = [];
+    let totalErrors = 0;
+
+    Object.keys(this.results).forEach(wordKey => {
+      const wordData = this.results[wordKey];
+      const attempts = wordData.attempts;
+
+      const stats = {
+        french_to_slovak: { successes: 0, failures: 0 },
+        slovak_to_french: { successes: 0, failures: 0 },
+        matching: { successes: 0, failures: 0 }
+      };
+
+      let wordErrors = 0;
+      attempts.forEach(attempt => {
+        if (attempt.isCorrect) {
+          stats[attempt.direction].successes++;
+        } else {
+          stats[attempt.direction].failures++;
+          wordErrors++;
+        }
+      });
+
+      totalErrors += wordErrors;
+
+      wordResults.push({
+        word: wordKey,
+        wordPair: wordData.wordPair,
+        french_to_slovak_successes: stats.french_to_slovak.successes,
+        french_to_slovak_failures: stats.french_to_slovak.failures,
+        slovak_to_french_successes: stats.slovak_to_french.successes,
+        slovak_to_french_failures: stats.slovak_to_french.failures,
+        matching_successes: stats.matching.successes,
+        matching_failures: stats.matching.failures,
+        totalAttempts: attempts.length,
+        totalErrors: wordErrors
+      });
+    });
+
+    // Use the specific quiz type passed in, or determine from current state
+    let databaseQuizType = specificQuizType || this.getCurrentQuizType();
+
+    // Normalize typing quiz types
+    if (databaseQuizType === QuizTypes.SLOVAK_TO_FRENCH_TYPING || databaseQuizType === QuizTypes.FRENCH_TO_SLOVAK_TYPING) {
+      databaseQuizType = 'typing';
+    }
+
+    console.log('Database quiz type:', databaseQuizType, 'from specificQuizType:', specificQuizType);
+
+    const uniqueId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    return {
+      uniqueId: uniqueId,
+      completionTimestamp: completionTimestamp,
+      totalQuestions: this.totalQuestions,
+      wordsCount: this.selectedWordPairs.length,
+      quizType: databaseQuizType,
+      quizName: this.quizName,
+      totalErrors: totalErrors,
+      words: wordResults
+    };
+  }
+
+  async initializeFirebase() {
+    if (firebaseApp) return;
+
+    try {
+      const importPromise = (async () => {
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
+        const { getDatabase } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+        return { initializeApp, getDatabase };
+      })();
+
+      const importTimeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Firebase import timeout')), 5000)
+      );
+
+      const { initializeApp, getDatabase } = await Promise.race([importPromise, importTimeoutPromise]);
+
+      firebaseApp = initializeApp(firebaseConfig);
+      database = getDatabase(firebaseApp);
+
+      console.log("Firebase initialized successfully");
+    } catch (error) {
+      console.error("Error initializing Firebase:", error);
+      throw error;
+    }
+  }
+
+  async pushQuizResultsToFirebase(results) {
+    try {
+      await this.uploadPendingResults();
+      await this.initializeFirebase();
+
+      const { ref, set, get } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+
+      const resultRef = ref(database, `results/${results.uniqueId}`);
+
+      const checkPromise = get(resultRef);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Network too slow')), 3000)
+      );
+
+      const snapshot = await Promise.race([checkPromise, timeoutPromise]);
+      if (snapshot.exists()) {
+        console.log(`Result ${results.uniqueId} already exists in Firebase, skipping duplicate`);
         return;
       }
-    }
 
-    // If no analysis data, fall back to regular quiz
-    if (Object.keys(wordAnalysis).length === 0) {
-      console.log("No previous quiz data found, showing regular start screen");
-      showStartScreen();
-      return;
-    }
+      const uploadPromise = set(resultRef, results);
+      const uploadTimeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Upload failed - network timeout')), 8000)
+      );
 
-    // Categorize word pairs based on performance
-    const categories = categorizeWordPairs(wordAnalysis);
+      await Promise.race([uploadPromise, uploadTimeoutPromise]);
+      console.log("Quiz results uploaded to Firebase successfully. ID:", results.uniqueId);
 
-    // Show adaptive quiz menu
-    showAdaptiveQuizMenu(categories, quizState.quizName, enabledQuizTypes);
-
-  } catch (error) {
-    console.error("Error initializing adaptive quiz:", error);
-    // Fall back to regular quiz on error
-    showStartScreen();
-  }
-}
-
-function createProgressElement(text) {
-  const progressElement = document.createElement('p');
-  progressElement.textContent = text;
-  progressElement.className   = 'progress';
-  return progressElement;
-}
-
-function cleanupEventListeners() {
-  // Clean up any remaining keyboard event listeners from previous quiz elements
-  const existingButtons = document.querySelectorAll('.submit-button, .next-button');
-  existingButtons.forEach(button => {
-    if (button._keyDownHandler) {
-      document.removeEventListener('keydown', button._keyDownHandler);
-    }
-    if (button._keyUpHandler) {
-      document.removeEventListener('keyup', button._keyUpHandler);
-    }
-    if (button._keyPressHandler) {
-      document.removeEventListener('keypress', button._keyPressHandler);
-    }
-    // Legacy cleanup for old handler name
-    if (button._keyHandler) {
-      document.removeEventListener('keypress', button._keyHandler);
-    }
-    button._keyListenerActive = false;
-  });
-}
-
-function drawMatchingLine(button1, button2, color = '#007bff') {
-  const container     = getQuizContainer().querySelector('.matching-container');
-  const rect1         = button1.getBoundingClientRect();
-  const rect2         = button2.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-
-  const line = document.createElement('div');
-  line.className = 'matching-line';
-
-  const x1 = rect1.right                  - containerRect.left - 2;
-  const y1 = rect1.top + rect1.height / 2 - containerRect.top;
-  const x2 = rect2.left                   - containerRect.left + 2;
-  const y2 = rect2.top + rect2.height / 2 - containerRect.top;
-
-  const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-  const angle  = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-
-  line.style.position        = 'absolute';
-  line.style.left            = `${x1}px`;
-  line.style.top             = `${y1}px`;
-  line.style.width           = `${length}px`;
-  line.style.height          = '2px';
-  line.style.backgroundColor = color;
-  line.style.transformOrigin = '0 0';
-  line.style.transform       = `rotate(${angle}deg)`;
-  line.style.zIndex          = '-1';
-
-  container.appendChild(line);
-}
-
-function initializeQuiz(wordPairs, quizName, enabledQuizTypes = null) {
-  // Store original word pairs for the very first initialization
-  if (wordPairs) {
-    quizState.originalWordPairs = wordPairs;
-  }
-
-  // Store quiz name only if explicitly provided (not default parameter)
-  if (quizName) {
-    quizState.quizName = quizName;
-  }
-
-  // Store enabled quiz types (default to all if not specified)
-  if (enabledQuizTypes && Array.isArray(enabledQuizTypes)) {
-    quizState.enabledQuizTypes = enabledQuizTypes;
-  } else if (!quizState.enabledQuizTypes) {
-    // Default to all quiz types if none specified
-    quizState.enabledQuizTypes = ['matching', 'multiple_choice', 'reorder_letters', 'slovak_to_french_typing', 'french_to_slovak_typing'];
-  }
-
-  // If not initialized yet, show start screen
-  if (!quizState.isInitialized) {
-    showStartScreen();
-    return;
-  }
-
-  // Get the next quiz type based on enabled types
-  function getNextQuizType(currentType) {
-    const quizSequence = ['matching', 'multiple_choice', 'reorder_letters', 'slovak_to_french_typing', 'french_to_slovak_typing'];
-    const enabledSequence = quizSequence.filter(type => quizState.enabledQuizTypes.includes(type));
-
-    if (enabledSequence.length === 0) {
-      console.error('No enabled quiz types found, defaulting to matching');
-      return 'matching';
-    }
-
-    const currentIndex = enabledSequence.indexOf(currentType);
-    if (currentIndex === -1 || currentIndex === enabledSequence.length - 1) {
-      // If current type not found or it's the last type, start over
-      return enabledSequence[0];
-    } else {
-      // Move to next type in sequence
-      return enabledSequence[currentIndex + 1];
+    } catch (error) {
+      console.error("Error pushing quiz results to Firebase:", error);
+      this.storeResultsLocally(results);
     }
   }
 
-  // Determine what type of quiz to start and whether to pick new words
-  if (quizState.isFirstStart || !quizState.quizType || quizState.quizType === quizState.enabledQuizTypes[quizState.enabledQuizTypes.length - 1]) {
-    // Starting a new sequence or completed the last enabled quiz type
-    quizState.quizType = quizState.enabledQuizTypes[0]; // Start with first enabled type
-    quizState.isFirstStart = false; // Reset flag
+  storeResultsLocally(results) {
+    try {
+      const existingResults = JSON.parse(localStorage.getItem('pendingQuizResults') || '[]');
+      const existingIndex = existingResults.findIndex(result => result.uniqueId === results.uniqueId);
 
-    // Select up to maxWords word pairs for the quiz (only for new sequences)
-    if (quizState.isFirstStart !== false || !quizState.selectedWordPairs || quizState.selectedWordPairs.length === 0) {
-      const maxPairs = Math.min(maxWords, quizState.originalWordPairs.length);
-      // Randomly select word pairs
-      const shuffledPairs = shuffleArray(quizState.originalWordPairs);
-      quizState.selectedWordPairs = shuffledPairs.slice(0, maxPairs);
-    }
-  } else {
-    // Move to next quiz type in enabled sequence
-    quizState.quizType = getNextQuizType(quizState.quizType);
-  }
-
-    // Reset quiz state for the new quiz
-  // Create a shuffled queue for word pairs to avoid immediate repetition
-  quizState.wordQueue = shuffleArray([...quizState.selectedWordPairs]);
-  quizState.incorrectPairs = []; // Keep track for completion checking
-  quizState.totalQuestions = 0;
-  quizState.correctAnswers = 0;
-  quizState.results = {};
-  quizState.matchingSelections = {};
-  quizState.matchingPairs = {};
-  quizState.reorderSelectedLetters = [];
-  quizState.reorderAvailableLetters = [];
-  quizState.enterKeyPressed = false; // Reset Enter key state
-
-  // Also reset wordQueue for initialization
-  if (!quizState.wordQueue) {
-    quizState.wordQueue = [];
-  }
-
-  // Initialize results tracking for each word pair
-  quizState.selectedWordPairs.forEach(pair => {
-    const wordKey = pair[1]; // Use second language as the key
-    quizState.results[wordKey] = {
-      wordPair: pair,
-      attempts: []
-    };
-  });
-
-  // Start the first question based on quiz type
-  if (quizState.quizType === 'matching') {
-    generateMatchingQuestion();
-  } else if (quizState.quizType === 'multiple_choice') {
-    generateNextQuestion();
-  } else if (quizState.quizType === 'reorder_letters') {
-    generateReorderQuestion();
-  } else if (quizState.quizType === 'slovak_to_french_typing') {
-    generateTypingQuestion(false); // Slovak to French
-  } else if (quizState.quizType === 'french_to_slovak_typing') {
-    generateTypingQuestion(true); // French to Slovak
-  }
-}
-
-function showStartScreen() {
-  const quizContainer = getQuizContainer();
-  if (!quizContainer) return;
-
-  quizContainer.innerHTML = ''; // Clear previous content
-
-  const startElement = document.createElement('div');
-  startElement.className = 'quiz-start';
-
-  // Check for pending results
-  const pendingCount = checkPendingResultsCount();
-  let pendingNotification = '';
-  if (pendingCount > 0) {
-    pendingNotification = `<p style="color: #856404; font-size: 14px; margin-bottom: 15px; background-color: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeaa7;">⚠️ ${pendingCount} résultat(s) en attente seront envoyés lors du démarrage.</p>`;
-  }
-
-  startElement.innerHTML = `
-    ${pendingNotification}
-    <button class="btn btn-success btn-lg start-button" id="start-quiz-button">Commencer le Quiz "${quizState.quizName}"</button>
-  `;
-
-  quizContainer.appendChild(startElement);
-
-  // Add event listener for the start button
-  setTimeout(() => {
-    const startButton = document.getElementById('start-quiz-button');
-    if (startButton) {
-      startButton.addEventListener('click', startQuiz);
-    }
-  }, 0);
-}
-
-async function startQuiz() {
-  quizState.isInitialized = true;
-  // Mark this as first quiz start to avoid transition logic
-  quizState.isFirstStart = true;
-
-  // Try to upload any pending results when starting the quiz
-  try {
-    await uploadPendingResults();
-  } catch (error) {
-    console.error("Error uploading pending results on quiz start:", error);
-  }
-
-  initializeQuiz();
-}
-
-function generateMatchingQuestion() {
-  // Get the quiz container element
-  const quizContainer = getQuizContainer();
-  if (!quizContainer) return;
-
-  cleanupEventListeners(); // Clean up any stale event listeners
-  quizContainer.innerHTML = ''; // Clear previous content
-
-  // Add progress indicator
-  const progressElement = createProgressElement(`Progrès: Correspondances`);
-  quizContainer.appendChild(progressElement);
-
-  // Create instruction
-  const instructionElement = document.createElement('p');
-  instructionElement.textContent = 'Associez les mots français aux mots slovaques';
-  instructionElement.className   = 'instruction';
-  quizContainer.appendChild(instructionElement);
-
-  // Create matching container
-  const matchingContainer = document.createElement('div');
-  matchingContainer.className = 'matching-container';
-  quizContainer.appendChild(matchingContainer);
-
-  // Create left column (French)
-  const leftColumn = document.createElement('div');
-  leftColumn.className = 'matching-column left-column';
-
-  // Create right column (Slovak)
-  const rightColumn = document.createElement('div');
-  rightColumn.className = 'matching-column right-column';
-
-  // Shuffle the words for each column
-  const frenchWords = quizState.selectedWordPairs.map(pair => pair[0]);
-  const slovakWords = quizState.selectedWordPairs.map(pair => pair[1]);
-
-  const shuffledFrenchWords = shuffleArray(frenchWords);
-  const shuffledSlovakWords = shuffleArray(slovakWords);
-
-  // Create French word buttons
-  shuffledFrenchWords.forEach((word, wordIndex) => {
-    const wordButton = document.createElement('button');
-    wordButton.textContent = word;
-    wordButton.className   = 'matching-word french-word';
-    wordButton.dataset.word = word;
-    wordButton.dataset.language = 'french';
-    wordButton.addEventListener('click', () => handleMatchingClick(wordButton));
-    leftColumn.appendChild(wordButton);
-  });
-
-  // Create Slovak word buttons
-  shuffledSlovakWords.forEach((word, wordIndex) => {
-    const wordButton = document.createElement('button');
-    wordButton.textContent = word;
-    wordButton.className   = 'matching-word slovak-word';
-    wordButton.dataset.word = word;
-    wordButton.dataset.language = 'slovak';
-    wordButton.addEventListener('click', () => handleMatchingClick(wordButton));
-
-    // Add audio emoji for Slovak words
-    const audioEmoji = createAudioEmoji(word);
-    wordButton.appendChild(audioEmoji);
-
-    rightColumn.appendChild(wordButton);
-  });
-
-  matchingContainer.appendChild(leftColumn);
-  matchingContainer.appendChild(rightColumn);
-
-  // Create submit button (initially disabled)
-  const submitButton = document.createElement('button');
-  submitButton.textContent = 'Soumettre';
-  submitButton.className   = 'btn btn-primary submit-button';
-  submitButton.disabled    = true;
-  submitButton.addEventListener('click', handleMatchingSubmit);
-
-  // Add Enter key support for matching quiz submission
-  const matchingKeyHandler = (event) => {
-    if (event.key === 'Enter' && !submitButton.disabled && submitButton.parentNode) {
-      event.preventDefault();
-      handleMatchingSubmit();
-    }
-  };
-  document.addEventListener('keypress', matchingKeyHandler);
-
-  // Store the handler for cleanup
-  submitButton.dataset.keyHandler = 'matching';
-  submitButton._keyPressHandler = matchingKeyHandler;
-
-  quizContainer.appendChild(submitButton);
-
-  quizState.totalQuestions = 1; // Matching is one comprehensive question
-}
-
-function handleMatchingClick(clickedButton) {
-  const word = clickedButton.dataset.word;
-  const language = clickedButton.dataset.language;
-
-  // If this word is already selected, deselect it
-  if (quizState.matchingSelections[language] === word) {
-    delete quizState.matchingSelections[language];
-    clickedButton.classList.remove('selected');
-    updateMatchingDisplay();
-    return;
-  }
-
-  // Clear previous selection in this language
-  if (quizState.matchingSelections[language]) {
-    const previousButton = document.querySelector(`[data-word="${quizState.matchingSelections[language]}"][data-language="${language}"]`);
-    if (previousButton) {
-      previousButton.classList.remove('selected');
-    }
-  }
-
-  // Set new selection
-  quizState.matchingSelections[language] = word;
-  clickedButton.classList.add('selected');
-
-  // If we have selections from both languages, create a pair
-  if (quizState.matchingSelections.french && quizState.matchingSelections.slovak) {
-    const frenchWord = quizState.matchingSelections.french;
-    const slovakWord = quizState.matchingSelections.slovak;
-
-    // Remove any existing pairs involving these words
-    Object.keys(quizState.matchingPairs).forEach(key => {
-      if (quizState.matchingPairs[key] === slovakWord) {
-        delete quizState.matchingPairs[key];
-      }
-    });
-    Object.keys(quizState.matchingPairs).forEach(key => {
-      if (key === frenchWord) {
-        delete quizState.matchingPairs[key];
-      }
-    });
-
-    // Create new pair
-    quizState.matchingPairs[frenchWord] = slovakWord;
-
-    // Clear selections
-    delete quizState.matchingSelections.french;
-    delete quizState.matchingSelections.slovak;
-
-    // Remove selected class from all buttons
-    document.querySelectorAll('.matching-word').forEach(button => {
-      button.classList.remove('selected');
-    });
-  }
-
-  updateMatchingDisplay();
-}
-
-function updateMatchingDisplay() {
-  // Remove existing lines
-  document.querySelectorAll('.matching-line').forEach(line => line.remove());
-
-  // Remove paired class from all buttons
-  document.querySelectorAll('.matching-word').forEach(button => {
-    button.classList.remove('paired');
-  });
-
-  // Add paired class and draw lines for current pairs
-  Object.keys(quizState.matchingPairs).forEach(frenchWord => {
-    const slovakWord = quizState.matchingPairs[frenchWord];
-
-    const frenchButton = document.querySelector(`[data-word="${frenchWord}"][data-language="french"]`);
-    const slovakButton = document.querySelector(`[data-word="${slovakWord}"][data-language="slovak"]`);
-
-    if (frenchButton && slovakButton) {
-      frenchButton.classList.add('paired');
-      slovakButton.classList.add('paired');
-
-      // Draw line between them
-      drawMatchingLine(frenchButton, slovakButton);
-    }
-  });
-
-  // Enable submit button if all words are paired
-  const submitButton = document.querySelector('.submit-button');
-  if (submitButton) {
-    const totalPairs = Object.keys(quizState.matchingPairs).length;
-    const expectedPairs = quizState.selectedWordPairs.length;
-    submitButton.disabled = totalPairs !== expectedPairs;
-  }
-}
-
-function handleMatchingSubmit() {
-  let correctPairs = 0;
-  let totalErrors  = 0;
-
-  // Disable submit button
-  const submitButton = document.querySelector('.submit-button');
-  if (submitButton) {
-    submitButton.disabled = true;
-  }
-
-  // Check each pair and mark as correct or incorrect
-  quizState.selectedWordPairs.forEach(correctPair => {
-    const frenchWord = correctPair[0];
-    const slovakWord = correctPair[1];
-    const userSlovakWord = quizState.matchingPairs[frenchWord];
-
-    const frenchButton = document.querySelector(`[data-word="${frenchWord}"][data-language="french"]`);
-    const slovakButton = document.querySelector(`[data-word="${slovakWord}"][data-language="slovak"]`);
-    const userSlovakButton = userSlovakWord ? document.querySelector(`[data-word="${userSlovakWord}"][data-language="slovak"]`) : null;
-
-    // Record the attempt in results
-    const wordKey = slovakWord; // Use second language as the key
-    const isCorrect = userSlovakWord === slovakWord;
-
-    quizState.results[wordKey].attempts.push({
-      direction: 'matching',
-      isCorrect: isCorrect,
-      timestamp: new Date().toISOString()
-    });
-
-    if (isCorrect) {
-      // Mark as correct
-      frenchButton.classList.add('state-correct');
-      slovakButton.classList.add('state-correct');
-      correctPairs++;
-      console.log(`correct: ${frenchWord} - ${slovakWord}`);
-    } else {
-      // Mark as incorrect
-      frenchButton.classList.add('state-incorrect');
-      if (userSlovakButton) {
-        userSlovakButton.classList.add('state-incorrect');
+      if (existingIndex !== -1) {
+        console.log(`Result with uniqueId ${results.uniqueId} already exists in localStorage, skipping duplicate`);
+        return;
       }
 
-      // Show the correct answer
-      slovakButton.classList.add('state-correct');
+      const resultWithTimestamp = {
+        ...results,
+        localStorageTimestamp: new Date().toISOString()
+      };
 
-      totalErrors++;
-      console.log(`incorrect: ${frenchWord} - ${userSlovakWord || 'none'}, correct: ${slovakWord}`);
-    }
-  });
-
-  // Update quiz state based on matching results
-  if (correctPairs === quizState.selectedWordPairs.length) {
-    // All correct - clear the word queue (all words mastered)
-    quizState.wordQueue = [];
-    quizState.correctAnswers = quizState.selectedWordPairs.length;
-  } else {
-    // Some incorrect - shuffle the queue for the next quiz types
-    // Correct pairs are removed, incorrect pairs go to the back
-    const correctWordPairs = [];
-    const incorrectWordPairs = [];
-
-    quizState.selectedWordPairs.forEach(correctPair => {
-      const frenchWord = correctPair[0];
-      const slovakWord = correctPair[1];
-      const userSlovakWord = quizState.matchingPairs[frenchWord];
-
-      if (userSlovakWord === slovakWord) {
-        correctWordPairs.push(correctPair);
-      } else {
-        incorrectWordPairs.push(correctPair);
-      }
-    });
-
-    // Start with a shuffled list of incorrect pairs for the next quiz type
-    quizState.wordQueue = shuffleArray(incorrectWordPairs);
-    quizState.correctAnswers = correctWordPairs.length;
-
-    // Track incorrect pairs
-    quizState.incorrectPairs = incorrectWordPairs;
-  }
-
-  // Update line colors
-  document.querySelectorAll('.matching-line').forEach(line => line.remove());
-  Object.keys(quizState.matchingPairs).forEach(frenchWord => {
-    const slovakWord   = quizState.matchingPairs[frenchWord];
-    const frenchButton = document.querySelector(`[data-word="${frenchWord}"][data-language="french"]`);
-    const slovakButton = document.querySelector(`[data-word="${slovakWord}"][data-language="slovak"]`);
-
-    if (frenchButton && slovakButton) {
-      // Determine line color based on correctness
-      let lineColor;
-      if (frenchButton.classList.contains('state-correct') && slovakButton.classList.contains('state-correct') && !slovakButton.classList.contains('show-correct')) {
-        lineColor = '#28a745'; // Green for correct
-      } else {
-        lineColor = '#dc3545'; // Red for incorrect
-      }
-      drawMatchingLine(frenchButton, slovakButton, lineColor);
-    }
-  });
-
-  // Show the next button
-  setTimeout(() => {
-    showNextButton();
-  }, 1000);
-}
-
-function generateNextQuestion() {
-  // Check if there are any words left in the queue
-  if (quizState.wordQueue.length === 0) {
-    showQuizCompletion();
-    return;
-  }
-
-  // Take the first word pair from the queue (FIFO)
-  const questionPair = quizState.wordQueue[0];
-
-  // Decide randomly which language is the question and which is the answer
-  const isFrenchQuestion = Math.random() < 0.5;
-  const questionText     = isFrenchQuestion ? questionPair[0] : questionPair[1];
-  const correctAnswer    = isFrenchQuestion ? questionPair[1] : questionPair[0];
-
-  // Generate incorrect answers from all selected word pairs (not just incorrect ones)
-  const incorrectAnswers = [];
-  while (incorrectAnswers.length < 3) {
-    const randomIndex = Math.floor(Math.random() * quizState.selectedWordPairs.length);
-    const randomPair  = quizState.selectedWordPairs[randomIndex];
-    const potentialIncorrectAnswer = isFrenchQuestion ? randomPair[1] : randomPair[0];
-
-    // Ensure the incorrect answer is not the correct answer and is not already picked
-    if (potentialIncorrectAnswer !== correctAnswer && !incorrectAnswers.includes(potentialIncorrectAnswer)) {
-      incorrectAnswers.push(potentialIncorrectAnswer);
+      existingResults.push(resultWithTimestamp);
+      localStorage.setItem('pendingQuizResults', JSON.stringify(existingResults));
+      console.log(`Stored quiz results locally. Total pending: ${existingResults.length}`);
+    } catch (error) {
+      console.error("Error storing results locally:", error);
     }
   }
 
-  // Combine correct and incorrect answers and shuffle them
-  const allChoices = shuffleArray([correctAnswer, ...incorrectAnswers]);
-
-  // Get the quiz container element
-  const quizContainer = getQuizContainer();
-  if (!quizContainer) return;
-
-  cleanupEventListeners(); // Clean up any stale event listeners
-  quizContainer.innerHTML = ''; // Clear previous content
-
-  // Add progress indicator
-  const progressElement = createProgressElement(`Progrès: ${quizState.correctAnswers}/${quizState.selectedWordPairs.length} mots maîtrisés`);
-  quizContainer.appendChild(progressElement);
-
-  // Create the HTML for the question and choices
-  const questionElement = document.createElement('p');
-  questionElement.textContent = questionText;
-  questionElement.className   = 'question';
-
-  // Add audio emoji for Slovak words in the question
-  if (!isFrenchQuestion) { // Slovak is the question
-    const audioEmoji = createAudioEmoji(questionText);
-    questionElement.appendChild(audioEmoji);
-  }
-
-  quizContainer.appendChild(questionElement);
-
-  const choicesContainer = document.createElement('div');
-  choicesContainer.className = 'choices';
-  quizContainer.appendChild(choicesContainer);
-
-  const choiceButtons = [];
-
-  allChoices.forEach(choice => {
-    const button = document.createElement('button');
-    button.textContent = choice;
-    button.className   = 'btn btn-outline btn-block choice-button';
-    button.addEventListener('click', () => handleAnswerClick(button, choice, correctAnswer, choiceButtons, questionPair, isFrenchQuestion));
-    choiceButtons.push(button);
-    choicesContainer.appendChild(button);
-  });
-
-  quizState.totalQuestions++;
-}
-
-function generateTypingQuestion(forceFrenchQuestion = null) {
-  // Check if there are any words left in the queue
-  if (quizState.wordQueue.length === 0) {
-    showQuizCompletion();
-    return;
-  }
-
-  // Take the first word pair from the queue (FIFO)
-  const questionPair = quizState.wordQueue[0];
-
-  // Use forced direction if provided, otherwise decide randomly
-  const isFrenchQuestion = forceFrenchQuestion !== null ? forceFrenchQuestion : Math.random() < 0.5;
-  const questionText     = isFrenchQuestion ? questionPair[0] : questionPair[1];
-  const correctAnswer    = cleanWordForInput(isFrenchQuestion ? questionPair[1] : questionPair[0]);
-
-  // Get the quiz container element
-  const quizContainer = getQuizContainer();
-  if (!quizContainer) return;
-
-  cleanupEventListeners(); // Clean up any stale event listeners
-  quizContainer.innerHTML = ''; // Clear previous content
-
-  // Add progress indicator with typing direction
-  let directionText = '';
-  if (quizState.quizType === 'slovak_to_french_typing') {
-    directionText = ' (SK→FR)';
-  } else if (quizState.quizType === 'french_to_slovak_typing') {
-    directionText = ' (FR→SK)';
-  }
-  const progressElement = createProgressElement(`Progrès: ${quizState.correctAnswers}/${quizState.selectedWordPairs.length} mots maîtrisés${directionText}`);
-  quizContainer.appendChild(progressElement);
-
-  // Create the HTML for the question
-  const questionElement = document.createElement('p');
-  questionElement.textContent = questionText;
-  questionElement.className   = 'question';
-
-  // Add audio emoji for Slovak words in the question
-  if (!isFrenchQuestion) { // Slovak is the question
-    const audioEmoji = createAudioEmoji(questionText);
-    questionElement.appendChild(audioEmoji);
-  }
-
-  quizContainer.appendChild(questionElement);
-
-  // Create input field and submit button
-  const inputContainer = document.createElement('div');
-  inputContainer.className = 'typing-container';
-
-  const inputField = document.createElement('input');
-  inputField.type         = 'text';
-  inputField.className    = 'form-input typing-input';
-  inputField.placeholder  = 'Type your answer here...';
-  inputField.autocomplete = 'off';
-
-  // Create special characters container
-  const specialCharsContainer = document.createElement('div');
-  specialCharsContainer.className = 'special-chars-container';
-
-  const specialChars = ['á', 'ä', 'č', 'ď', 'dž', 'é', 'í', 'ĺ', 'ľ', 'ň', 'ó', 'ô', 'ŕ', 'š', 'ť', 'ú', 'ý', 'ž'];
-
-  specialChars.forEach(char => {
-    const charButton = document.createElement('button');
-    charButton.type        = 'button';
-    charButton.textContent = char;
-    charButton.className   = 'btn btn-secondary btn-sm special-char-button';
-    charButton.addEventListener('click', () => {
-      // Insert character at cursor position
-      const cursorPosition = inputField.selectionStart;
-      const textBefore = inputField.value.substring(0, cursorPosition);
-      const textAfter = inputField.value.substring(inputField.selectionEnd);
-      inputField.value = textBefore + char + textAfter;
-
-      // Move cursor after inserted character
-      const newCursorPosition = cursorPosition + char.length;
-      inputField.focus();
-      inputField.setSelectionRange(newCursorPosition, newCursorPosition);
-    });
-    specialCharsContainer.appendChild(charButton);
-  });
-
-  const submitButton = document.createElement('button');
-  submitButton.textContent = 'Soumettre';
-  submitButton.className   = 'btn btn-primary submit-button';
-  submitButton.addEventListener('click', () => handleTypingSubmit(inputField, correctAnswer, questionPair, isFrenchQuestion));
-
-  // Allow Enter key to submit
-  inputField.addEventListener('keypress', (event) => {
-    if (event.key === 'Enter') {
-      handleTypingSubmit(inputField, correctAnswer, questionPair, isFrenchQuestion);
-    }
-  });
-
-  inputContainer.appendChild(inputField);
-  inputContainer.appendChild(specialCharsContainer);
-  inputContainer.appendChild(submitButton);
-  quizContainer.appendChild(inputContainer);
-
-  // Focus on input field and reset Enter key state
-  inputField.focus();
-  quizState.enterKeyPressed = false;
-
-  quizState.totalQuestions++;
-}
-
-function generateReorderQuestion() {
-  // Check if there are any words left in the queue
-  if (quizState.wordQueue.length === 0) {
-    showQuizCompletion();
-    return;
-  }
-
-  // Take the first word pair from the queue (FIFO)
-  const questionPair = quizState.wordQueue[0];
-
-  // Always French to Slovak for reorder quiz
-  const frenchWord = questionPair[0];
-  const slovakWord = cleanWordForInput(questionPair[1]);
-
-  // Split Slovak word into lowercase letters
-  const correctLetters = slovakWord.toLowerCase().split('');
-
-    // Add some random letters to make it challenging
-  // More regular alphabet letters, fewer special Slovak characters for better balance
-  const regularLetters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
-  const slovakSpecialLetters = ['á', 'ä', 'č', 'ď', 'é', 'í', 'ĺ', 'ľ', 'ň', 'ó', 'ô', 'ŕ', 'š', 'ť', 'ú', 'ý', 'ž'];
-
-  const randomLetters = [];
-
-  // Add 3-5 random letters that are not in the correct word
-  const numRandomLetters = Math.min(5, Math.max(3, Math.floor(correctLetters.length * 0.8)));
-  while (randomLetters.length < numRandomLetters) {
-    // 70% chance for regular letters, 30% chance for Slovak special letters
-    const useSpecialLetter = Math.random() < 0.3;
-    const letterPool = useSpecialLetter ? slovakSpecialLetters : regularLetters;
-    const randomLetter = letterPool[Math.floor(Math.random() * letterPool.length)];
-
-    if (!correctLetters.includes(randomLetter.toLowerCase()) && !randomLetters.includes(randomLetter.toLowerCase())) {
-      randomLetters.push(randomLetter.toLowerCase());
-    }
-  }
-
-  // Combine and shuffle all available letters
-  const allLetters = [...correctLetters, ...randomLetters];
-  quizState.reorderAvailableLetters = shuffleArray(allLetters);
-  quizState.reorderSelectedLetters = [];
-
-  // Get the quiz container element
-  const quizContainer = getQuizContainer();
-  if (!quizContainer) return;
-
-  cleanupEventListeners(); // Clean up any stale event listeners
-  quizContainer.innerHTML = ''; // Clear previous content
-
-  // Add progress indicator
-  const progressElement = createProgressElement(`Progrès: ${quizState.correctAnswers}/${quizState.selectedWordPairs.length} mots maîtrisés (Réorganiser)`);
-  quizContainer.appendChild(progressElement);
-
-  // Create the HTML for the French question
-  const questionElement = document.createElement('p');
-  questionElement.textContent = frenchWord;
-  questionElement.className = 'question';
-  quizContainer.appendChild(questionElement);
-
-  // Create instruction
-  const instructionElement = document.createElement('p');
-  instructionElement.textContent = 'Cliquez sur les lettres pour former le mot slovaque';
-  instructionElement.className = 'instruction';
-  quizContainer.appendChild(instructionElement);
-
-  // Create container for the word being built
-  const wordContainer = document.createElement('div');
-  wordContainer.className = 'reorder-word-container';
-  quizContainer.appendChild(wordContainer);
-
-  // Create container for available letters
-  const lettersContainer = document.createElement('div');
-  lettersContainer.className = 'reorder-letters-container';
-  quizContainer.appendChild(lettersContainer);
-
-  // Create submit button (initially disabled)
-  const submitButton = document.createElement('button');
-  submitButton.textContent = 'Vérifier';
-  submitButton.className = 'btn btn-primary submit-button';
-  submitButton.disabled = true;
-  submitButton.addEventListener('click', () => handleReorderSubmit(slovakWord, questionPair));
-
-  // Add Enter key support for reorder quiz submission
-  const reorderKeyHandler = (event) => {
-    if (event.key === 'Enter' && !submitButton.disabled && submitButton.parentNode) {
-      event.preventDefault();
-      handleReorderSubmit(slovakWord, questionPair);
-    }
-  };
-  document.addEventListener('keypress', reorderKeyHandler);
-
-  // Store the handler for cleanup
-  submitButton.dataset.keyHandler = 'reorder';
-  submitButton._keyPressHandler = reorderKeyHandler;
-
-  quizContainer.appendChild(submitButton);
-
-  // Initialize the display
-  updateReorderDisplay();
-
-  quizState.totalQuestions++;
-}
-
-function updateReorderDisplay() {
-  const wordContainer = document.querySelector('.reorder-word-container');
-  const lettersContainer = document.querySelector('.reorder-letters-container');
-  const submitButton = document.querySelector('.submit-button');
-
-  if (!wordContainer || !lettersContainer || !submitButton) return;
-
-  // Clear containers
-  wordContainer.innerHTML = '';
-  lettersContainer.innerHTML = '';
-
-  // Create slots for the selected letters
-  quizState.reorderSelectedLetters.forEach((letter, index) => {
-    const letterSlot = document.createElement('button');
-    letterSlot.textContent = letter;
-    letterSlot.className = 'reorder-letter-slot filled';
-    letterSlot.addEventListener('click', () => removeLetterFromWord(index));
-    wordContainer.appendChild(letterSlot);
-  });
-
-  // Create empty slots for remaining letters (based on correct word length)
-  const questionPair = quizState.wordQueue[0];
-  const slovakWord = cleanWordForInput(questionPair[1]);
-  const remainingSlots = slovakWord.length - quizState.reorderSelectedLetters.length;
-
-  for (let slotIndex = 0; slotIndex < remainingSlots; slotIndex++) {
-    const emptySlot = document.createElement('div');
-    emptySlot.className = 'reorder-letter-slot empty';
-    wordContainer.appendChild(emptySlot);
-  }
-
-  // Create buttons for available letters
-  quizState.reorderAvailableLetters.forEach((letter, index) => {
-    const letterButton = document.createElement('button');
-    letterButton.textContent = letter;
-    letterButton.className = 'btn btn-secondary btn-sm reorder-letter-button';
-    letterButton.addEventListener('click', () => addLetterToWord(index));
-    lettersContainer.appendChild(letterButton);
-  });
-
-  // Enable submit button only if word is complete
-  submitButton.disabled = quizState.reorderSelectedLetters.length !== slovakWord.length;
-}
-
-function addLetterToWord(letterIndex) {
-  const letter = quizState.reorderAvailableLetters[letterIndex];
-
-  // Move letter from available to selected
-  quizState.reorderSelectedLetters.push(letter);
-  quizState.reorderAvailableLetters.splice(letterIndex, 1);
-
-  updateReorderDisplay();
-}
-
-function removeLetterFromWord(letterIndex) {
-  const letter = quizState.reorderSelectedLetters[letterIndex];
-
-  // Move letter from selected back to available
-  quizState.reorderAvailableLetters.push(letter);
-  quizState.reorderSelectedLetters.splice(letterIndex, 1);
-
-  updateReorderDisplay();
-}
-
-function handleReorderSubmit(correctAnswer, questionPair) {
-  const userAnswer = quizState.reorderSelectedLetters.join('');
-  const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
-  const originalCorrectAnswer = questionPair[1]; // Original with parentheses for display
-
-  // Disable submit button
-  const submitButton = document.querySelector('.submit-button');
-  if (submitButton) {
-    submitButton.disabled = true;
-  }
-
-  // Disable all letter buttons
-  document.querySelectorAll('.reorder-letter-button, .reorder-letter-slot.filled').forEach(button => {
-    button.disabled = true;
-  });
-
-  // Show feedback
-  const quizContainer = getQuizContainer();
-  const feedbackElement = document.createElement('div');
-  feedbackElement.className = 'feedback reorder-feedback';
-
-  if (isCorrect) {
-    feedbackElement.innerHTML = `<span class="feedback-success">✓ Correct!</span>`;
-
-    // Add audio emoji for Slovak correct answer
-    const audioEmoji = createAudioEmoji(originalCorrectAnswer, '10px');
-    feedbackElement.appendChild(audioEmoji);
-
-    // Highlight correct letters
-    document.querySelectorAll('.reorder-letter-slot.filled').forEach(slot => {
-      slot.classList.add('state-correct');
-    });
-  } else {
-    feedbackElement.innerHTML = `
-      <span class="feedback-error">✗ Incorrect</span><br>
-      <span class="feedback-info">Réponse correcte: "${originalCorrectAnswer}"</span>
-    `;
-
-    // Highlight incorrect letters
-    document.querySelectorAll('.reorder-letter-slot.filled').forEach(slot => {
-      slot.classList.add('state-incorrect');
-    });
-
-    // Add audio emoji for Slovak correct answer
-    const audioEmoji = createAudioEmoji(originalCorrectAnswer);
-    feedbackElement.querySelector('.feedback-info').appendChild(audioEmoji);
-  }
-
-  quizContainer.appendChild(feedbackElement);
-
-  // Record the attempt in results
-  const wordKey = questionPair[1]; // Use Slovak word as the key
-  quizState.results[wordKey].attempts.push({
-    direction: 'french_to_slovak',
-    isCorrect: isCorrect,
-    timestamp: new Date().toISOString()
-  });
-
-  // Check if the answer is correct
-  if (isCorrect) {
-    console.log("correct");
-
-    // Remove the word pair from the front of the queue (answered correctly)
-    quizState.wordQueue.shift();
-    quizState.correctAnswers++;
-  } else {
-    console.log("incorrect");
-
-    // Move the word pair from front to back of queue (incorrect, will be asked again later)
-    const incorrectPair = quizState.wordQueue.shift();
-    quizState.wordQueue.push(incorrectPair);
-
-    // Add to incorrect pairs for tracking purposes
-    const isInIncorrectPairs = quizState.incorrectPairs.some(pair =>
-      (pair[0] === questionPair[0] && pair[1] === questionPair[1]) ||
-      (pair[0] === questionPair[1] && pair[1] === questionPair[0])
-    );
-
-    if (!isInIncorrectPairs) {
-      quizState.incorrectPairs.push(questionPair);
-    }
-  }
-
-  // Show the next button
-  showNextButton();
-}
-
-function handleAnswerClick(clickedButton, selectedAnswer, correctAnswer, allButtons, questionPair, isFrenchQuestion) {
-  // Disable all buttons to prevent multiple selections
-  allButtons.forEach(button => {
-    button.disabled = true;
-  });
-
-  // Highlight the correct answer in green
-  allButtons.forEach(button => {
-    if (button.textContent === correctAnswer) {
-      button.classList.add('state-correct');
-
-      // Add audio emoji for Slovak correct answers
-      if (isFrenchQuestion) { // Correct answer is Slovak
-        const audioEmoji = createAudioEmoji(correctAnswer);
-        button.appendChild(audioEmoji);
-      }
-    }
-  });
-
-  // Record the attempt in results
-  const wordKey = questionPair[1]; // Use second language as the key
-  const isCorrect = selectedAnswer === correctAnswer;
-  const direction = isFrenchQuestion ? 'french_to_slovak' : 'slovak_to_french';
-
-  quizState.results[wordKey].attempts.push({
-    direction: direction,
-    isCorrect: isCorrect,
-    timestamp: new Date().toISOString()
-  });
-
-  // Check if the answer is correct
-  if (isCorrect) {
-    console.log("correct");
-
-    // Remove the word pair from the front of the queue (answered correctly)
-    quizState.wordQueue.shift();
-    quizState.correctAnswers++;
-  } else {
-    // If the clicked answer is wrong, highlight it in red
-    clickedButton.classList.add('state-incorrect');
-    console.log("incorrect");
-
-    // Move the word pair from front to back of queue (incorrect, will be asked again later)
-    const incorrectPair = quizState.wordQueue.shift();
-    quizState.wordQueue.push(incorrectPair);
-
-    // Add to incorrect pairs for tracking purposes
-    const isInIncorrectPairs = quizState.incorrectPairs.some(pair =>
-      (pair[0] === questionPair[0] && pair[1] === questionPair[1]) ||
-      (pair[0] === questionPair[1] && pair[1] === questionPair[0])
-    );
-
-    if (!isInIncorrectPairs) {
-      quizState.incorrectPairs.push(questionPair);
-    }
-  }
-
-  // Show the next button
-  showNextButton();
-}
-
-function handleTypingSubmit(inputField, correctAnswer, questionPair, isFrenchQuestion) {
-  const userAnswer = cleanWordForInput(inputField.value.trim());
-  const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase(); // Case-insensitive comparison
-  const direction = isFrenchQuestion ? 'french_to_slovak' : 'slovak_to_french';
-  const originalCorrectAnswer = isFrenchQuestion ? questionPair[1] : questionPair[0]; // Original with parentheses for display
-
-  // Disable input and submit button
-  inputField.disabled = true;
-  const submitButton = inputField.nextElementSibling;
-  if (submitButton && submitButton.classList.contains('submit-button')) {
-    submitButton.disabled = true;
-  }
-
-  // Show feedback
-  const quizContainer = getQuizContainer();
-  const feedbackElement = document.createElement('div');
-  feedbackElement.className = 'feedback typing-feedback';
-
-  if (isCorrect) {
-    feedbackElement.innerHTML = `<span class="feedback-success correct-feedback">✓ Correct!</span>`;
-
-    // Add audio emoji for Slovak correct answers in French to Slovak typing
-    if (isFrenchQuestion) { // Correct answer is Slovak
-      const audioEmoji = createAudioEmoji(originalCorrectAnswer, '10px');
-      feedbackElement.appendChild(audioEmoji);
-    }
-
-    inputField.classList.add('state-correct');
-  } else {
-    feedbackElement.innerHTML = `
-      <span class="feedback-error wrong-feedback">✗ Incorrect</span><br>
-      <span class="feedback-info correct-answer-display">Réponse correcte: "${originalCorrectAnswer}"</span>
-    `;
-    inputField.classList.add('state-incorrect');
-
-    // Add audio emoji for Slovak correct answers
-    if (isFrenchQuestion) { // Correct answer is Slovak
-      const audioEmoji = createAudioEmoji(originalCorrectAnswer);
-      feedbackElement.querySelector('.correct-answer-display').appendChild(audioEmoji);
-    }
-  }
-
-  quizContainer.appendChild(feedbackElement);
-
-  // Record the attempt in results
-  const wordKey = questionPair[1]; // Use second language as the key
-  quizState.results[wordKey].attempts.push({
-    direction: direction,
-    isCorrect: isCorrect,
-    timestamp: new Date().toISOString()
-  });
-
-  // Check if the answer is correct
-  if (isCorrect) {
-    console.log("correct");
-
-    // Remove the word pair from the front of the queue (answered correctly)
-    quizState.wordQueue.shift();
-    quizState.correctAnswers++;
-  } else {
-    console.log("incorrect");
-
-    // Move the word pair from front to back of queue (incorrect, will be asked again later)
-    const incorrectPair = quizState.wordQueue.shift();
-    quizState.wordQueue.push(incorrectPair);
-
-    // Add to incorrect pairs for tracking purposes
-    const isInIncorrectPairs = quizState.incorrectPairs.some(pair =>
-      (pair[0] === questionPair[0] && pair[1] === questionPair[1]) ||
-      (pair[0] === questionPair[1] && pair[1] === questionPair[0])
-    );
-
-    if (!isInIncorrectPairs) {
-      quizState.incorrectPairs.push(questionPair);
-    }
-  }
-
-  // Show the next button
-  showNextButton();
-}
-
-function showNextButton() {
-  const quizContainer = getQuizContainer();
-  if (!quizContainer) return;
-
-    // Find existing submit button to replace, or existing next button to remove
-  const existingSubmitButton = quizContainer.querySelector('.submit-button');
-  const existingNextButton = quizContainer.querySelector('.next-button');
-
-  if (existingNextButton) {
-    // Clean up existing next button event listeners
-    if (existingNextButton._keyDownHandler) {
-      document.removeEventListener('keydown', existingNextButton._keyDownHandler);
-    }
-    if (existingNextButton._keyUpHandler) {
-      document.removeEventListener('keyup', existingNextButton._keyUpHandler);
-    }
-    if (existingNextButton._keyPressHandler) {
-      document.removeEventListener('keypress', existingNextButton._keyPressHandler);
-    }
-    existingNextButton._keyListenerActive = false;
-    existingNextButton.remove();
-  }
-
-  const nextButton = document.createElement('button');
-  nextButton.textContent = 'Suivant';
-  nextButton.className   = 'btn btn-primary next-button';
-
-  const nextButtonHandler = () => {
-    // Check if current quiz type should continue or transition
-    if (quizState.wordQueue.length > 0) {
-      // Continue with current quiz type until all words are mastered
-      if (quizState.quizType === 'multiple_choice') {
-        generateNextQuestion();
-      } else if (quizState.quizType === 'reorder_letters') {
-        generateReorderQuestion();
-      } else if (quizState.quizType === 'slovak_to_french_typing') {
-        generateTypingQuestion(false); // Slovak to French
-      } else if (quizState.quizType === 'french_to_slovak_typing') {
-        generateTypingQuestion(true); // French to Slovak
-      } else {
-        // Matching is always one question, so show completion (which will upload to DB)
-        showQuizCompletion();
-      }
-    } else {
-      // All words mastered, show completion screen (which uploads to database)
-      showQuizCompletion();
-    }
-  };
-
-    nextButton.addEventListener('click', nextButtonHandler);
-
-  // Add Enter key support for the next button with proper key state tracking
-  const keyDownHandler = (event) => {
-    if (event.key === 'Enter') {
-      quizState.enterKeyPressed = true;
-    }
-  };
-
-  const keyUpHandler = (event) => {
-    if (event.key === 'Enter') {
-      quizState.enterKeyPressed = false;
-    }
-  };
-
-  const keyPressHandler = (event) => {
-    if (event.key === 'Enter' && nextButton.parentNode && nextButton._keyListenerActive && !quizState.enterKeyPressed) {
-      event.preventDefault();
-      nextButtonHandler();
-    }
-  };
-
-  document.addEventListener('keydown', keyDownHandler);
-  document.addEventListener('keyup', keyUpHandler);
-  document.addEventListener('keypress', keyPressHandler);
-
-  // Store the handlers for cleanup
-  nextButton._keyDownHandler = keyDownHandler;
-  nextButton._keyUpHandler = keyUpHandler;
-  nextButton._keyPressHandler = keyPressHandler;
-
-  // Activate the key listener after ensuring Enter key is released
-  const activateListener = () => {
-    if (!quizState.enterKeyPressed) {
-      nextButton._keyListenerActive = true;
-    } else {
-      // Check again in a short time if Enter is still pressed
-      setTimeout(activateListener, 50);
-    }
-  };
-
-  setTimeout(activateListener, 100);
-
-  if (existingSubmitButton) {
-        // Clean up any existing submit button event listeners
-    if (existingSubmitButton._keyDownHandler) {
-      document.removeEventListener('keydown', existingSubmitButton._keyDownHandler);
-    }
-    if (existingSubmitButton._keyUpHandler) {
-      document.removeEventListener('keyup', existingSubmitButton._keyUpHandler);
-    }
-    if (existingSubmitButton._keyPressHandler) {
-      document.removeEventListener('keypress', existingSubmitButton._keyPressHandler);
-    }
-    existingSubmitButton._keyListenerActive = false;
-
-    // Replace the submit button with the next button
-    existingSubmitButton.parentNode.replaceChild(nextButton, existingSubmitButton);
-  } else {
-    // No submit button to replace (e.g., multiple choice), just append
-    quizContainer.appendChild(nextButton);
-  }
-}
-
-async function showQuizCompletion() {
-  const quizContainer = getQuizContainer();
-  if (!quizContainer) return;
-
-  quizContainer.innerHTML = '';
-
-  // Generate and print results
-  const results = generateQuizResults();
-  console.log('Quiz Results:', results);
-
-  // Push results to Firebase
-  await pushQuizResultsToFirebase(results);
-
-  const completionElement = document.createElement('div');
-  completionElement.className = 'quiz-completion';
-
-  // Determine next quiz type display based on enabled types
-  function getNextQuizTypeDisplay(currentType) {
-    const quizSequence = ['matching', 'multiple_choice', 'reorder_letters', 'slovak_to_french_typing', 'french_to_slovak_typing'];
-    const enabledSequence = quizSequence.filter(type => quizState.enabledQuizTypes.includes(type));
-
-    const currentIndex = enabledSequence.indexOf(currentType);
-    const nextType = (currentIndex === -1 || currentIndex === enabledSequence.length - 1)
-      ? enabledSequence[0]
-      : enabledSequence[currentIndex + 1];
-
-    const typeDisplayNames = {
-      'matching': 'Correspondances',
-      'multiple_choice': 'Choix Multiple',
-      'reorder_letters': 'Réorganiser Lettres',
-      'slovak_to_french_typing': 'Saisie SK→FR',
-      'french_to_slovak_typing': 'Saisie FR→SK'
-    };
-
-    return typeDisplayNames[nextType] || 'Quiz Suivant';
-  }
-
-  const nextQuizTypeDisplay = getNextQuizTypeDisplay(quizState.quizType);
-
-  completionElement.innerHTML = `
-    <p>Questions Répondues: <strong>${quizState.totalQuestions}</strong></p>
-    <p>Prochain Quiz: <strong>${nextQuizTypeDisplay}</strong></p>
-    <button class="btn btn-primary next-button" id="restart-quiz-button">Commencer</button>
-  `;
-
-  // Add event listener for the restart button
-  setTimeout(() => {
-    const restartButton = document.getElementById('restart-quiz-button');
-    if (restartButton) {
-      restartButton.addEventListener('click', restartQuiz);
-    }
-  }, 0);
-
-  quizContainer.appendChild(completionElement);
-
-  console.log(`Quiz completed! Total questions: ${quizState.totalQuestions}, Words mastered: ${quizState.correctAnswers}`);
-
-  // Clear results after completion
-  clearQuizResults();
-}
-
-async function initializeFirebase() {
-  if (firebaseApp) {
-    return; // Already initialized
-  }
-
-  try {
-    // Dynamic imports with timeout to avoid hanging on slow networks
-    const importPromise = (async () => {
-      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
-      const { getDatabase }   = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
-      return { initializeApp, getDatabase };
-    })();
-
-    const importTimeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Firebase import timeout')), 5000)
-    );
-
-    const { initializeApp, getDatabase } = await Promise.race([importPromise, importTimeoutPromise]);
-
-    // Initialize Firebase app and database
-    firebaseApp = initializeApp(firebaseConfig);
-    database    = getDatabase(firebaseApp);
-
-    console.log("Firebase initialized successfully");
-  } catch (error) {
-    console.error("Error initializing Firebase:", error);
-    throw error;
-  }
-}
-
-async function pushQuizResultsToFirebase(results) {
-  try {
-    // Try to upload any pending results from localStorage first
-    await uploadPendingResults();
-
-    // Initialize Firebase if not already done
-    await initializeFirebase();
-
-    // Dynamic import for database functions
-    const { ref, set, get } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
-
-    // Use the uniqueId as the Firebase key to prevent duplicates
-    const resultRef = ref(database, `results/${results.uniqueId}`);
-
-    // Quick existence check with short timeout - if this fails, network is too bad
-    const checkPromise = get(resultRef);
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Network too slow')), 3000)
-    );
-
-    const snapshot = await Promise.race([checkPromise, timeoutPromise]);
-    if (snapshot.exists()) {
-      console.log(`Result ${results.uniqueId} already exists in Firebase, skipping duplicate`);
-      return;
-    }
-
-    // Upload using set() with the unique key - with timeout
-    const uploadPromise = set(resultRef, results);
-    const uploadTimeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Upload failed - network timeout')), 8000)
-    );
-
-    await Promise.race([uploadPromise, uploadTimeoutPromise]);
-    console.log("Quiz results uploaded to Firebase successfully. ID:", results.uniqueId);
-
-  } catch (error) {
-    console.error("Error pushing quiz results to Firebase:", error);
-
-    // Store results locally for retry later
-    storeResultsLocally(results);
-
-    // Show user-friendly error message
-    const quizContainer = getQuizContainer();
-    if (quizContainer) {
-      const errorElement = document.createElement('p');
-      errorElement.textContent = "Pas de connexion internet. Résultats sauvegardés localement.";
-      errorElement.style.color = '#856404';
-      errorElement.style.fontSize = '14px';
-      errorElement.style.marginTop = '10px';
-      quizContainer.appendChild(errorElement);
-    }
-  }
-}
-
-
-
-/**
- * Manually trigger upload of pending results (useful for debugging or forcing uploads)
- */
-async function forceUploadPendingResults() {
-  console.log("Manually triggering upload of pending results...");
-  try {
-    await uploadPendingResults();
-  } catch (error) {
-    console.error("Error in manual upload:", error);
-  }
-}
-
-/**
- * Store quiz results locally when upload fails
- */
-function storeResultsLocally(results) {
-  try {
-    // Get existing pending results
-    const existingResults = JSON.parse(localStorage.getItem('pendingQuizResults') || '[]');
-
-    // Check if this uniqueId already exists in localStorage to prevent duplicates
-    const existingIndex = existingResults.findIndex(result => result.uniqueId === results.uniqueId);
-    if (existingIndex !== -1) {
-      console.log(`Result with uniqueId ${results.uniqueId} already exists in localStorage, skipping duplicate`);
-      return;
-    }
-
-    // Add new results with a timestamp
-    const resultWithTimestamp = {
-      ...results,
-      localStorageTimestamp: new Date().toISOString()
-    };
-
-    existingResults.push(resultWithTimestamp);
-
-    // Store back to localStorage
-    localStorage.setItem('pendingQuizResults', JSON.stringify(existingResults));
-
-    console.log(`Stored quiz results locally. Total pending: ${existingResults.length}`);
-  } catch (error) {
-    console.error("Error storing results locally:", error);
-  }
-}
-
-/**
- * Upload all pending results from localStorage
- */
-async function uploadPendingResults() {
-  try {
-    const pendingResults = JSON.parse(localStorage.getItem('pendingQuizResults') || '[]');
-
-    if (pendingResults.length === 0) {
-      return; // No pending results
-    }
-
-    console.log(`Found ${pendingResults.length} pending results to upload`);
-
-    // Initialize Firebase if not already done
-    await initializeFirebase();
-
-        // Dynamic import for database functions
-    const { ref, set, get } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
-
-    // Upload each pending result
-    let successCount = 0;
-    const failedResults = [];
-
-    for (const result of pendingResults) {
-      try {
-        // Remove the local storage timestamp before uploading
-        const cleanResult = { ...result };
-        delete cleanResult.localStorageTimestamp;
-
-                // Use the uniqueId as the Firebase key to prevent duplicates
-        const resultRef = ref(database, `results/${cleanResult.uniqueId}`);
-
-                // Quick existence check - if this fails, network is too bad to upload
-        const checkPromise = get(resultRef);
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Network too slow for pending upload')), 3000)
-        );
-
-        const snapshot = await Promise.race([checkPromise, timeoutPromise]);
-        if (snapshot.exists()) {
-          console.log(`Pending result ${cleanResult.uniqueId} already exists in Firebase, skipping duplicate`);
-          successCount++; // Count as success since it's already uploaded
-          continue;
-        }
-
-        // Upload using set() with timeout
-        const uploadPromise = set(resultRef, cleanResult);
-        const uploadTimeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Pending upload failed - network timeout')), 8000)
-        );
-
-        await Promise.race([uploadPromise, uploadTimeoutPromise]);
-        console.log(`Uploaded pending result. ID: ${cleanResult.uniqueId}`);
-        successCount++;
-      } catch (uploadError) {
-        console.error("Failed to upload individual pending result:", uploadError);
-        failedResults.push(result);
-      }
-    }
-
-
-
-    // Update localStorage with only the failed uploads
-    if (failedResults.length > 0) {
-      localStorage.setItem('pendingQuizResults', JSON.stringify(failedResults));
-      console.log(`${failedResults.length} results remain pending`);
-    } else {
-      // All uploaded successfully, clear localStorage
-      localStorage.removeItem('pendingQuizResults');
-      console.log('All pending results uploaded successfully');
-    }
-
-    // Only show notification if we actually uploaded some results AND there were pending results to begin with
-    if (successCount > 0 && pendingResults.length > 0) {
-      console.log(`Successfully uploaded ${successCount} pending results`);
-
-      // Only show UI notification if there's a quiz container and we're not in start screen
-      const quizContainer = getQuizContainer();
-      if (quizContainer && !quizContainer.querySelector('.quiz-start')) {
-        const notificationElement = document.createElement('p');
-        notificationElement.textContent = `${successCount} résultat(s) en attente ont été envoyés avec succès.`;
-        notificationElement.style.color = '#155724';
-        notificationElement.style.fontSize = '14px';
-        notificationElement.style.marginTop = '10px';
-        notificationElement.style.backgroundColor = '#d4edda';
-        notificationElement.style.padding = '8px';
-        notificationElement.style.borderRadius = '4px';
-        notificationElement.style.border = '1px solid #c3e6cb';
-        quizContainer.appendChild(notificationElement);
-
-        // Remove notification after 5 seconds
-        setTimeout(() => {
-          if (notificationElement.parentNode) {
-            notificationElement.parentNode.removeChild(notificationElement);
+  async uploadPendingResults() {
+    try {
+      const pendingResults = JSON.parse(localStorage.getItem('pendingQuizResults') || '[]');
+      if (pendingResults.length === 0) return;
+
+      console.log(`Found ${pendingResults.length} pending results to upload`);
+      await this.initializeFirebase();
+
+      const { ref, set, get } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+
+      let successCount = 0;
+      const failedResults = [];
+
+      for (const result of pendingResults) {
+        try {
+          const cleanResult = { ...result };
+          delete cleanResult.localStorageTimestamp;
+
+          const resultRef = ref(database, `results/${cleanResult.uniqueId}`);
+
+          const checkPromise = get(resultRef);
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Network too slow for pending upload')), 3000)
+          );
+
+          const snapshot = await Promise.race([checkPromise, timeoutPromise]);
+          if (snapshot.exists()) {
+            console.log(`Pending result ${cleanResult.uniqueId} already exists in Firebase, skipping duplicate`);
+            successCount++;
+            continue;
           }
-        }, 5000);
+
+          const uploadPromise = set(resultRef, cleanResult);
+          const uploadTimeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Pending upload failed - network timeout')), 8000)
+          );
+
+          await Promise.race([uploadPromise, uploadTimeoutPromise]);
+          console.log(`Uploaded pending result. ID: ${cleanResult.uniqueId}`);
+          successCount++;
+        } catch (uploadError) {
+          console.error("Failed to upload individual pending result:", uploadError);
+          failedResults.push(result);
+        }
       }
-    }
 
-  } catch (error) {
-    console.error("Error uploading pending results:", error);
-  }
-}
-
-/**
- * Check and display the number of pending results
- */
-function checkPendingResultsCount() {
-  try {
-    const pendingResults = JSON.parse(localStorage.getItem('pendingQuizResults') || '[]');
-    return pendingResults.length;
-  } catch (error) {
-    console.error("Error checking pending results:", error);
-    return 0;
-  }
-}
-
-function generateQuizResults() {
-  const completionTimestamp = new Date().toISOString();
-  const wordResults = [];
-  let   totalErrors = 0;
-
-  // Process results for each word
-  Object.keys(quizState.results).forEach(wordKey => {
-    const wordData = quizState.results[wordKey];
-    const attempts = wordData.attempts;
-
-    // Count successes and failures by direction
-    const stats = {
-      french_to_slovak: { successes: 0, failures: 0 },
-      slovak_to_french: { successes: 0, failures: 0 },
-      matching:         { successes: 0, failures: 0 }
-    };
-
-    let wordErrors = 0;
-    attempts.forEach(attempt => {
-      if (attempt.isCorrect) {
-        stats[attempt.direction].successes++;
+      if (failedResults.length > 0) {
+        localStorage.setItem('pendingQuizResults', JSON.stringify(failedResults));
+        console.log(`${failedResults.length} results remain pending`);
       } else {
-        stats[attempt.direction].failures++;
-        wordErrors++;
+        localStorage.removeItem('pendingQuizResults');
+        console.log('All pending results uploaded successfully');
       }
-    });
 
-    totalErrors += wordErrors;
-
-    wordResults.push({
-      word:                        wordKey,
-      wordPair:                    wordData.wordPair,
-      french_to_slovak_successes:  stats.french_to_slovak.successes,
-      french_to_slovak_failures:   stats.french_to_slovak.failures,
-      slovak_to_french_successes:  stats.slovak_to_french.successes,
-      slovak_to_french_failures:   stats.slovak_to_french.failures,
-      matching_successes:          stats.matching.successes,
-      matching_failures:           stats.matching.failures,
-      totalAttempts:               attempts.length,
-      totalErrors:                 wordErrors
-    });
-  });
-
-  // Normalize quiz type for database storage to maintain backwards compatibility
-  let databaseQuizType = quizState.quizType;
-  if (quizState.quizType === 'slovak_to_french_typing' || quizState.quizType === 'french_to_slovak_typing') {
-    databaseQuizType = 'typing';
+      if (successCount > 0 && pendingResults.length > 0) {
+        console.log(`Successfully uploaded ${successCount} pending results`);
+      }
+    } catch (error) {
+      console.error("Error uploading pending results:", error);
+    }
   }
 
-  // Generate a unique ID to prevent duplicates from race conditions
-  const uniqueId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-  return {
-    uniqueId:             uniqueId, // Add unique identifier to prevent duplicates
-    completionTimestamp:  completionTimestamp,
-    totalQuestions:       quizState.totalQuestions,
-    wordsCount:           quizState.selectedWordPairs.length,
-    quizType:             databaseQuizType,
-    quizName:             quizState.quizName,
-    totalErrors:          totalErrors,
-    words:                wordResults
-  };
-}
-
-function clearQuizResults() {
-  // Clear the results after they have been recorded
-  quizState.results = {};
-  console.log('Quiz results cleared - ready for database push');
-}
-
-function restartQuiz() {
-  // Only set isFirstStart to true if we're starting a completely new sequence (after the last enabled quiz type)
-  const lastEnabledType = quizState.enabledQuizTypes[quizState.enabledQuizTypes.length - 1];
-  if (quizState.quizType === lastEnabledType) {
-    quizState.isFirstStart = true; // Reset to first start for new sequence
+  checkPendingResultsCount() {
+    try {
+      const pendingResults = JSON.parse(localStorage.getItem('pendingQuizResults') || '[]');
+      return pendingResults.length;
+    } catch (error) {
+      console.error("Error checking pending results:", error);
+      return 0;
+    }
   }
-  initializeQuiz();
 }
 
-// Direct function for database-based adaptive quiz (no word list needed)
-function startAdaptiveQuizFromHistory(quizName = 'Quiz Adaptatif - Historique Complet') {
-  initializeAdaptiveQuiz(null, quizName, ['slovak_to_french_typing', 'french_to_slovak_typing']);
+// Global quiz instance
+let quiz = null;
+
+// Public API functions for backward compatibility
+async function generateQuizExercise(wordPairs, quizName, enabledQuizTypes) {
+  quiz = new QuizStateMachine();
+  await quiz.initialize(wordPairs, quizName, enabledQuizTypes);
 }
 
-// Backward compatibility wrapper
-function generateQuizExercise(wordPairs, quizName, enabledQuizTypes) {
-  // If no arguments provided, extract everything from database
-  if (!wordPairs && !quizName) {
-    startAdaptiveQuizFromHistory();
-  } else {
-    initializeAdaptiveQuiz(wordPairs, quizName || 'Slovak Language Quiz', enabledQuizTypes);
-  }
+async function initializeQuiz(wordPairs, quizName, enabledQuizTypes) {
+  await generateQuizExercise(wordPairs, quizName, enabledQuizTypes);
+}
+
+async function startAdaptiveQuizFromHistory(quizName = 'Quiz Adaptatif - Historique Complet') {
+  quiz = new QuizStateMachine();
+  await quiz.initialize(null, quizName, [QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING]);
 }

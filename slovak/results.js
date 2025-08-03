@@ -175,10 +175,18 @@ function aggregateWordPairStats(allResults) {
  */
 function displayResultsTable(wordPairStats) {
   // Sort by success rate (lowest first) to show most problematic words at the top
+  // If success rates are equal, sort by number of questions (highest first) to show better mastery
   wordPairStats.sort((a, b) => {
     const successRateA = a.totalQuestions > 0 ? ((a.totalQuestions - a.totalErrors) / a.totalQuestions) * 100 : 100;
     const successRateB = b.totalQuestions > 0 ? ((b.totalQuestions - b.totalErrors) / b.totalQuestions) * 100 : 100;
-    return successRateA - successRateB; // Ascending order (lowest success rate first)
+
+    // Primary sort: by success rate (ascending - lowest first)
+    if (successRateA !== successRateB) {
+      return successRateA - successRateB;
+    }
+
+    // Secondary sort: by number of questions (descending - most questions first for better mastery)
+    return a.totalQuestions - b.totalQuestions;
   });
 
   // Get or create container
