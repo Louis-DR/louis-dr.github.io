@@ -264,14 +264,14 @@ class QuizStateMachine {
       this.currentQuizTypeIndex++;
       console.log(`Moving to next quiz type - new index: ${this.currentQuizTypeIndex}`);
 
+      // Always upload results for the just-completed quiz type
+      console.log('Quiz type completed - uploading results for:', this.enabledQuizTypes[this.currentQuizTypeIndex - 1]);
+      await this.uploadCurrentQuizTypeResults();
+
       if (this.currentQuizTypeIndex >= this.enabledQuizTypes.length) {
         console.log('All quiz types completed - showing completion screen');
         await this.transition(QuizStates.QUIZ_COMPLETE);
       } else {
-        console.log('Quiz type completed - uploading results for:', this.enabledQuizTypes[this.currentQuizTypeIndex - 1]);
-        // Upload results for the just-completed quiz type
-        await this.uploadCurrentQuizTypeResults();
-
         console.log('Resetting for next quiz type');
         // Reset word queue for next quiz type
         this.wordQueue = this.shuffleArray([...this.selectedWordPairs]);
