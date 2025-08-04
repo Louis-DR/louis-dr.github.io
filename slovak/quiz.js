@@ -161,7 +161,13 @@ class QuizStateMachine {
       }
 
       if (Object.keys(wordAnalysis).length === 0) {
-        await this.transition(QuizStates.START_SCREEN);
+        // No historical data, show empty adaptive menu
+        const emptyCategories = {
+          mastered: [],
+          learning: [],
+          struggling: []
+        };
+        await this.transition(QuizStates.ADAPTIVE_MENU, { categories: emptyCategories });
         return;
       }
 
@@ -407,9 +413,16 @@ class QuizStateMachine {
     }
 
     const isHistoryMode = this.quizName.includes('Historique') || this.quizName.includes('Adaptatif');
-    const subtitle = isHistoryMode
-      ? "Basé sur votre historique d'apprentissage complet :"
-      : "Choisissez votre mode d'entraînement :";
+    const totalWords = categories.mastered.length + categories.learning.length + categories.struggling.length;
+
+    let subtitle;
+    if (isHistoryMode && totalWords === 0) {
+      subtitle = "Aucun historique d'apprentissage trouvé. Commencez par faire quelques quiz pour débloquer le mode adaptatif.";
+    } else if (isHistoryMode) {
+      subtitle = "Basé sur votre historique d'apprentissage complet :";
+    } else {
+      subtitle = "Choisissez votre mode d'entraînement :";
+    }
 
     this.container.innerHTML = `
       <div class="adaptive-quiz-menu">
@@ -440,10 +453,10 @@ class QuizStateMachine {
           </button>
 
           <div style="border-top: 1px solid #dee2e6; margin: 20px 0; padding-top: 20px;">
-            <button class="btn btn-outline btn-lg" id="regular-quiz-button">
+            <button class="btn btn-outline btn-lg" id="regular-quiz-button" ${this.wordPairs.length === 0 ? 'disabled' : ''}>
               📝 Quiz classique
               <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
-                Sélection aléatoire de tous les mots
+                ${this.wordPairs.length === 0 ? 'Aucun mot disponible' : 'Sélection aléatoire de tous les mots'}
               </small>
             </button>
           </div>
@@ -1233,7 +1246,12 @@ class QuizStateMachine {
       await this.initializeFirebase();
       const { ref, get } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
 
-      const resultsRef = ref(database, 'results');
+      if (!this.user) {
+        console.log("No user logged in, cannot analyze word pair performance");
+        return { analysis: {}, extractedWordPairs: [] };
+      }
+
+      const resultsRef = ref(database, `results/${this.user.uid}`);
       const snapshot = await get(resultsRef);
 
       if (!snapshot.exists()) {
