@@ -82,8 +82,9 @@ async function fetchAllResults() {
 /**
  * Aggregate word pair statistics from all quiz results
  */
-function aggregateWordPairStats(allResults) {
+function aggregateWordPairStats(allResults, filterWordSet = null) {
   const wordStats = new Map();
+  const allWordSets = new Set(); // Track all unique word sets
 
   // Process each quiz result
   Object.values(allResults).forEach(result => {
@@ -93,12 +94,22 @@ function aggregateWordPairStats(allResults) {
       result.words.forEach(wordData => {
         const frenchWord = wordData.wordPair[0];
         const slovakWord = wordData.wordPair[1];
+        const wordSetName = wordData.wordSetName || result.quizName || 'Unknown Set';
         const wordPairKey = `${frenchWord}|${slovakWord}`;
+
+        // Track all word sets
+        allWordSets.add(wordSetName);
+
+        // Apply filter if specified
+        if (filterWordSet && filterWordSet !== 'all' && wordSetName !== filterWordSet) {
+          return; // Skip this word if it doesn't match the filter
+        }
 
         if (!wordStats.has(wordPairKey)) {
           wordStats.set(wordPairKey, {
             frenchWord: frenchWord,
             slovakWord: slovakWord,
+            wordSets: new Set([wordSetName]), // Track word sets for this word pair
             totalQuestions: 0,
             totalErrors: 0,
             // Multiple choice stats
@@ -118,6 +129,9 @@ function aggregateWordPairStats(allResults) {
             matchingQuestions: 0,
             matchingErrors: 0
           });
+        } else {
+          // Add word set to existing word pair
+          wordStats.get(wordPairKey).wordSets.add(wordSetName);
         }
 
         const stats = wordStats.get(wordPairKey);
@@ -176,13 +190,22 @@ function aggregateWordPairStats(allResults) {
     }
   });
 
-  return Array.from(wordStats.values());
+  // Convert wordSets from Set to Array for each word pair
+  const result = Array.from(wordStats.values()).map(stats => ({
+    ...stats,
+    wordSets: Array.from(stats.wordSets).sort() // Convert Set to sorted Array
+  }));
+
+  return {
+    wordPairStats: result,
+    allWordSets: Array.from(allWordSets).sort() // Return all unique word sets
+  };
 }
 
 /**
  * Create and display the results table
  */
-function displayResultsTable(wordPairStats) {
+function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all') {
   // Sort by success rate (lowest first) to show most problematic words at the top
   // If success rates are equal, sort by number of questions (highest first) to show better mastery
   wordPairStats.sort((a, b) => {
@@ -209,12 +232,53 @@ function displayResultsTable(wordPairStats) {
   // Clear previous content
   container.innerHTML = '';
 
-  // Create title
+  // Create title and filter
+  const headerSection = document.createElement('div');
+  headerSection.className = 'results-header';
+
   const title = document.createElement('h2');
   title.textContent = 'Statistiques des Mots';
-  title.style.textAlign = 'center';
-  title.style.marginBottom = '20px';
-  container.appendChild(title);
+  headerSection.appendChild(title);
+
+  // Create filter dropdown
+  const filterSection = document.createElement('div');
+  filterSection.className = 'filter-section';
+
+  const filterLabel = document.createElement('label');
+  filterLabel.textContent = 'Filtrer par ensemble de mots: ';
+  filterLabel.htmlFor = 'wordset-filter';
+
+  const filterSelect = document.createElement('select');
+  filterSelect.id = 'wordset-filter';
+  filterSelect.className = 'filter-select';
+
+  // Add "All" option
+  const allOption = document.createElement('option');
+  allOption.value = 'all';
+  allOption.textContent = 'Tous les ensembles';
+  allOption.selected = selectedWordSet === 'all';
+  filterSelect.appendChild(allOption);
+
+  // Add word set options
+  allWordSets.forEach(wordSet => {
+    const option = document.createElement('option');
+    option.value = wordSet;
+    option.textContent = wordSet;
+    option.selected = selectedWordSet === wordSet;
+    filterSelect.appendChild(option);
+  });
+
+  // Add change listener
+  filterSelect.addEventListener('change', () => {
+    const selectedValue = filterSelect.value;
+    loadAndDisplayResults(selectedValue);
+  });
+
+  filterSection.appendChild(filterLabel);
+  filterSection.appendChild(filterSelect);
+  headerSection.appendChild(filterSection);
+
+  container.appendChild(headerSection);
 
   // Create table wrapper for horizontal scrolling
   const tableWrapper = document.createElement('div');
@@ -230,6 +294,7 @@ function displayResultsTable(wordPairStats) {
   headerRow.innerHTML = `
     <th>Français</th>
     <th>Slovaque</th>
+    <th>Ensembles</th>
     <th>Total Questions</th>
     <th>Réussite Globale</th>
     <th>Correspondances</th>
@@ -280,9 +345,15 @@ function displayResultsTable(wordPairStats) {
       ? (((wordStats.frenchToSlovakTypingQuestions - wordStats.frenchToSlovakTypingErrors) / wordStats.frenchToSlovakTypingQuestions) * 100).toFixed(1)
       : '-';
 
+    // Format word sets for display
+    const wordSetsDisplay = wordStats.wordSets.length > 1
+      ? wordStats.wordSets.join(', ')
+      : wordStats.wordSets[0] || 'Unknown';
+
     row.innerHTML = `
       <td>${wordStats.frenchWord}</td>
       <td><strong>${wordStats.slovakWord}</strong></td>
+      <td class="word-sets-cell">${wordSetsDisplay}</td>
       <td>${wordStats.totalQuestions}</td>
       <td>${globalSuccessRate}%</td>
       <td>${matchingSuccessRate}${matchingSuccessRate !== '-' ? '%' : ''}</td>
@@ -302,8 +373,8 @@ function displayResultsTable(wordPairStats) {
         td.innerHTML = `<span class="word-slovak">${td.textContent}</span>`;
       }
 
-      // Highlight success rates (columns 3-9 are success rate columns)
-      if (cellIndex >= 3 && cellIndex <= 9) {
+      // Highlight success rates (columns 4-10 are success rate columns, after adding word sets column)
+      if (cellIndex >= 4 && cellIndex <= 10) {
         const rateText = td.textContent.replace('%', '');
         if (rateText !== '-') {
           const rate = parseFloat(rateText);
@@ -354,7 +425,7 @@ function displayResultsTable(wordPairStats) {
 /**
  * Extract and prepare daily progression data for charts
  */
-function prepareProgressionData(allResults) {
+function prepareProgressionData(allResults, filterWordSet = 'all') {
   // Collect all quiz results with timestamps
   const timelineData = [];
 
@@ -417,6 +488,13 @@ function prepareProgressionData(allResults) {
     resultsUpToThisDay.forEach(entry => {
       entry.words.forEach(wordData => {
         if (wordData.wordPair && wordData.wordPair.length >= 2) {
+          const wordSetName = wordData.wordSetName || entry.quizName || 'Unknown Set';
+
+          // Apply filter if specified
+          if (filterWordSet && filterWordSet !== 'all' && wordSetName !== filterWordSet) {
+            return; // Skip this word if it doesn't match the filter
+          }
+
           const wordPairKey = `${wordData.wordPair[0]}|${wordData.wordPair[1]}`;
 
           // Initialize word stats if we haven't seen this word before
@@ -492,13 +570,16 @@ function prepareProgressionData(allResults) {
 /**
  * Create and display the progression chart
  */
-function displayProgressionChart(progressionData) {
+function displayProgressionChart(progressionData, filterWordSet = 'all') {
   // Create chart container
   const chartContainer = document.createElement('div');
   chartContainer.className = 'chart-container';
 
   const chartTitle = document.createElement('h3');
-  chartTitle.textContent = 'Progression de l\'Apprentissage dans le Temps';
+  const titleText = filterWordSet === 'all'
+    ? 'Progression de l\'Apprentissage dans le Temps'
+    : `Progression de l\'Apprentissage dans le Temps - ${filterWordSet}`;
+  chartTitle.textContent = titleText;
   chartContainer.appendChild(chartTitle);
 
   // Create canvas for chart
@@ -648,7 +729,7 @@ function displayProgressionChart(progressionData) {
 /**
  * Extract and prepare daily activity data for bar chart
  */
-function prepareDailyActivityData(allResults) {
+function prepareDailyActivityData(allResults, filterWordSet = 'all') {
   // Collect all quiz results with timestamps
   const timelineData = [];
 
@@ -698,6 +779,13 @@ function prepareDailyActivityData(allResults) {
     // Process all quiz results for this day
     dayResults.forEach(entry => {
       entry.words.forEach(wordData => {
+        const wordSetName = wordData.wordSetName || entry.quizName || 'Unknown Set';
+
+        // Apply filter if specified
+        if (filterWordSet && filterWordSet !== 'all' && wordSetName !== filterWordSet) {
+          return; // Skip this word if it doesn't match the filter
+        }
+
         // Count all attempts across all quiz types
         const frenchToSlovakCorrect = wordData.french_to_slovak_successes || 0;
         const frenchToSlovakIncorrect = wordData.french_to_slovak_failures || 0;
@@ -732,13 +820,16 @@ function prepareDailyActivityData(allResults) {
 /**
  * Create and display the daily activity chart
  */
-function displayDailyActivityChart(activityData) {
+function displayDailyActivityChart(activityData, filterWordSet = 'all') {
   // Create chart container
   const chartContainer = document.createElement('div');
   chartContainer.className = 'chart-container activity-chart';
 
   const chartTitle = document.createElement('h3');
-  chartTitle.textContent = 'Activité Quotidienne des Quiz';
+  const titleText = filterWordSet === 'all'
+    ? 'Activité Quotidienne des Quiz'
+    : `Activité Quotidienne des Quiz - ${filterWordSet}`;
+  chartTitle.textContent = titleText;
   chartContainer.appendChild(chartTitle);
 
   // Create canvas for chart
@@ -962,7 +1053,7 @@ function renderAuthStatusFooter() {
 /**
  * Main function to load and display all results
  */
-async function loadAndDisplayResults() {
+async function loadAndDisplayResults(filterWordSet = 'all') {
   try {
     console.log("Loading results from Firebase...");
 
@@ -973,24 +1064,25 @@ async function loadAndDisplayResults() {
     // Fetch all results
     const allResults = await fetchAllResults();
 
-    // Aggregate word pair statistics
-    const wordPairStats = aggregateWordPairStats(allResults);
+    // Aggregate word pair statistics with filtering
+    const aggregationResult = aggregateWordPairStats(allResults, filterWordSet);
+    const { wordPairStats, allWordSets } = aggregationResult;
 
-    // Display the table
-    displayResultsTable(wordPairStats);
+    // Display the table with filter
+    displayResultsTable(wordPairStats, allWordSets, filterWordSet);
 
-    // Prepare and display progression chart
-    const progressionData = prepareProgressionData(allResults);
+    // Prepare and display progression chart (filtered)
+    const progressionData = prepareProgressionData(allResults, filterWordSet);
     if (progressionData.dailyStats.length > 0) {
-      displayProgressionChart(progressionData);
+      displayProgressionChart(progressionData, filterWordSet);
     } else {
       console.log('No progression data available for chart');
     }
 
-    // Prepare and display daily activity chart
-    const activityData = prepareDailyActivityData(allResults);
+    // Prepare and display daily activity chart (filtered)
+    const activityData = prepareDailyActivityData(allResults, filterWordSet);
     if (activityData.dailyActivity.length > 0) {
-      displayDailyActivityChart(activityData);
+      displayDailyActivityChart(activityData, filterWordSet);
     } else {
       console.log('No activity data available for chart');
     }
