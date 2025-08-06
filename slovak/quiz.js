@@ -33,6 +33,29 @@ const firebaseConfig = {
 
 const maxWords = 8;
 
+// Utility function to get local timestamp in ISO format
+function getLocalTimestamp() {
+  const now = new Date();
+
+  // Get local date components
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+
+  // Get timezone offset in ±HH:MM format
+  const offset = -now.getTimezoneOffset();
+  const offsetHours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
+  const offsetMinutes = String(Math.abs(offset) % 60).padStart(2, '0');
+  const offsetSign = offset >= 0 ? '+' : '-';
+
+  // Return proper ISO 8601 format with timezone
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}${offsetSign}${offsetHours}:${offsetMinutes}`;
+}
+
 // Firebase globals
 let firebaseApp = null;
 let database    = null;
@@ -248,7 +271,7 @@ class QuizStateMachine {
     this.results[wordKey].attempts.push({
       direction: this.currentQuestion.direction,
       isCorrect: isCorrect,
-      timestamp: new Date().toISOString()
+      timestamp: getLocalTimestamp()
     });
 
     this.totalQuestions++;
@@ -1155,7 +1178,7 @@ class QuizStateMachine {
       this.results[wordKey].attempts.push({
         direction: 'matching',
         isCorrect: isCorrect,
-        timestamp: new Date().toISOString()
+        timestamp: getLocalTimestamp()
       });
 
       if (isCorrect) {
@@ -1369,7 +1392,7 @@ class QuizStateMachine {
   }
 
   generateQuizResults(specificQuizType = null) {
-  const completionTimestamp = new Date().toISOString();
+  const completionTimestamp = getLocalTimestamp();
   const wordResults = [];
     let totalErrors = 0;
 
@@ -1509,7 +1532,7 @@ class QuizStateMachine {
 
       const resultWithTimestamp = {
         ...results,
-        localStorageTimestamp: new Date().toISOString()
+        localStorageTimestamp: getLocalTimestamp()
       };
 
       existingResults.push(resultWithTimestamp);

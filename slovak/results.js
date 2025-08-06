@@ -432,6 +432,13 @@ function prepareProgressionData(allResults, filterWordSet = 'all') {
   Object.values(allResults).forEach(result => {
     if (result.completionTimestamp && result.words && Array.isArray(result.words)) {
       const date = new Date(result.completionTimestamp);
+
+      // Check for invalid date
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid timestamp found in progression data:', result.completionTimestamp);
+        return; // Skip this result
+      }
+
       const dayKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
 
       timelineData.push({
@@ -736,6 +743,13 @@ function prepareDailyActivityData(allResults, filterWordSet = 'all') {
   Object.values(allResults).forEach(result => {
     if (result.completionTimestamp && result.words && Array.isArray(result.words)) {
       const date = new Date(result.completionTimestamp);
+
+      // Check for invalid date
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid timestamp found in activity data:', result.completionTimestamp);
+        return; // Skip this result
+      }
+
       const dayKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
 
       timelineData.push({
