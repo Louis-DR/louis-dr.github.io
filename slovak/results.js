@@ -307,12 +307,16 @@ function displayResultsTable(wordPairStats) {
         const rateText = td.textContent.replace('%', '');
         if (rateText !== '-') {
           const rate = parseFloat(rateText);
-          if (rate >= 80) {
+          if (rate >= 90) {
+            td.classList.add('success-rate-very-high');
+          } else if (rate >= 80) {
             td.classList.add('success-rate-high');
-          } else if (rate >= 50) {
+          } else if (rate >= 70) {
             td.classList.add('success-rate-medium');
-          } else {
+          } else if (rate >= 50) {
             td.classList.add('success-rate-low');
+          } else {
+            td.classList.add('success-rate-very-low');
           }
         }
       }

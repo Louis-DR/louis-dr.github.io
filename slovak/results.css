@@ -121,40 +121,54 @@
 }
 
 /* Success rate colors */
-.success-rate-high {
+.success-rate-very-high {
   color: hsl(120, 60%, 25%);
   background-color: hsl(120, 50%, 90%);
   font-weight: 600;
 }
 
-@media (prefers-color-scheme: dark) {
-  .success-rate-high {
-    color: hsl(120, 50%, 80%);
-    background-color: hsl(120, 50%, 20%);
-  }
-}
-
-.success-rate-medium {
-  color: hsl(45, 60%, 25%);
-  background-color: hsl(45, 70%, 90%);
+.success-rate-high {
+  color: hsl(90, 60%, 25%);
+  background-color: hsl(90, 50%, 90%);
   font-weight: 600;
 }
 
-@media (prefers-color-scheme: dark) {
-  .success-rate-medium {
-    color: hsl(45, 70%, 80%);
-    background-color: hsl(45, 50%, 20%);
-  }
+.success-rate-medium {
+  color: hsl(60, 60%, 25%);
+  background-color: hsl(60, 70%, 90%);
+  font-weight: 600;
 }
 
 .success-rate-low {
+  color: hsl(30, 60%, 25%);
+  background-color: hsl(30, 50%, 90%);
+  font-weight: 600;
+}
+
+.success-rate-very-low {
   color: hsl(0, 60%, 25%);
   background-color: hsl(0, 50%, 90%);
   font-weight: 600;
 }
 
 @media (prefers-color-scheme: dark) {
+  .success-rate-very-high {
+    color: hsl(120, 50%, 80%);
+    background-color: hsl(120, 50%, 20%);
+  }
+  .success-rate-high {
+    color: hsl(90, 50%, 80%);
+    background-color: hsl(90, 50%, 20%);
+  }
+  .success-rate-medium {
+    color: hsl(60, 70%, 80%);
+    background-color: hsl(60, 50%, 20%);
+  }
   .success-rate-low {
+    color: hsl(30, 50%, 80%);
+    background-color: hsl(30, 50%, 20%);
+  }
+  .success-rate-very-low {
     color: hsl(0, 50%, 80%);
     background-color: hsl(0, 50%, 20%);
   }
