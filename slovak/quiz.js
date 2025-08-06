@@ -44,7 +44,6 @@ class QuizStateMachine {
     this.state                   = QuizStates.INITIAL;
     this.wordPairs               = [];
     this.quizName                = 'Slovak Language Quiz';
-    this.wordSetName             = null; // Original word set name
     this.selectionMode           = 'all'; // all, mastered, learning, struggling
     this.enabledQuizTypes        = [QuizTypes.MATCHING, QuizTypes.MULTIPLE_CHOICE, QuizTypes.REORDER_LETTERS, QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
     this.currentQuizTypeIndex    = 0;
@@ -102,9 +101,17 @@ class QuizStateMachine {
   async initialize(wordPairs, quizName, enabledQuizTypes) {
     this.wordPairs        = wordPairs        || [];
     this.quizName         = quizName         || 'Slovak Language Quiz';
-    this.wordSetName      = quizName         || 'Slovak Language Quiz'; // Store original word set name
     this.selectionMode    = 'all'; // Default to 'all' for regular quizzes
     this.enabledQuizTypes = enabledQuizTypes || [QuizTypes.MATCHING, QuizTypes.MULTIPLE_CHOICE, QuizTypes.REORDER_LETTERS, QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
+
+    // Set wordSetName for provided word pairs (regular vocabulary page quizzes)
+    if (this.wordPairs.length > 0) {
+      this.wordPairs.forEach(pair => {
+        if (!pair.wordSetName) {
+          pair.wordSetName = this.quizName;
+        }
+      });
+    }
 
     try {
       await this.initializeFirebaseAndAuth();
@@ -135,11 +142,7 @@ class QuizStateMachine {
 
         if (user) {
           console.log("User is signed in:", user.displayName);
-          if (this.wordPairs.length === 0) {
-            await this.initializeAdaptiveQuiz();
-          } else {
-            await this.transition(QuizStates.START_SCREEN);
-          }
+          await this.initializeAdaptiveQuiz();
         } else {
           console.log("User is signed out.");
           this.renderLoginScreen();
@@ -158,28 +161,28 @@ class QuizStateMachine {
         this.container.innerHTML = '<div class="loading-message">Récupération de votre historique d\'apprentissage...</div>';
       }
 
+      // Analyze performance for both provided word pairs and historical data
       const { analysis: wordAnalysis, extractedWordPairs } = await this.analyzeWordPairPerformance(this.wordPairs);
 
-      if (extractedWordPairs.length > 0) {
+      // For global adaptive quiz (no word pairs provided), use extracted word pairs
+      if (this.wordPairs.length === 0 && extractedWordPairs.length > 0) {
         this.wordPairs = extractedWordPairs;
       }
 
-      if (Object.keys(wordAnalysis).length === 0) {
-        // No historical data, show empty adaptive menu
-        const emptyCategories = {
-          mastered:   [],
-          learning:   [],
-          struggling: []
-        };
-        await this.transition(QuizStates.ADAPTIVE_MENU, { categories: emptyCategories });
-        return;
-      }
-
+      // Create categories from the word analysis
       const categories = this.categorizeWordPairs(wordAnalysis);
+
+      // Always show adaptive menu
       await this.transition(QuizStates.ADAPTIVE_MENU, { categories });
     } catch (error) {
       console.error("Error initializing adaptive quiz:", error);
-      await this.transition(QuizStates.START_SCREEN);
+      // Show empty adaptive menu on error
+      const emptyCategories = {
+        mastered:   [],
+        learning:   [],
+        struggling: []
+      };
+      await this.transition(QuizStates.ADAPTIVE_MENU, { categories: emptyCategories });
     }
   }
 
@@ -205,10 +208,11 @@ class QuizStateMachine {
     this.selectedWordPairs.forEach(pair => {
       const wordKey = pair[1];
       this.results[wordKey] = {
-      wordPair: pair,
-      attempts: []
-    };
-  });
+        wordPair: pair,
+        wordSetName: pair.wordSetName || this.quizName, // Track per-word word set name
+        attempts: []
+      };
+    });
 
     await this.transition(QuizStates.QUIZ_ACTIVE);
   }
@@ -435,6 +439,13 @@ class QuizStateMachine {
         <p style="margin-bottom: 30px; color: #495057;">${subtitle}</p>
 
         <div style="display: flex; flex-direction: column; gap: 15px; max-width: 500px; margin: 0 auto;">
+          <button class="btn btn-outline btn-lg adaptive-option" data-mode="all" ${this.wordPairs.length === 0 ? 'disabled' : ''}>
+            📝 Tous les mots
+            <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
+              ${this.wordPairs.length === 0 ? 'Aucun mot disponible' : `${this.wordPairs.length} mot(s) • Sélection aléatoire`}
+            </small>
+          </button>
+
           <button class="btn btn-success btn-lg adaptive-option" data-mode="mastered" ${categories.mastered.length === 0 ? 'disabled' : ''}>
             🎯 Vérifier les acquis
             <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
@@ -455,15 +466,6 @@ class QuizStateMachine {
               ${categories.struggling.length} mot(s) difficile(s) • Taux de réussite <65%
             </small>
           </button>
-
-          <div style="border-top: 1px solid #dee2e6; margin: 20px 0; padding-top: 20px;">
-            <button class="btn btn-outline btn-lg" id="regular-quiz-button" ${this.wordPairs.length === 0 ? 'disabled' : ''}>
-              📝 Quiz classique
-              <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
-                ${this.wordPairs.length === 0 ? 'Aucun mot disponible' : 'Sélection aléatoire de tous les mots'}
-              </small>
-            </button>
-          </div>
         </div>
       </div>
     `;
@@ -476,6 +478,15 @@ class QuizStateMachine {
         let enabledQuizTypes;
 
         switch (mode) {
+          case 'all':
+            // Use all available word pairs
+            const maxPairs = Math.min(maxWords, this.wordPairs.length);
+            const shuffledAll = this.shuffleArray([...this.wordPairs]);
+            selectedWordPairs = shuffledAll.slice(0, maxPairs);
+            enabledQuizTypes  = this.enabledQuizTypes; // Use default enabled quiz types
+            this.selectionMode = 'all';
+            // Keep original quiz name for 'all' mode
+            break;
           case 'mastered':
             // Limit to maxWords and use only typing quizzes for mastered words
             const shuffledMastered = this.shuffleArray([...categories.mastered]);
@@ -516,9 +527,7 @@ class QuizStateMachine {
       });
     });
 
-    document.getElementById('regular-quiz-button').addEventListener('click', async () => {
-      await this.transition(QuizStates.START_SCREEN);
-    });
+
   }
 
   async renderActiveQuiz() {
@@ -1277,7 +1286,13 @@ class QuizStateMachine {
               if (wordResult.wordPair && Array.isArray(wordResult.wordPair) && wordResult.wordPair.length >= 2) {
                 const frenchWord = wordResult.wordPair[0];
                 const slovakWord = wordResult.wordPair[1];
-                uniqueWordPairs.set(slovakWord, [frenchWord, slovakWord]);
+                const wordSetName = wordResult.wordSetName || result.quizName || 'Unknown Set';
+
+                // Create enhanced word pair with wordSetName
+                const wordPair = [frenchWord, slovakWord];
+                wordPair.wordSetName = wordSetName;
+
+                uniqueWordPairs.set(slovakWord, wordPair);
               }
             });
           }
@@ -1383,6 +1398,7 @@ class QuizStateMachine {
     wordResults.push({
         word: wordKey,
         wordPair: wordData.wordPair,
+        wordSetName: wordData.wordSetName || this.quizName, // Per-word word set name
         french_to_slovak_successes: stats.french_to_slovak.successes,
         french_to_slovak_failures: stats.french_to_slovak.failures,
         slovak_to_french_successes: stats.slovak_to_french.successes,
@@ -1413,7 +1429,6 @@ class QuizStateMachine {
       wordsCount: this.selectedWordPairs.length,
       quizType: databaseQuizType,
       quizName: this.quizName,
-      wordSetName: this.wordSetName || this.quizName, // Original word set name
       selectionMode: this.selectionMode || 'all', // all, mastered, learning, struggling
       totalErrors: totalErrors,
       words: wordResults
