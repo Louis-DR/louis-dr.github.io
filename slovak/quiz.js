@@ -44,6 +44,8 @@ class QuizStateMachine {
     this.state                   = QuizStates.INITIAL;
     this.wordPairs               = [];
     this.quizName                = 'Slovak Language Quiz';
+    this.wordSetName             = null; // Original word set name
+    this.selectionMode           = 'all'; // all, mastered, learning, struggling
     this.enabledQuizTypes        = [QuizTypes.MATCHING, QuizTypes.MULTIPLE_CHOICE, QuizTypes.REORDER_LETTERS, QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
     this.currentQuizTypeIndex    = 0;
     this.selectedWordPairs       = [];
@@ -100,6 +102,8 @@ class QuizStateMachine {
   async initialize(wordPairs, quizName, enabledQuizTypes) {
     this.wordPairs        = wordPairs        || [];
     this.quizName         = quizName         || 'Slovak Language Quiz';
+    this.wordSetName      = quizName         || 'Slovak Language Quiz'; // Store original word set name
+    this.selectionMode    = 'all'; // Default to 'all' for regular quizzes
     this.enabledQuizTypes = enabledQuizTypes || [QuizTypes.MATCHING, QuizTypes.MULTIPLE_CHOICE, QuizTypes.REORDER_LETTERS, QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
 
     try {
@@ -477,6 +481,7 @@ class QuizStateMachine {
             const shuffledMastered = this.shuffleArray([...categories.mastered]);
             selectedWordPairs      = shuffledMastered.slice(0, Math.min(maxWords, categories.mastered.length));
             enabledQuizTypes       = [QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
+            this.selectionMode     = 'mastered';
             this.quizName          = `${this.quizName} - Vérification des acquis`;
             break;
           case 'learning':
@@ -484,6 +489,7 @@ class QuizStateMachine {
             const shuffledLearning = this.shuffleArray([...categories.learning]);
             selectedWordPairs      = shuffledLearning.slice(0, Math.min(maxWords, categories.learning.length));
             enabledQuizTypes       = this.enabledQuizTypes; // Use default enabled quiz types
+            this.selectionMode     = 'learning';
             this.quizName          = `${this.quizName} - Consolidation de l'apprentissage`;
             break;
           case 'struggling':
@@ -491,6 +497,7 @@ class QuizStateMachine {
             const shuffledStruggling = this.shuffleArray([...categories.struggling]);
             selectedWordPairs        = shuffledStruggling.slice(0, Math.min(maxWords, categories.struggling.length));
             enabledQuizTypes         = this.enabledQuizTypes; // Use default enabled quiz types
+            this.selectionMode       = 'struggling';
             this.quizName            = `${this.quizName} - Correction des lacunes`;
             break;
         }
@@ -1406,6 +1413,8 @@ class QuizStateMachine {
       wordsCount: this.selectedWordPairs.length,
       quizType: databaseQuizType,
       quizName: this.quizName,
+      wordSetName: this.wordSetName || this.quizName, // Original word set name
+      selectionMode: this.selectionMode || 'all', // all, mastered, learning, struggling
       totalErrors: totalErrors,
       words: wordResults
     };
