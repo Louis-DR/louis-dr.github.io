@@ -3,18 +3,18 @@
 
 // Quiz States
 const QuizStates = {
-  INITIAL: 'initial',
-  START_SCREEN: 'start_screen',
+  INITIAL:       'initial',
+  START_SCREEN:  'start_screen',
   ADAPTIVE_MENU: 'adaptive_menu',
-  QUIZ_ACTIVE: 'quiz_active',
+  QUIZ_ACTIVE:   'quiz_active',
   QUIZ_COMPLETE: 'quiz_complete'
 };
 
 // Quiz Types
 const QuizTypes = {
-  MATCHING: 'matching',
-  MULTIPLE_CHOICE: 'multiple_choice',
-  REORDER_LETTERS: 'reorder_letters',
+  MATCHING:                'matching',
+  MULTIPLE_CHOICE:         'multiple_choice',
+  REORDER_LETTERS:         'reorder_letters',
   SLOVAK_TO_FRENCH_TYPING: 'slovak_to_french_typing',
   FRENCH_TO_SLOVAK_TYPING: 'french_to_slovak_typing'
 };
@@ -35,34 +35,34 @@ const maxWords = 8;
 
 // Firebase globals
 let firebaseApp = null;
-let database = null;
-let auth = null;
+let database    = null;
+let auth        = null;
 
 // Main Quiz State Machine
 class QuizStateMachine {
   constructor() {
-    this.state = QuizStates.INITIAL;
-    this.wordPairs = [];
-    this.quizName = 'Slovak Language Quiz';
-    this.enabledQuizTypes = [QuizTypes.MATCHING, QuizTypes.MULTIPLE_CHOICE, QuizTypes.REORDER_LETTERS, QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
-    this.currentQuizTypeIndex = 0;
-    this.selectedWordPairs = [];
-    this.wordQueue = [];
-    this.correctAnswers = 0;
-    this.totalQuestions = 0;
-    this.results = {};
-    this.currentQuestion = null;
-    this.feedbackData = null;
-    this.user = null;
+    this.state                   = QuizStates.INITIAL;
+    this.wordPairs               = [];
+    this.quizName                = 'Slovak Language Quiz';
+    this.enabledQuizTypes        = [QuizTypes.MATCHING, QuizTypes.MULTIPLE_CHOICE, QuizTypes.REORDER_LETTERS, QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
+    this.currentQuizTypeIndex    = 0;
+    this.selectedWordPairs       = [];
+    this.wordQueue               = [];
+    this.correctAnswers          = 0;
+    this.totalQuestions          = 0;
+    this.results                 = {};
+    this.currentQuestion         = null;
+    this.feedbackData            = null;
+    this.user                    = null;
 
     // UI state
-    this.matchingSelections = {};
-    this.matchingPairs = {};
-    this.reorderSelectedLetters = [];
+    this.matchingSelections      = {};
+    this.matchingPairs           = {};
+    this.reorderSelectedLetters  = [];
     this.reorderAvailableLetters = [];
 
     // Initialize
-    this.container = null;
+    this.container               = null;
     this.bindEvents();
   }
 
@@ -98,8 +98,8 @@ class QuizStateMachine {
 
   // Initialization methods
   async initialize(wordPairs, quizName, enabledQuizTypes) {
-    this.wordPairs = wordPairs || [];
-    this.quizName = quizName || 'Slovak Language Quiz';
+    this.wordPairs        = wordPairs        || [];
+    this.quizName         = quizName         || 'Slovak Language Quiz';
     this.enabledQuizTypes = enabledQuizTypes || [QuizTypes.MATCHING, QuizTypes.MULTIPLE_CHOICE, QuizTypes.REORDER_LETTERS, QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
 
     try {
@@ -114,14 +114,14 @@ class QuizStateMachine {
 
     try {
       console.log("Initializing Firebase and Auth...");
-      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
-      const { getDatabase } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+      const { initializeApp }               = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
+      const { getDatabase }                 = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
       const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js");
 
       if (!firebaseApp) {
         firebaseApp = initializeApp(firebaseConfig);
-        database = getDatabase(firebaseApp);
-        auth = getAuth(firebaseApp);
+        database    = getDatabase(firebaseApp);
+        auth        = getAuth(firebaseApp);
         console.log("Firebase with Auth initialized successfully");
       }
 
@@ -163,8 +163,8 @@ class QuizStateMachine {
       if (Object.keys(wordAnalysis).length === 0) {
         // No historical data, show empty adaptive menu
         const emptyCategories = {
-          mastered: [],
-          learning: [],
+          mastered:   [],
+          learning:   [],
           struggling: []
         };
         await this.transition(QuizStates.ADAPTIVE_MENU, { categories: emptyCategories });
@@ -185,17 +185,17 @@ class QuizStateMachine {
       this.selectedWordPairs = selectedWordPairs;
   } else {
       const maxPairs = Math.min(maxWords, this.wordPairs.length);
-      const shuffledPairs = this.shuffleArray([...this.wordPairs]);
+      const shuffledPairs    = this.shuffleArray([...this.wordPairs]);
       this.selectedWordPairs = shuffledPairs.slice(0, maxPairs);
     }
 
     // Reset quiz state
-    this.currentQuizTypeIndex = 0;
+    this.currentQuizTypeIndex  = 0;
     this.lastCompletedQuizType = null;
-    this.wordQueue = this.shuffleArray([...this.selectedWordPairs]);
-    this.correctAnswers = 0;
-    this.totalQuestions = 0;
-    this.results = {};
+    this.wordQueue             = this.shuffleArray([...this.selectedWordPairs]);
+    this.correctAnswers        = 0;
+    this.totalQuestions        = 0;
+    this.results               = {};
 
     // Initialize results tracking
     this.selectedWordPairs.forEach(pair => {
@@ -413,7 +413,7 @@ class QuizStateMachine {
     }
 
     const isHistoryMode = this.quizName.includes('Historique') || this.quizName.includes('Adaptatif');
-    const totalWords = categories.mastered.length + categories.learning.length + categories.struggling.length;
+    const totalWords    = categories.mastered.length + categories.learning.length + categories.struggling.length;
 
     let subtitle;
     if (isHistoryMode && totalWords === 0) {
@@ -475,23 +475,23 @@ class QuizStateMachine {
           case 'mastered':
             // Limit to maxWords and use only typing quizzes for mastered words
             const shuffledMastered = this.shuffleArray([...categories.mastered]);
-            selectedWordPairs = shuffledMastered.slice(0, Math.min(maxWords, categories.mastered.length));
-            enabledQuizTypes = [QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
-            this.quizName = `${this.quizName} - Vérification des acquis`;
+            selectedWordPairs      = shuffledMastered.slice(0, Math.min(maxWords, categories.mastered.length));
+            enabledQuizTypes       = [QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
+            this.quizName          = `${this.quizName} - Vérification des acquis`;
             break;
           case 'learning':
             // Limit to maxWords and use all quiz types for learning words
             const shuffledLearning = this.shuffleArray([...categories.learning]);
-            selectedWordPairs = shuffledLearning.slice(0, Math.min(maxWords, categories.learning.length));
-            enabledQuizTypes = this.enabledQuizTypes; // Use default enabled quiz types
-            this.quizName = `${this.quizName} - Consolidation de l'apprentissage`;
+            selectedWordPairs      = shuffledLearning.slice(0, Math.min(maxWords, categories.learning.length));
+            enabledQuizTypes       = this.enabledQuizTypes; // Use default enabled quiz types
+            this.quizName          = `${this.quizName} - Consolidation de l'apprentissage`;
             break;
           case 'struggling':
             // Limit to maxWords and use all quiz types for struggling words
             const shuffledStruggling = this.shuffleArray([...categories.struggling]);
-            selectedWordPairs = shuffledStruggling.slice(0, Math.min(maxWords, categories.struggling.length));
-            enabledQuizTypes = this.enabledQuizTypes; // Use default enabled quiz types
-            this.quizName = `${this.quizName} - Correction des lacunes`;
+            selectedWordPairs        = shuffledStruggling.slice(0, Math.min(maxWords, categories.struggling.length));
+            enabledQuizTypes         = this.enabledQuizTypes; // Use default enabled quiz types
+            this.quizName            = `${this.quizName} - Correction des lacunes`;
             break;
         }
 
@@ -548,8 +548,8 @@ class QuizStateMachine {
       <button class="btn btn-primary submit-button" disabled>Soumettre</button>
     `;
 
-    const leftColumn = this.container.querySelector('.left-column');
-    const rightColumn = this.container.querySelector('.right-column');
+    const leftColumn   = this.container.querySelector('.left-column');
+    const rightColumn  = this.container.querySelector('.right-column');
     const submitButton = this.container.querySelector('.submit-button');
 
     // Create word buttons
@@ -558,9 +558,9 @@ class QuizStateMachine {
 
     frenchWords.forEach(word => {
     const button = document.createElement('button');
-      button.textContent = word;
-      button.className = 'matching-word french-word';
-      button.dataset.word = word;
+      button.textContent      = word;
+      button.className        = 'matching-word french-word';
+      button.dataset.word     = word;
       button.dataset.language = 'french';
       button.addEventListener('click', () => this.handleMatchingClick(button));
       leftColumn.appendChild(button);
@@ -568,9 +568,9 @@ class QuizStateMachine {
 
     slovakWords.forEach(word => {
       const button = document.createElement('button');
-      button.textContent = word;
-      button.className = 'matching-word slovak-word';
-      button.dataset.word = word;
+      button.textContent      = word;
+      button.className        = 'matching-word slovak-word';
+      button.dataset.word     = word;
       button.dataset.language = 'slovak';
       button.addEventListener('click', () => this.handleMatchingClick(button));
 
@@ -582,7 +582,7 @@ class QuizStateMachine {
     submitButton.addEventListener('click', () => this.handleMatchingSubmit());
 
     this.matchingSelections = {};
-    this.matchingPairs = {};
+    this.matchingPairs      = {};
   }
 
   async renderMultipleChoiceQuiz() {
@@ -595,7 +595,7 @@ class QuizStateMachine {
 
     const questionPair = this.wordQueue[0];
   const isFrenchQuestion = Math.random() < 0.5;
-    const questionText = isFrenchQuestion ? questionPair[0] : questionPair[1];
+    const questionText  = isFrenchQuestion ? questionPair[0] : questionPair[1];
     const correctAnswer = isFrenchQuestion ? questionPair[1] : questionPair[0];
 
     // Generate wrong answers
@@ -611,8 +611,8 @@ class QuizStateMachine {
     const allChoices = this.shuffleArray([correctAnswer, ...wrongAnswers]);
 
     this.currentQuestion = {
-      pair: questionPair,
-      direction: isFrenchQuestion ? 'french_to_slovak' : 'slovak_to_french',
+      pair:          questionPair,
+      direction:     isFrenchQuestion ? 'french_to_slovak' : 'slovak_to_french',
       correctAnswer: correctAnswer
     };
 
@@ -624,7 +624,7 @@ class QuizStateMachine {
 
     if (!isFrenchQuestion) {
       const questionElement = this.container.querySelector('.question');
-      const audioEmoji = this.createAudioEmoji(questionText);
+      const audioEmoji      = this.createAudioEmoji(questionText);
       questionElement.appendChild(audioEmoji);
     }
 
@@ -632,7 +632,7 @@ class QuizStateMachine {
     allChoices.forEach(choice => {
       const button = document.createElement('button');
       button.textContent = choice;
-      button.className = 'btn btn-outline btn-block choice-button';
+      button.className   = 'btn btn-outline btn-block choice-button';
       button.addEventListener('click', () => {
         const isCorrect = choice === correctAnswer;
 
@@ -668,8 +668,8 @@ class QuizStateMachine {
       return;
     }
 
-    const questionPair = this.wordQueue[0];
-    const questionText = isFrenchQuestion ? questionPair[0] : questionPair[1];
+    const questionPair  = this.wordQueue[0];
+    const questionText  = isFrenchQuestion ? questionPair[0] : questionPair[1];
     const correctAnswer = this.cleanWordForInput(isFrenchQuestion ? questionPair[1] : questionPair[0]);
 
     const directionText = isFrenchQuestion ? ' (FR→SK)' : ' (SK→FR)';
