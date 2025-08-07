@@ -904,8 +904,29 @@ class QuizStateMachine {
       // Only process when on reorder quiz
       if (this.getCurrentQuizType() !== QuizTypes.REORDER_LETTERS) return;
 
-      // Ignore modifiers and non-single-character keys
+      // Ignore modifiers
       if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+      // Enter validates (click submit if enabled)
+      if (event.key === 'Enter') {
+        const submitButton = this.container && this.container.querySelector('.submit-button');
+        if (submitButton && !submitButton.disabled) {
+          event.preventDefault();
+          submitButton.click();
+        }
+        return;
+      }
+
+      // Backspace removes last selected letter
+      if (event.key === 'Backspace') {
+        if (this.reorderSelectedLetters.length > 0) {
+          event.preventDefault();
+          this.removeLetterFromWord(this.reorderSelectedLetters.length - 1);
+        }
+        return;
+      }
+
+      // Non-character keys are ignored beyond this point
       if (event.key.length !== 1) return;
 
       const key = event.key.toLowerCase();
