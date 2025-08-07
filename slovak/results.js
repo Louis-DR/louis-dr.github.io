@@ -126,22 +126,29 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
             wordSets: new Set([wordSetName]), // Track word sets for this word pair
             totalQuestions: 0,
             totalErrors: 0,
+            totalAlmosts: 0,
             // Multiple choice stats
             frenchToSlovakMultipleChoiceQuestions: 0,
             frenchToSlovakMultipleChoiceErrors: 0,
+            frenchToSlovakMultipleChoiceAlmosts: 0,
             slovakToFrenchMultipleChoiceQuestions: 0,
             slovakToFrenchMultipleChoiceErrors: 0,
+            slovakToFrenchMultipleChoiceAlmosts: 0,
             // Typing stats
             frenchToSlovakTypingQuestions: 0,
             frenchToSlovakTypingErrors: 0,
+            frenchToSlovakTypingAlmosts: 0,
             slovakToFrenchTypingQuestions: 0,
             slovakToFrenchTypingErrors: 0,
+            slovakToFrenchTypingAlmosts: 0,
             // Reorder letters stats
             reorderLettersQuestions: 0,
             reorderLettersErrors: 0,
+            reorderLettersAlmosts: 0,
             // Matching stats
             matchingQuestions: 0,
-            matchingErrors: 0
+            matchingErrors: 0,
+            matchingAlmosts: 0
           });
         } else {
           // Add word set to existing word pair
@@ -156,49 +163,59 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
           const frenchToSlovakTotal = (wordData.french_to_slovak_successes || 0) + (wordData.french_to_slovak_failures || 0);
           stats.frenchToSlovakMultipleChoiceQuestions += frenchToSlovakTotal;
           stats.frenchToSlovakMultipleChoiceErrors += (wordData.french_to_slovak_failures || 0);
+          stats.frenchToSlovakMultipleChoiceAlmosts += (wordData.french_to_slovak_almosts || 0);
 
           // Aggregate Slovak to French multiple choice stats
           const slovakToFrenchTotal = (wordData.slovak_to_french_successes || 0) + (wordData.slovak_to_french_failures || 0);
           stats.slovakToFrenchMultipleChoiceQuestions += slovakToFrenchTotal;
           stats.slovakToFrenchMultipleChoiceErrors += (wordData.slovak_to_french_failures || 0);
+          stats.slovakToFrenchMultipleChoiceAlmosts += (wordData.slovak_to_french_almosts || 0);
 
           // Update totals
           stats.totalQuestions += frenchToSlovakTotal + slovakToFrenchTotal;
           stats.totalErrors += (wordData.french_to_slovak_failures || 0) + (wordData.slovak_to_french_failures || 0);
+          stats.totalAlmosts += (wordData.french_to_slovak_almosts || 0) + (wordData.slovak_to_french_almosts || 0);
 
         } else if (quizType === 'typing') {
           // Aggregate typing stats for both directions
           const frenchToSlovakTotal = (wordData.french_to_slovak_successes || 0) + (wordData.french_to_slovak_failures || 0);
           stats.frenchToSlovakTypingQuestions += frenchToSlovakTotal;
           stats.frenchToSlovakTypingErrors += (wordData.french_to_slovak_failures || 0);
+          stats.frenchToSlovakTypingAlmosts += (wordData.french_to_slovak_almosts || 0);
 
           const slovakToFrenchTotal = (wordData.slovak_to_french_successes || 0) + (wordData.slovak_to_french_failures || 0);
           stats.slovakToFrenchTypingQuestions += slovakToFrenchTotal;
           stats.slovakToFrenchTypingErrors += (wordData.slovak_to_french_failures || 0);
+          stats.slovakToFrenchTypingAlmosts += (wordData.slovak_to_french_almosts || 0);
 
           // Update totals
           stats.totalQuestions += frenchToSlovakTotal + slovakToFrenchTotal;
           stats.totalErrors += (wordData.french_to_slovak_failures || 0) + (wordData.slovak_to_french_failures || 0);
+          stats.totalAlmosts += (wordData.french_to_slovak_almosts || 0) + (wordData.slovak_to_french_almosts || 0);
 
         } else if (quizType === 'reorder_letters') {
           // Aggregate Reorder Letters stats (French to Slovak only)
           const reorderTotal = (wordData.french_to_slovak_successes || 0) + (wordData.french_to_slovak_failures || 0);
           stats.reorderLettersQuestions += reorderTotal;
           stats.reorderLettersErrors += (wordData.french_to_slovak_failures || 0);
+          stats.reorderLettersAlmosts += (wordData.french_to_slovak_almosts || 0);
 
           // Update totals
           stats.totalQuestions += reorderTotal;
           stats.totalErrors += (wordData.french_to_slovak_failures || 0);
+          stats.totalAlmosts += (wordData.french_to_slovak_almosts || 0);
 
         } else if (quizType === 'matching') {
           // Aggregate Matching stats
           const matchingTotal = (wordData.matching_successes || 0) + (wordData.matching_failures || 0);
           stats.matchingQuestions += matchingTotal;
           stats.matchingErrors += (wordData.matching_failures || 0);
+          stats.matchingAlmosts += (wordData.matching_almosts || 0);
 
           // Update totals
           stats.totalQuestions += matchingTotal;
           stats.totalErrors += (wordData.matching_failures || 0);
+          stats.totalAlmosts += (wordData.matching_almosts || 0);
         }
       });
     }
@@ -317,6 +334,7 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
     <th>FR→SK Réorganiser</th>
     <th>SK→FR Saisie</th>
     <th>FR→SK Saisie</th>
+    <th>Presque (Total)</th>
   `;
 
   // Table header styling is handled by CSS classes
@@ -364,6 +382,13 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
       ? wordStats.wordSets.join(', ')
       : wordStats.wordSets[0] || 'Unknown';
 
+    const totalAlmosts = (wordStats.matchingAlmosts || 0) +
+                        (wordStats.slovakToFrenchMultipleChoiceAlmosts || 0) +
+                        (wordStats.frenchToSlovakMultipleChoiceAlmosts || 0) +
+                        (wordStats.reorderLettersAlmosts || 0) +
+                        (wordStats.slovakToFrenchTypingAlmosts || 0) +
+                        (wordStats.frenchToSlovakTypingAlmosts || 0);
+
     row.innerHTML = `
       <td>${wordStats.frenchWord}</td>
       <td><strong>${wordStats.slovakWord}</strong></td>
@@ -376,6 +401,7 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
       <td>${reorderLettersSuccessRate}${reorderLettersSuccessRate !== '-' ? '%' : ''}</td>
       <td>${slovakToFrenchTypingSuccessRate}${slovakToFrenchTypingSuccessRate !== '-' ? '%' : ''}</td>
       <td>${frenchToSlovakTypingSuccessRate}${frenchToSlovakTypingSuccessRate !== '-' ? '%' : ''}</td>
+      <td>${totalAlmosts}</td>
     `;
 
     // Apply success rate colors (columns 3-9 are success rate columns)
@@ -862,6 +888,7 @@ function prepareDailyActivityData(allResults, filterWordSet = 'all') {
 
     let correctAnswers = 0;
     let incorrectAnswers = 0;
+    let almostAnswers = 0;
 
     // Process all quiz results for this day
     dayResults.forEach(entry => {
@@ -876,13 +903,17 @@ function prepareDailyActivityData(allResults, filterWordSet = 'all') {
         // Count all attempts across all quiz types
         const frenchToSlovakCorrect = wordData.french_to_slovak_successes || 0;
         const frenchToSlovakIncorrect = wordData.french_to_slovak_failures || 0;
+        const frenchToSlovakAlmost = wordData.french_to_slovak_almosts || 0;
         const slovakToFrenchCorrect = wordData.slovak_to_french_successes || 0;
         const slovakToFrenchIncorrect = wordData.slovak_to_french_failures || 0;
+        const slovakToFrenchAlmost = wordData.slovak_to_french_almosts || 0;
         const matchingCorrect = wordData.matching_successes || 0;
         const matchingIncorrect = wordData.matching_failures || 0;
+        const matchingAlmost = wordData.matching_almosts || 0;
 
         correctAnswers += frenchToSlovakCorrect + slovakToFrenchCorrect + matchingCorrect;
         incorrectAnswers += frenchToSlovakIncorrect + slovakToFrenchIncorrect + matchingIncorrect;
+        almostAnswers += frenchToSlovakAlmost + slovakToFrenchAlmost + matchingAlmost;
       });
     });
 
@@ -890,7 +921,8 @@ function prepareDailyActivityData(allResults, filterWordSet = 'all') {
       date: day,
       correct: correctAnswers,
       incorrect: incorrectAnswers,
-      total: correctAnswers + incorrectAnswers
+      almost: almostAnswers,
+      total: correctAnswers + incorrectAnswers + almostAnswers
     });
   });
 
@@ -955,6 +987,13 @@ function displayDailyActivityChart(activityData, filterWordSet = 'all') {
         borderWidth: 1
       },
       {
+        label: 'Presque',
+        data: activityData.dailyActivity.map(day => day.almost || 0),
+        backgroundColor: 'rgba(255, 193, 7, 0.8)',
+        borderColor: 'rgba(255, 193, 7, 1)',
+        borderWidth: 1
+      },
+      {
         label: 'Réponses Incorrectes',
         data: activityData.dailyActivity.map(day => day.incorrect),
         backgroundColor: 'rgba(220, 53, 69, 0.8)',
@@ -1006,7 +1045,8 @@ function displayDailyActivityChart(activityData, filterWordSet = 'all') {
               const dataIndex = tooltipItems[0].dataIndex;
               const dayData = activityData.dailyActivity[dataIndex];
               const successRate = dayData.total > 0 ? Math.round((dayData.correct / dayData.total) * 100) : 0;
-              return `Total: ${dayData.total} réponses (${successRate}% de réussite)`;
+              const almost = dayData.almost || 0;
+              return `Total: ${dayData.total} réponses (${successRate}% de réussite, ${almost} presque)`;
             }
           }
         }

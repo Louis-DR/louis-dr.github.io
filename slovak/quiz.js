@@ -84,6 +84,7 @@ class QuizStateMachine {
     this.matchingPairs           = {};
     this.reorderSelectedLetters  = [];
     this.reorderAvailableLetters = [];
+    this.reorderKeydownHandler   = null;
 
     // Initialize
     this.container               = null;
@@ -271,6 +272,10 @@ class QuizStateMachine {
     this.results[wordKey].attempts.push({
       direction: this.currentQuestion.direction,
       isCorrect: isCorrect,
+      // Optional fields for typing/reorder quizzes (may be undefined for other types)
+      isAlmost: this.currentQuestion.isAlmost,
+      mistakeMetric: this.currentQuestion.mistakeMetric,
+      userInput: typeof answer === 'string' ? answer : undefined,
       timestamp: getLocalTimestamp()
     });
 
@@ -559,18 +564,22 @@ class QuizStateMachine {
 
     switch (quizType) {
       case QuizTypes.MATCHING:
+        this.unbindReorderKeyboard();
         this.renderMatchingQuiz();
         break;
       case QuizTypes.MULTIPLE_CHOICE:
+        this.unbindReorderKeyboard();
         await this.renderMultipleChoiceQuiz();
         break;
       case QuizTypes.REORDER_LETTERS:
         await this.renderReorderQuiz();
         break;
       case QuizTypes.SLOVAK_TO_FRENCH_TYPING:
+        this.unbindReorderKeyboard();
         await this.renderTypingQuiz(false);
         break;
       case QuizTypes.FRENCH_TO_SLOVAK_TYPING:
+        this.unbindReorderKeyboard();
         await this.renderTypingQuiz(true);
         break;
     }
@@ -763,6 +772,13 @@ class QuizStateMachine {
       const userAnswer = this.cleanWordForInput(inputField.value.trim());
       const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
 
+      // Compute mistake metric and almost classification for typing
+      const mistakeMetric = this.computeMistakeMetric(userAnswer, correctAnswer);
+      const threshold = this.getAlmostThreshold(correctAnswer.length);
+      const isAlmost = !isCorrect && mistakeMetric <= threshold;
+      this.currentQuestion.mistakeMetric = mistakeMetric;
+      this.currentQuestion.isAlmost = isAlmost;
+
       inputField.disabled = true;
       submitButton.disabled = true;
 
@@ -838,16 +854,88 @@ class QuizStateMachine {
 
     this.updateReorderDisplay();
 
+    // Bind keyboard input for faster letter selection
+    this.bindReorderKeyboard();
+
     const submitButton = this.container.querySelector('.submit-button');
     submitButton.addEventListener('click', () => {
       const userAnswer = this.reorderSelectedLetters.join('');
       const isCorrect = userAnswer.toLowerCase() === slovakWord.toLowerCase();
+      // Compute mistake metric and almost classification for reorder letters
+      const mistakeMetric = this.computeMistakeMetric(userAnswer, slovakWord);
+      const threshold = this.getAlmostThreshold(slovakWord.length);
+      const isAlmost = !isCorrect && mistakeMetric <= threshold;
+      this.currentQuestion.mistakeMetric = mistakeMetric;
+      this.currentQuestion.isAlmost = isAlmost;
 
       submitButton.disabled = true;
       document.querySelectorAll('.reorder-letter-button, .reorder-letter-slot.filled').forEach(btn => btn.disabled = true);
 
       this.submitAnswer(userAnswer, isCorrect);
     });
+  }
+
+  // Map of base letters to preferred accented alternatives for Slovak
+  getAccentedAlternatives(baseLetter) {
+    const map = {
+      'a': ['á', 'ä'],
+      'c': ['č'],
+      'd': ['ď'],
+      'e': ['é'],
+      'i': ['í'],
+      'l': ['ĺ', 'ľ'],
+      'n': ['ň'],
+      'o': ['ó', 'ô'],
+      'r': ['ŕ'],
+      's': ['š'],
+      't': ['ť'],
+      'u': ['ú'],
+      'y': ['ý'],
+      'z': ['ž']
+    };
+    return map[baseLetter] || [];
+  }
+
+  bindReorderKeyboard() {
+    // Remove previous handler if any
+    this.unbindReorderKeyboard();
+
+    this.reorderKeydownHandler = (event) => {
+      // Only process when on reorder quiz
+      if (this.getCurrentQuizType() !== QuizTypes.REORDER_LETTERS) return;
+
+      // Ignore modifiers and non-single-character keys
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.key.length !== 1) return;
+
+      const key = event.key.toLowerCase();
+
+      // Try exact match first among available letters
+      let index = this.reorderAvailableLetters.findIndex(l => l.toLowerCase() === key);
+
+      // If not found, try accented alternatives for the base letter
+      if (index === -1) {
+        const alternatives = this.getAccentedAlternatives(key);
+        for (const alt of alternatives) {
+          index = this.reorderAvailableLetters.findIndex(l => l.toLowerCase() === alt.toLowerCase());
+          if (index !== -1) break;
+        }
+      }
+
+      if (index !== -1) {
+        event.preventDefault();
+        this.addLetterToWord(index);
+      }
+    };
+
+    document.addEventListener('keydown', this.reorderKeydownHandler);
+  }
+
+  unbindReorderKeyboard() {
+    if (this.reorderKeydownHandler) {
+      document.removeEventListener('keydown', this.reorderKeydownHandler);
+      this.reorderKeydownHandler = null;
+    }
   }
 
   showInlineFeedback(answer, isCorrect) {
@@ -934,8 +1022,10 @@ class QuizStateMachine {
         feedbackDiv.appendChild(audioEmoji);
       }
     } else {
+      const almostNote = this.currentQuestion.isAlmost ? ' (Presque)' : '';
+      const metricInfo = typeof this.currentQuestion.mistakeMetric === 'number' ? ` (écart: ${this.currentQuestion.mistakeMetric})` : '';
       feedbackDiv.innerHTML = `
-        <span class="feedback-error">✗ Incorrect</span><br>
+        <span class="feedback-error">✗ Incorrect${almostNote}${metricInfo}</span><br>
         <span class="feedback-info">Votre réponse: "${answer}"</span><br>
         <span class="feedback-info">Réponse correcte: "${this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer}"</span>
       `;
@@ -964,8 +1054,10 @@ class QuizStateMachine {
       const audioEmoji = this.createAudioEmoji(this.currentQuestion.originalCorrectAnswer, '10px');
       feedbackDiv.appendChild(audioEmoji);
   } else {
+      const almostNote = this.currentQuestion.isAlmost ? ' (Presque)' : '';
+      const metricInfo = typeof this.currentQuestion.mistakeMetric === 'number' ? ` (écart: ${this.currentQuestion.mistakeMetric})` : '';
       feedbackDiv.innerHTML = `
-        <span class="feedback-error">✗ Incorrect</span><br>
+        <span class="feedback-error">✗ Incorrect${almostNote}${metricInfo}</span><br>
         <span class="feedback-info">Réponse correcte: "${this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer}"</span>
       `;
 
@@ -1049,6 +1141,86 @@ class QuizStateMachine {
 
   cleanWordForInput(word) {
     return word.replace(/\s*\([^)]*\)\s*/g, '').trim();
+  }
+
+  // Compute mistake metric using accent-aware Damerau-Levenshtein
+  computeMistakeMetric(userInput, correct) {
+    const user = (userInput || '').toLowerCase();
+    const target = (correct || '').toLowerCase();
+    if (user === target) return 0;
+
+    const strip = (s) => s
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ľ|ĺ/g, 'l')
+      .replace(/ň/g, 'n')
+      .replace(/ŕ/g, 'r')
+      .replace(/š/g, 's')
+      .replace(/ť/g, 't')
+      .replace(/ž/g, 'z')
+      .replace(/ď/g, 'd')
+      .replace(/č/g, 'c')
+      .replace(/ý/g, 'y')
+      .replace(/á|ä/g, 'a')
+      .replace(/ó|ô/g, 'o');
+
+    const userBase = strip(user);
+    const targetBase = strip(target);
+
+    // Accent-only differences cost 1 per position
+    let accentDifferences = 0;
+    const minLen = Math.min(user.length, target.length);
+    for (let i = 0; i < minLen; i++) {
+      if (strip(user[i]) === strip(target[i]) && user[i] !== target[i]) {
+        accentDifferences++;
+      }
+    }
+
+    // Damerau-Levenshtein distance (unit cost) on base letters
+    const m = userBase.length;
+    const n = targetBase.length;
+    const dist = Array.from({ length: m + 2 }, () => new Array(n + 2).fill(0));
+    const maxDist = m + n;
+    dist[0][0] = maxDist;
+    for (let i = 0; i <= m; i++) {
+      dist[i + 1][1] = i;
+      dist[i + 1][0] = maxDist;
+    }
+    for (let j = 0; j <= n; j++) {
+      dist[1][j + 1] = j;
+      dist[0][j + 1] = maxDist;
+    }
+    const lastSeen = {};
+    for (let i = 1; i <= m; i++) {
+      let db = 0;
+      for (let j = 1; j <= n; j++) {
+        const i1 = lastSeen[targetBase[j - 1]] || 0;
+        const j1 = db;
+        const cost = userBase[i - 1] === targetBase[j - 1] ? 0 : 1; // substitution cost 1
+        if (cost === 0) db = j;
+        // substitution, insertion, deletion
+        dist[i + 1][j + 1] = Math.min(
+          dist[i][j] + cost,
+          dist[i + 1][j] + 1,
+          dist[i][j + 1] + 1,
+          // transposition
+          dist[i1][j1] + (i - i1 - 1) + 1 + (j - j1 - 1)
+        );
+      }
+      lastSeen[userBase[i - 1]] = i;
+    }
+    const baseOps = dist[m + 1][n + 1];
+
+    // Each base op (insert/delete/substitute/transposition) counts as 2; accents count as 1
+    return baseOps * 2 + accentDifferences;
+  }
+
+  // Determine dynamic threshold for considering an attempt as "almost"
+  getAlmostThreshold(correctLength) {
+    if (correctLength <= 3) return 1;
+    if (correctLength <= 5) return 2;
+    if (correctLength <= 8) return 3;
+    return 4;
   }
 
   cleanup() {
@@ -1401,15 +1573,18 @@ class QuizStateMachine {
     const attempts = wordData.attempts;
 
     const stats = {
-      french_to_slovak: { successes: 0, failures: 0 },
-        slovak_to_french: { successes: 0, failures: 0 },
-        matching: { successes: 0, failures: 0 }
+      french_to_slovak: { successes: 0, failures: 0, almosts: 0 },
+      slovak_to_french: { successes: 0, failures: 0, almosts: 0 },
+      matching: { successes: 0, failures: 0, almosts: 0 }
     };
 
     let wordErrors = 0;
     attempts.forEach(attempt => {
       if (attempt.isCorrect) {
         stats[attempt.direction].successes++;
+      } else if (attempt.isAlmost) {
+        stats[attempt.direction].almosts++;
+        wordErrors += 0.5; // almost counts as half incorrect for mastery
       } else {
         stats[attempt.direction].failures++;
         wordErrors++;
@@ -1424,10 +1599,13 @@ class QuizStateMachine {
         wordSetName: wordData.wordSetName || this.quizName, // Per-word word set name
         french_to_slovak_successes: stats.french_to_slovak.successes,
         french_to_slovak_failures: stats.french_to_slovak.failures,
+      french_to_slovak_almosts: stats.french_to_slovak.almosts,
         slovak_to_french_successes: stats.slovak_to_french.successes,
         slovak_to_french_failures: stats.slovak_to_french.failures,
+      slovak_to_french_almosts: stats.slovak_to_french.almosts,
         matching_successes: stats.matching.successes,
-        matching_failures: stats.matching.failures,
+      matching_failures: stats.matching.failures,
+      matching_almosts: stats.matching.almosts,
         totalAttempts: attempts.length,
         totalErrors: wordErrors
     });
