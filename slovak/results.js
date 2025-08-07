@@ -92,8 +92,22 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
       const quizType = result.quizType || 'unknown';
 
       result.words.forEach(wordData => {
-        const frenchWord = wordData.wordPair[0];
-        const slovakWord = wordData.wordPair[1];
+        // Handle both array and object formats for wordPair
+        let wordPairArray;
+        if (Array.isArray(wordData.wordPair)) {
+          wordPairArray = wordData.wordPair;
+        } else if (wordData.wordPair && typeof wordData.wordPair === 'object') {
+          wordPairArray = [wordData.wordPair[0] || wordData.wordPair["0"], wordData.wordPair[1] || wordData.wordPair["1"]];
+        } else {
+          return; // Skip if wordPair is invalid
+        }
+
+        if (!wordPairArray || wordPairArray.length < 2 || !wordPairArray[0] || !wordPairArray[1]) {
+          return; // Skip if wordPair is invalid
+        }
+
+        const frenchWord = wordPairArray[0];
+        const slovakWord = wordPairArray[1];
         const wordSetName = wordData.wordSetName || result.quizName || 'Unknown Set';
         const wordPairKey = `${frenchWord}|${slovakWord}`;
 
@@ -430,12 +444,25 @@ function prepareProgressionData(allResults, filterWordSet = 'all') {
   const timelineData = [];
 
   Object.values(allResults).forEach(result => {
-    if (result.completionTimestamp && result.words && Array.isArray(result.words)) {
-      const date = new Date(result.completionTimestamp);
+    if (result && result.words && Array.isArray(result.words)) {
+      const rawTs = result.completionTimestamp ?? result.timestamp ?? result.date;
+      if (!rawTs) {
+        return;
+      }
+
+      let date;
+      if (typeof rawTs === 'number') {
+        date = new Date(rawTs);
+      } else {
+        const tsString = String(rawTs);
+        // Normalize common non-ISO "YYYY-MM-DD HH:mm:ss" to ISO by inserting 'T'
+        const normalized = (tsString.includes(' ') && !tsString.includes('T')) ? tsString.replace(' ', 'T') : tsString;
+        date = new Date(normalized);
+      }
 
       // Check for invalid date
       if (isNaN(date.getTime())) {
-        console.warn('Invalid timestamp found in progression data:', result.completionTimestamp);
+        console.warn('Invalid timestamp found in progression data:', rawTs);
         return; // Skip this result
       }
 
@@ -445,6 +472,7 @@ function prepareProgressionData(allResults, filterWordSet = 'all') {
         date: dayKey,
         timestamp: date.getTime(),
         quizType: result.quizType || 'unknown',
+        quizName: result.quizName || 'Unknown Quiz',
         words: result.words
       });
     }
@@ -461,8 +489,16 @@ function prepareProgressionData(allResults, filterWordSet = 'all') {
   const allWordPairs = new Set();
   timelineData.forEach(entry => {
     entry.words.forEach(wordData => {
-      if (wordData.wordPair && wordData.wordPair.length >= 2) {
-        const wordPairKey = `${wordData.wordPair[0]}|${wordData.wordPair[1]}`;
+      // Handle both array and object formats for wordPair
+      let wordPairArray;
+      if (Array.isArray(wordData.wordPair)) {
+        wordPairArray = wordData.wordPair;
+      } else if (wordData.wordPair && typeof wordData.wordPair === 'object') {
+        wordPairArray = [wordData.wordPair[0] || wordData.wordPair["0"], wordData.wordPair[1] || wordData.wordPair["1"]];
+      }
+
+      if (wordPairArray && wordPairArray.length >= 2 && wordPairArray[0] && wordPairArray[1]) {
+        const wordPairKey = `${wordPairArray[0]}|${wordPairArray[1]}`;
         allWordPairs.add(wordPairKey);
       }
     });
@@ -484,6 +520,9 @@ function prepareProgressionData(allResults, filterWordSet = 'all') {
   // Calculate cumulative word stats for each day
   const dailyStats = [];
 
+  console.log(`prepareProgressionData: Processing ${dateRange.length} days for filter "${filterWordSet}"`);
+  console.log(`prepareProgressionData: Timeline data has ${timelineData.length} entries`);
+
   dateRange.forEach(day => {
     // Get all quiz results up to and including this day
     const resultsUpToThisDay = timelineData.filter(entry => entry.date <= day);
@@ -494,15 +533,31 @@ function prepareProgressionData(allResults, filterWordSet = 'all') {
     // Process all results up to this day to find which words have been seen
     resultsUpToThisDay.forEach(entry => {
       entry.words.forEach(wordData => {
-        if (wordData.wordPair && wordData.wordPair.length >= 2) {
+        // Handle both array and object formats for wordPair
+        let wordPairArray;
+        if (Array.isArray(wordData.wordPair)) {
+          wordPairArray = wordData.wordPair;
+        } else if (wordData.wordPair && typeof wordData.wordPair === 'object') {
+          // Handle object format: {"0": "French", "1": "Slovak", "wordSetName": "..."}
+          wordPairArray = [wordData.wordPair[0] || wordData.wordPair["0"], wordData.wordPair[1] || wordData.wordPair["1"]];
+        } else {
+          return; // Skip if wordPair is invalid
+        }
+
+        if (wordPairArray && wordPairArray.length >= 2 && wordPairArray[0] && wordPairArray[1]) {
           const wordSetName = wordData.wordSetName || entry.quizName || 'Unknown Set';
+
+          // Debug logging for filtering
+          if (day === dateRange[dateRange.length - 1]) { // Only log for the last day to avoid spam
+            console.log(`prepareProgressionData: Word ${wordPairArray[1]}, wordSetName: "${wordSetName}", filter: "${filterWordSet}", matches: ${filterWordSet === 'all' || wordSetName === filterWordSet}`);
+          }
 
           // Apply filter if specified
           if (filterWordSet && filterWordSet !== 'all' && wordSetName !== filterWordSet) {
             return; // Skip this word if it doesn't match the filter
           }
 
-          const wordPairKey = `${wordData.wordPair[0]}|${wordData.wordPair[1]}`;
+          const wordPairKey = `${wordPairArray[0]}|${wordPairArray[1]}`;
 
           // Initialize word stats if we haven't seen this word before
           if (!cumulativeWordStats.has(wordPairKey)) {
@@ -554,12 +609,17 @@ function prepareProgressionData(allResults, filterWordSet = 'all') {
       }
     });
 
+    const dayTotal = masteredCount + learningCount + strugglingCount;
+    if (day === dateRange[dateRange.length - 1]) { // Only log for the last day
+      console.log(`prepareProgressionData: Day ${day} stats - Mastered: ${masteredCount}, Learning: ${learningCount}, Struggling: ${strugglingCount}, Total: ${dayTotal}`);
+    }
+
     dailyStats.push({
       date: day,
       mastered: masteredCount,
       learning: learningCount,
       struggling: strugglingCount,
-      total: masteredCount + learningCount + strugglingCount
+      total: dayTotal
     });
   });
 
@@ -741,12 +801,24 @@ function prepareDailyActivityData(allResults, filterWordSet = 'all') {
   const timelineData = [];
 
   Object.values(allResults).forEach(result => {
-    if (result.completionTimestamp && result.words && Array.isArray(result.words)) {
-      const date = new Date(result.completionTimestamp);
+    if (result && result.words && Array.isArray(result.words)) {
+      const rawTs = result.completionTimestamp ?? result.timestamp ?? result.date;
+      if (!rawTs) {
+        return;
+      }
+
+      let date;
+      if (typeof rawTs === 'number') {
+        date = new Date(rawTs);
+      } else {
+        const tsString = String(rawTs);
+        const normalized = (tsString.includes(' ') && !tsString.includes('T')) ? tsString.replace(' ', 'T') : tsString;
+        date = new Date(normalized);
+      }
 
       // Check for invalid date
       if (isNaN(date.getTime())) {
-        console.warn('Invalid timestamp found in activity data:', result.completionTimestamp);
+        console.warn('Invalid timestamp found in activity data:', rawTs);
         return; // Skip this result
       }
 
@@ -755,6 +827,7 @@ function prepareDailyActivityData(allResults, filterWordSet = 'all') {
       timelineData.push({
         date: dayKey,
         timestamp: date.getTime(),
+        quizName: result.quizName || 'Unknown Quiz',
         words: result.words
       });
     }

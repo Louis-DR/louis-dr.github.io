@@ -166,7 +166,7 @@ class QuizStateMachine {
         if (user) {
           console.log("User is signed in:", user.displayName);
           await this.initializeAdaptiveQuiz();
-        } else {
+  } else {
           console.log("User is signed out.");
           this.renderLoginScreen();
         }
@@ -231,11 +231,11 @@ class QuizStateMachine {
     this.selectedWordPairs.forEach(pair => {
       const wordKey = pair[1];
       this.results[wordKey] = {
-        wordPair: pair,
+      wordPair: pair,
         wordSetName: pair.wordSetName || this.quizName, // Track per-word word set name
-        attempts: []
-      };
-    });
+      attempts: []
+    };
+  });
 
     await this.transition(QuizStates.QUIZ_ACTIVE);
   }
@@ -279,7 +279,7 @@ class QuizStateMachine {
     if (isCorrect) {
       this.correctAnswers++;
       this.wordQueue.shift(); // Remove from queue
-    } else {
+  } else {
       // Move to back of queue
       const incorrectPair = this.wordQueue.shift();
       this.wordQueue.push(incorrectPair);
