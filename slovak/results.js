@@ -143,7 +143,10 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
 
         const frenchWord  = wordPairArray[0];
         const slovakWord  = wordPairArray[1];
-        const wordSetName = wordData.wordSetName || result.quizName || 'Unknown Set';
+        const rawSetName  = wordData.wordSetName || result.quizName || 'Unknown Set';
+        const wordSetName = (window.SlovakData && typeof window.SlovakData.normalizeWordSetName === 'function')
+          ? window.SlovakData.normalizeWordSetName(rawSetName)
+          : rawSetName;
         const wordPairKey = `${frenchWord}|${slovakWord}`;
 
         // Track all word sets
@@ -709,8 +712,9 @@ function displayProgressionChart(progressionData, filterWordSet = 'all') {
           mode: 'index',
           intersect: false,
           callbacks: {
-            afterLabel: function(context) {
-              const dayData = progressionData.dailyStats[context.dataIndex];
+            footer: function(tooltipItems) {
+              const dataIndex = tooltipItems[0].dataIndex;
+              const dayData = progressionData.dailyStats[dataIndex];
               return `Total: ${dayData.total} mots`;
             }
           }
@@ -832,7 +836,10 @@ function prepareDailyActivityData(allResults, filterWordSet = 'all') {
     // Process all quiz results for this day
     dayResults.forEach(entry => {
       entry.words.forEach(wordData => {
-        const wordSetName = wordData.wordSetName || entry.quizName || 'Unknown Set';
+        const rawSetName  = wordData.wordSetName || entry.quizName || 'Unknown Set';
+        const wordSetName = (window.SlovakData && typeof window.SlovakData.normalizeWordSetName === 'function')
+          ? window.SlovakData.normalizeWordSetName(rawSetName)
+          : rawSetName;
 
         // Apply filter if specified
         if (filterWordSet && filterWordSet !== 'all' && wordSetName !== filterWordSet) {

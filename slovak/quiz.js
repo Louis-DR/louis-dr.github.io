@@ -285,11 +285,14 @@ class QuizStateMachine {
     this.selectedWordPairs.forEach(pair => {
       const wordKey = pair[1];
       this.results[wordKey] = {
-      wordPair: pair,
-        wordSetName: pair.wordSetName || this.quizName, // Track per-word word set name
-      attempts: []
-    };
-  });
+        wordPair: pair,
+        // Track per-word word set name (normalize to strip adaptive suffixes if helper exists)
+        wordSetName: (window.SlovakData && typeof window.SlovakData.normalizeWordSetName === 'function')
+          ? window.SlovakData.normalizeWordSetName(pair.wordSetName || this.quizName)
+          : (pair.wordSetName || this.quizName),
+        attempts: []
+      };
+    });
 
     await this.transition(QuizStates.QUIZ_ACTIVE);
   }
@@ -579,7 +582,6 @@ class QuizStateMachine {
             selectedWordPairs      = shuffledMastered.slice(0, Math.min(maxWords, selectionPool.length));
             enabledQuizTypes       = [QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
             this.selectionMode     = 'mastered';
-            this.quizName          = `${this.quizName} - Vérification des acquis`;
             break;
           case 'learning':
             // Limit to maxWords and use all quiz types for learning words
@@ -588,7 +590,6 @@ class QuizStateMachine {
             selectedWordPairs      = shuffledLearning.slice(0, Math.min(maxWords, selectionPool.length));
             enabledQuizTypes       = this.enabledQuizTypes; // Use default enabled quiz types
             this.selectionMode     = 'learning';
-            this.quizName          = `${this.quizName} - Consolidation de l'apprentissage`;
             break;
           case 'struggling':
             // Limit to maxWords and use all quiz types for struggling words
@@ -597,7 +598,6 @@ class QuizStateMachine {
             selectedWordPairs        = shuffledStruggling.slice(0, Math.min(maxWords, selectionPool.length));
             enabledQuizTypes         = this.enabledQuizTypes; // Use default enabled quiz types
             this.selectionMode       = 'struggling';
-            this.quizName            = `${this.quizName} - Correction des lacunes`;
             break;
         }
 
@@ -1646,10 +1646,14 @@ class QuizStateMachine {
 
     totalErrors += wordErrors;
 
+    const normalizedSetName = (window.SlovakData && typeof window.SlovakData.normalizeWordSetName === 'function')
+      ? window.SlovakData.normalizeWordSetName(wordData.wordSetName || this.quizName)
+      : (wordData.wordSetName || this.quizName);
+
     wordResults.push({
         word: wordKey,
         wordPair: wordData.wordPair,
-        wordSetName: wordData.wordSetName || this.quizName, // Per-word word set name
+        wordSetName: normalizedSetName,
         french_to_slovak_successes: stats.french_to_slovak.successes,
         french_to_slovak_failures: stats.french_to_slovak.failures,
       french_to_slovak_almosts: stats.french_to_slovak.almosts,

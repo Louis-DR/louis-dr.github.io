@@ -103,11 +103,15 @@
     const minStruggling  = thresholds.minStruggling  ??  1;
     const strugglingRate = thresholds.strugglingRate ?? 70;
 
-    const masteryAttempts = node.masteryTyping.filter(a => a.t <= dayTs).slice(-masteredStreak);
-    const isMastered = masteryAttempts.length === masteredStreak && masteryAttempts.every(a => a.ok === true);
-    if (isMastered) return 'mastered';
-
+    // Overall rolling performance up to this day (with almost = 0.5 weighting)
     const { total, successRate } = computeWindowStats(node.attempts, dayTs, windowSize);
+    const qualifiesMasteringOverall = (total >= minMastering) && (successRate >= masteringRate);
+
+    // Mastered requires BOTH: recent perfect mastery streak AND overall qualifies for mastering
+    const masteryAttempts = node.masteryTyping.filter(a => a.t <= dayTs).slice(-masteredStreak);
+    const hasPerfectMasteryStreak = masteryAttempts.length === masteredStreak && masteryAttempts.every(a => a.ok === true);
+    if (hasPerfectMasteryStreak && qualifiesMasteringOverall) return 'mastered';
+
     if (total >= minMastering  && successRate >= masteringRate) return 'mastering';
     if (total >= minStruggling && successRate < strugglingRate) return 'struggling';
     return 'learning';
@@ -148,7 +152,9 @@
     computeDailyCounts,
     computeRecentMasteryRatePerWord,
     localDateKeyFromTs,
-    endOfLocalDayTs
+    endOfLocalDayTs,
+    // Expose normalized set name helper under a stable API used by UI code
+    normalizeWordSetName: normalizeSetName
   };
 })();
 
