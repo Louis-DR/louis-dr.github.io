@@ -147,19 +147,25 @@
 }
 
 .feedback-success {
-  color: #155724;
+  color: hsl(130, 60%, 30%);
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.feedback-almost {
+  color: hsl(45, 100%, 30%);
   font-weight: bold;
   font-size: 18px;
 }
 
 .feedback-error {
-  color: #721c24;
+  color: hsl(0, 60%, 40%);
   font-weight: bold;
   font-size: 18px;
 }
 
 .feedback-info {
-  color: #495057;
+  color: hsl(210, 10%, 30%);
   font-style: italic;
   margin-top: 5px;
   display: inline-block;
@@ -293,6 +299,11 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
+.adaptive-quiz-menu .btn-outline small {
+  font-weight: normal;
+  color: rgba(0, 0, 0, 0.5);
+}
+
 .btn-danger {
   color: white;
   background-color: #dc3545;
@@ -300,7 +311,7 @@
 }
 
 .btn-danger:hover:not(:disabled) {
-  background-color: #c82333;
+  background-color: #c82555;
   border-color: #bd2130;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);

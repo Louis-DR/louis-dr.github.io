@@ -122,6 +122,7 @@ class QuizStateMachine {
     this.reorderSelectedLetters  = [];
     this.reorderAvailableLetters = [];
     this.reorderKeydownHandler   = null;
+    this.activeAdaptivePool      = null;
 
     // Initialize
     this.container               = null;
@@ -262,10 +263,14 @@ class QuizStateMachine {
     // Select words for this quiz session
     if (selectedWordPairs) {
       this.selectedWordPairs = selectedWordPairs;
-  } else {
-      const maxPairs = Math.min(maxWords, this.wordPairs.length);
-      const shuffledPairs    = this.shuffleArray([...this.wordPairs]);
-      this.selectedWordPairs = shuffledPairs.slice(0, maxPairs);
+    } else if (Array.isArray(this.activeAdaptivePool) && this.activeAdaptivePool.length > 0) {
+      const maxPairs = Math.min(maxWords, this.activeAdaptivePool.length);
+      const shuffled = this.shuffleArray([...this.activeAdaptivePool]);
+      this.selectedWordPairs = shuffled.slice(0, maxPairs);
+    } else {
+      const fallbackMax = Math.min(maxWords, this.wordPairs.length);
+      const shuffledPairs = this.shuffleArray([...this.wordPairs]);
+      this.selectedWordPairs = shuffledPairs.slice(0, fallbackMax);
     }
 
     // Reset quiz state
@@ -526,21 +531,21 @@ class QuizStateMachine {
           <button class="btn btn-success btn-lg adaptive-option" data-mode="mastered" ${masteredOrMasteringCount === 0 ? 'disabled' : ''}>
             🎯 Vérifier les acquis
             <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
-              ${masteredOrMasteringCount} mot(s) à perfectionner (Maîtrisés + En maîtrise)
+              ${masteredOrMasteringCount} mot(s) en maîtrise • Taux de réussite >90%
             </small>
           </button>
 
           <button class="btn btn-primary btn-lg adaptive-option" data-mode="learning" ${categories.learning.length === 0 ? 'disabled' : ''}>
             📚 Consolider l'apprentissage
             <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
-              ${categories.learning.length} mot(s) en apprentissage • Taux de réussite 65-90%
+              ${categories.learning.length} mot(s) en apprentissage • Taux de réussite 70-90%
             </small>
           </button>
 
           <button class="btn btn-danger btn-lg adaptive-option" data-mode="struggling" ${categories.struggling.length === 0 ? 'disabled' : ''}>
             🔥 Corriger les lacunes
             <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
-              ${categories.struggling.length} mot(s) difficile(s) • Taux de réussite <65%
+              ${categories.struggling.length} mot(s) difficile(s) • Taux de réussite <70%
             </small>
           </button>
         </div>
@@ -553,12 +558,14 @@ class QuizStateMachine {
         const mode = event.currentTarget.dataset.mode;
         let selectedWordPairs;
         let enabledQuizTypes;
+        let selectionPool;
 
         switch (mode) {
           case 'all':
             // Use all available word pairs
-            const maxPairs = Math.min(maxWords, this.wordPairs.length);
-            const shuffledAll = this.shuffleArray([...this.wordPairs]);
+            selectionPool = [...this.wordPairs];
+            const maxPairs = Math.min(maxWords, selectionPool.length);
+            const shuffledAll = this.shuffleArray(selectionPool);
             selectedWordPairs = shuffledAll.slice(0, maxPairs);
             enabledQuizTypes  = this.enabledQuizTypes; // Use default enabled quiz types
             this.selectionMode = 'all';
@@ -567,24 +574,27 @@ class QuizStateMachine {
           case 'mastered':
             // Limit to maxWords and use only typing quizzes for mastered OR mastering words
             const masteredOrMastering = [...(categories.mastered || []), ...(categories.mastering || [])];
-            const shuffledMastered = this.shuffleArray(masteredOrMastering);
-            selectedWordPairs      = shuffledMastered.slice(0, Math.min(maxWords, masteredOrMastering.length));
+            selectionPool = masteredOrMastering;
+            const shuffledMastered = this.shuffleArray(selectionPool);
+            selectedWordPairs      = shuffledMastered.slice(0, Math.min(maxWords, selectionPool.length));
             enabledQuizTypes       = [QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
             this.selectionMode     = 'mastered';
             this.quizName          = `${this.quizName} - Vérification des acquis`;
             break;
           case 'learning':
             // Limit to maxWords and use all quiz types for learning words
-            const shuffledLearning = this.shuffleArray([...categories.learning]);
-            selectedWordPairs      = shuffledLearning.slice(0, Math.min(maxWords, categories.learning.length));
+            selectionPool = [...categories.learning];
+            const shuffledLearning = this.shuffleArray(selectionPool);
+            selectedWordPairs      = shuffledLearning.slice(0, Math.min(maxWords, selectionPool.length));
             enabledQuizTypes       = this.enabledQuizTypes; // Use default enabled quiz types
             this.selectionMode     = 'learning';
             this.quizName          = `${this.quizName} - Consolidation de l'apprentissage`;
             break;
           case 'struggling':
             // Limit to maxWords and use all quiz types for struggling words
-            const shuffledStruggling = this.shuffleArray([...categories.struggling]);
-            selectedWordPairs        = shuffledStruggling.slice(0, Math.min(maxWords, categories.struggling.length));
+            selectionPool = [...categories.struggling];
+            const shuffledStruggling = this.shuffleArray(selectionPool);
+            selectedWordPairs        = shuffledStruggling.slice(0, Math.min(maxWords, selectionPool.length));
             enabledQuizTypes         = this.enabledQuizTypes; // Use default enabled quiz types
             this.selectionMode       = 'struggling';
             this.quizName            = `${this.quizName} - Correction des lacunes`;
@@ -601,6 +611,8 @@ class QuizStateMachine {
 
         // Update enabled quiz types for this session
         this.enabledQuizTypes = enabledQuizTypes;
+        // Remember current adaptive selection pool for restarts
+        this.activeAdaptivePool = Array.isArray(selectionPool) ? selectionPool : null;
         await this.startQuiz(selectedWordPairs);
       });
     });
@@ -1093,10 +1105,11 @@ class QuizStateMachine {
         feedbackDiv.appendChild(audioEmoji);
       }
     } else {
-      const almostNote = this.currentQuestion.isAlmost ? ' (Presque)' : '';
-      const metricInfo = typeof this.currentQuestion.mistakeMetric === 'number' ? ` (écart: ${this.currentQuestion.mistakeMetric})` : '';
+      const feedbackClass   = this.currentQuestion.isAlmost ? 'feedback-almost' : 'feedback-error';
+      const feedbackMessage = this.currentQuestion.isAlmost ? 'Presque' : 'Incorrect';
+      const metricInfo      = typeof this.currentQuestion.mistakeMetric === 'number' ? ` (écart: ${this.currentQuestion.mistakeMetric})` : '';
       feedbackDiv.innerHTML = `
-        <span class="feedback-error">✗ Incorrect${almostNote}${metricInfo}</span><br>
+        <span class="${feedbackClass}">✗ ${feedbackMessage}${metricInfo}</span><br>
         <span class="feedback-info">Votre réponse: "${answer}"</span><br>
         <span class="feedback-info">Réponse correcte: "${this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer}"</span>
       `;

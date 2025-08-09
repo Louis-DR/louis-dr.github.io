@@ -11,9 +11,9 @@
   }
 
   function localDateKeyFromTs(ts) {
-    const d = new Date(ts);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const d   = new Date(ts);
+    const y   = d.getFullYear();
+    const m   = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
   }
@@ -49,8 +49,8 @@
     })).sort((a, b) => a._ts - b._ts);
 
     const pushAttempts = (arr, ts, s, a, f) => {
-      for (let i = 0; i < (s || 0); i++) arr.push({ t: ts, ok: true, almost: false });
-      for (let i = 0; i < (a || 0); i++) arr.push({ t: ts, ok: false, almost: true });
+      for (let i = 0; i < (s || 0); i++) arr.push({ t: ts, ok: true,  almost: false });
+      for (let i = 0; i < (a || 0); i++) arr.push({ t: ts, ok: false, almost: true  });
       for (let i = 0; i < (f || 0); i++) arr.push({ t: ts, ok: false, almost: false });
     };
 
@@ -69,7 +69,7 @@
 
         pushAttempts(node.attempts, ts, wordData.french_to_slovak_successes, wordData.french_to_slovak_almosts, wordData.french_to_slovak_failures);
         pushAttempts(node.attempts, ts, wordData.slovak_to_french_successes, wordData.slovak_to_french_almosts, wordData.slovak_to_french_failures);
-        pushAttempts(node.attempts, ts, wordData.matching_successes, wordData.matching_almosts, wordData.matching_failures);
+        pushAttempts(node.attempts, ts, wordData.matching_successes,         wordData.matching_almosts,         wordData.matching_failures);
 
         if (isMasteryTyping) {
           pushAttempts(node.masteryTyping, ts, wordData.french_to_slovak_successes, wordData.french_to_slovak_almosts, wordData.french_to_slovak_failures);
@@ -83,11 +83,11 @@
 
   // Compute window stats for last N attempts up to dayTs
   function computeWindowStats(attempts, dayTs, windowSize) {
-    const upto = attempts.filter(a => a.t <= dayTs);
-    const window = upto.slice(-windowSize);
-    const total = window.length;
+    const upto              = attempts.filter(a => a.t <= dayTs);
+    const window            = upto.slice(-windowSize);
+    const total             = window.length;
     const incorrectWeighted = window.reduce((acc, a) => acc + (!a.ok ? (a.almost ? 0.5 : 1) : 0), 0);
-    const successRate = total > 0 ? ((total - incorrectWeighted) / total) * 100 : 0;
+    const successRate       = total > 0 ? ((total - incorrectWeighted) / total) * 100 : 0;
     return { total, successRate };
   }
 
@@ -96,11 +96,11 @@
     // Only count words that have appeared by this day
     const appearedAttempts = node.attempts.filter(a => a.t <= dayTs);
     if (appearedAttempts.length === 0) return null;
-    const masteredStreak = thresholds.masteredStreak || 4;
-    const windowSize = thresholds.windowSize || 20;
-    const minMastering = thresholds.minMastering ?? 5;
-    const masteringRate = thresholds.masteringRate ?? 90;
-    const minStruggling = thresholds.minStruggling ?? 1;
+    const masteredStreak = thresholds.masteredStreak ||  4;
+    const windowSize     = thresholds.windowSize     || 20;
+    const minMastering   = thresholds.minMastering   ??  5;
+    const masteringRate  = thresholds.masteringRate  ?? 90;
+    const minStruggling  = thresholds.minStruggling  ??  1;
     const strugglingRate = thresholds.strugglingRate ?? 70;
 
     const masteryAttempts = node.masteryTyping.filter(a => a.t <= dayTs).slice(-masteredStreak);
@@ -108,7 +108,7 @@
     if (isMastered) return 'mastered';
 
     const { total, successRate } = computeWindowStats(node.attempts, dayTs, windowSize);
-    if (total >= minMastering && successRate >= masteringRate) return 'mastering';
+    if (total >= minMastering  && successRate >= masteringRate) return 'mastering';
     if (total >= minStruggling && successRate < strugglingRate) return 'struggling';
     return 'learning';
   }
@@ -118,8 +118,8 @@
     perWord.forEach(node => {
       const cat = categorizeWordByCriteria(node, dayTs, thresholds, filterWordSet);
       if (!cat) return;
-      if (cat === 'mastered') mastered++;
-      else if (cat === 'mastering') mastering++;
+      if      (cat === 'mastered')   mastered++;
+      else if (cat === 'mastering')  mastering++;
       else if (cat === 'struggling') struggling++;
       else learning++;
     });
@@ -132,7 +132,7 @@
       const last4 = node.masteryTyping.slice(-4);
       const total = last4.length;
       const score = last4.reduce((s, a) => s + (a.ok ? 1 : (a.almost ? 0.5 : 0)), 0);
-      const rate = total > 0 ? (score / total) * 100 : null;
+      const rate  = total > 0 ? (score / total) * 100 : null;
       result.set(key, { total, rate });
     });
     return result;

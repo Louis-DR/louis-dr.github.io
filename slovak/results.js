@@ -14,7 +14,7 @@ const firebaseConfig = {
 // Firebase app and database - will be initialized when needed
 let firebaseApp = null;
 let database    = null;
-let auth = null;
+let auth        = null;
 let currentUser = null;
 
 // Ensure shared data helpers are present
@@ -23,13 +23,13 @@ async function ensureDataHelpersLoaded() {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector('script[src$="data.js"]');
     if (existing) {
-      existing.addEventListener('load', () => resolve(true));
+      existing.addEventListener('load',  () => resolve(true));
       existing.addEventListener('error', () => reject(new Error('Failed to load data.js')));
       return;
     }
     const script = document.createElement('script');
     script.src = 'data.js';
-    script.onload = () => resolve(true);
+    script.onload  = () => resolve(true);
     script.onerror = () => reject(new Error('Failed to load data.js'));
     document.head.appendChild(script);
   });
@@ -47,12 +47,12 @@ async function initializeFirebase() {
     // Dynamic imports to avoid CORS issues with file:// protocol
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
     const { getDatabase }   = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
-    const { getAuth } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js");
+    const { getAuth }       = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js");
 
     // Initialize Firebase app and database
     firebaseApp = initializeApp(firebaseConfig);
     database    = getDatabase(firebaseApp);
-    auth = getAuth(firebaseApp);
+    auth        = getAuth(firebaseApp);
 
     console.log("Firebase initialized successfully for results");
   } catch (error) {
@@ -101,7 +101,7 @@ async function fetchAllResults() {
  * Aggregate word pair statistics from all quiz results
  */
 function aggregateWordPairStats(allResults, filterWordSet = null) {
-  const wordStats = new Map();
+  const wordStats   = new Map();
   const allWordSets = new Set(); // Track all unique word sets
 
   // Build a time-ordered list of results to compute recent mastery typing rates
@@ -109,10 +109,10 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
     .map(r => ({
       ...r,
       _ts: (() => {
-        const raw = r.completionTimestamp || r.timestamp || r.date;
-        const str = typeof raw === 'number' ? new Date(raw).toISOString() : String(raw || '');
+        const raw        = r.completionTimestamp || r.timestamp || r.date;
+        const str        = typeof raw === 'number' ? new Date(raw).toISOString() : String(raw || '');
         const normalized = (str.includes(' ') && !str.includes('T')) ? str.replace(' ', 'T') : str;
-        const d = new Date(normalized);
+        const d          = new Date(normalized);
         return isNaN(d.getTime()) ? 0 : d.getTime();
       })()
     }))
@@ -141,8 +141,8 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
           return; // Skip if wordPair is invalid
         }
 
-        const frenchWord = wordPairArray[0];
-        const slovakWord = wordPairArray[1];
+        const frenchWord  = wordPairArray[0];
+        const slovakWord  = wordPairArray[1];
         const wordSetName = wordData.wordSetName || result.quizName || 'Unknown Set';
         const wordPairKey = `${frenchWord}|${slovakWord}`;
 
@@ -197,60 +197,60 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
           // Aggregate French to Slovak multiple choice stats
           const frenchToSlovakTotal = (wordData.french_to_slovak_successes || 0) + (wordData.french_to_slovak_failures || 0);
           stats.frenchToSlovakMultipleChoiceQuestions += frenchToSlovakTotal;
-          stats.frenchToSlovakMultipleChoiceErrors += (wordData.french_to_slovak_failures || 0);
-          stats.frenchToSlovakMultipleChoiceAlmosts += (wordData.french_to_slovak_almosts || 0);
+          stats.frenchToSlovakMultipleChoiceErrors    += (wordData.french_to_slovak_failures || 0);
+          stats.frenchToSlovakMultipleChoiceAlmosts   += (wordData.french_to_slovak_almosts  || 0);
 
           // Aggregate Slovak to French multiple choice stats
           const slovakToFrenchTotal = (wordData.slovak_to_french_successes || 0) + (wordData.slovak_to_french_failures || 0);
           stats.slovakToFrenchMultipleChoiceQuestions += slovakToFrenchTotal;
-          stats.slovakToFrenchMultipleChoiceErrors += (wordData.slovak_to_french_failures || 0);
-          stats.slovakToFrenchMultipleChoiceAlmosts += (wordData.slovak_to_french_almosts || 0);
+          stats.slovakToFrenchMultipleChoiceErrors    += (wordData.slovak_to_french_failures || 0);
+          stats.slovakToFrenchMultipleChoiceAlmosts   += (wordData.slovak_to_french_almosts  || 0);
 
           // Update totals
           stats.totalQuestions += frenchToSlovakTotal + slovakToFrenchTotal;
-          stats.totalErrors += (wordData.french_to_slovak_failures || 0) + (wordData.slovak_to_french_failures || 0);
-          stats.totalAlmosts += (wordData.french_to_slovak_almosts || 0) + (wordData.slovak_to_french_almosts || 0);
+          stats.totalErrors    += (wordData.french_to_slovak_failures || 0) + (wordData.slovak_to_french_failures || 0);
+          stats.totalAlmosts   += (wordData.french_to_slovak_almosts  || 0) + (wordData.slovak_to_french_almosts  || 0);
 
         } else if (quizType === 'typing') {
           // Aggregate typing stats for both directions
           const frenchToSlovakTotal = (wordData.french_to_slovak_successes || 0) + (wordData.french_to_slovak_failures || 0);
           stats.frenchToSlovakTypingQuestions += frenchToSlovakTotal;
-          stats.frenchToSlovakTypingErrors += (wordData.french_to_slovak_failures || 0);
-          stats.frenchToSlovakTypingAlmosts += (wordData.french_to_slovak_almosts || 0);
+          stats.frenchToSlovakTypingErrors    += (wordData.french_to_slovak_failures || 0);
+          stats.frenchToSlovakTypingAlmosts   += (wordData.french_to_slovak_almosts  || 0);
 
           const slovakToFrenchTotal = (wordData.slovak_to_french_successes || 0) + (wordData.slovak_to_french_failures || 0);
           stats.slovakToFrenchTypingQuestions += slovakToFrenchTotal;
-          stats.slovakToFrenchTypingErrors += (wordData.slovak_to_french_failures || 0);
-          stats.slovakToFrenchTypingAlmosts += (wordData.slovak_to_french_almosts || 0);
+          stats.slovakToFrenchTypingErrors    += (wordData.slovak_to_french_failures || 0);
+          stats.slovakToFrenchTypingAlmosts   += (wordData.slovak_to_french_almosts  || 0);
 
           // Update totals
           stats.totalQuestions += frenchToSlovakTotal + slovakToFrenchTotal;
-          stats.totalErrors += (wordData.french_to_slovak_failures || 0) + (wordData.slovak_to_french_failures || 0);
-          stats.totalAlmosts += (wordData.french_to_slovak_almosts || 0) + (wordData.slovak_to_french_almosts || 0);
+          stats.totalErrors    += (wordData.french_to_slovak_failures || 0) + (wordData.slovak_to_french_failures || 0);
+          stats.totalAlmosts   += (wordData.french_to_slovak_almosts  || 0) + (wordData.slovak_to_french_almosts  || 0);
 
         } else if (quizType === 'reorder_letters') {
           // Aggregate Reorder Letters stats (French to Slovak only)
           const reorderTotal = (wordData.french_to_slovak_successes || 0) + (wordData.french_to_slovak_failures || 0);
           stats.reorderLettersQuestions += reorderTotal;
-          stats.reorderLettersErrors += (wordData.french_to_slovak_failures || 0);
-          stats.reorderLettersAlmosts += (wordData.french_to_slovak_almosts || 0);
+          stats.reorderLettersErrors    += (wordData.french_to_slovak_failures || 0);
+          stats.reorderLettersAlmosts   += (wordData.french_to_slovak_almosts  || 0);
 
           // Update totals
           stats.totalQuestions += reorderTotal;
-          stats.totalErrors += (wordData.french_to_slovak_failures || 0);
-          stats.totalAlmosts += (wordData.french_to_slovak_almosts || 0);
+          stats.totalErrors    += (wordData.french_to_slovak_failures || 0);
+          stats.totalAlmosts   += (wordData.french_to_slovak_almosts  || 0);
 
         } else if (quizType === 'matching') {
           // Aggregate Matching stats
           const matchingTotal = (wordData.matching_successes || 0) + (wordData.matching_failures || 0);
           stats.matchingQuestions += matchingTotal;
-          stats.matchingErrors += (wordData.matching_failures || 0);
-          stats.matchingAlmosts += (wordData.matching_almosts || 0);
+          stats.matchingErrors    += (wordData.matching_failures || 0);
+          stats.matchingAlmosts   += (wordData.matching_almosts  || 0);
 
           // Update totals
           stats.totalQuestions += matchingTotal;
-          stats.totalErrors += (wordData.matching_failures || 0);
-          stats.totalAlmosts += (wordData.matching_almosts || 0);
+          stats.totalErrors    += (wordData.matching_failures || 0);
+          stats.totalAlmosts   += (wordData.matching_almosts  || 0);
         }
       });
     }
@@ -273,11 +273,11 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
       const arr = masteryAttemptScoresByWord.get(key);
 
       const s1 = wordData.french_to_slovak_successes || 0;
-      const f1 = wordData.french_to_slovak_failures || 0;
-      const a1 = wordData.french_to_slovak_almosts || 0;
+      const f1 = wordData.french_to_slovak_failures  || 0;
+      const a1 = wordData.french_to_slovak_almosts   || 0;
       const s2 = wordData.slovak_to_french_successes || 0;
-      const f2 = wordData.slovak_to_french_failures || 0;
-      const a2 = wordData.slovak_to_french_almosts || 0;
+      const f2 = wordData.slovak_to_french_failures  || 0;
+      const a2 = wordData.slovak_to_french_almosts   || 0;
 
       // Push successes (1), almosts (0.5), failures (0)
       for (let i = 0; i < s1 + s2; i++) arr.push(1);
@@ -288,13 +288,13 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
 
   // Attach recent mastery rate to stats
   wordStats.forEach((stats, key) => {
-    const scores = masteryAttemptScoresByWord.get(key) || [];
-    const recent = scores.slice(-4);
-    const total = recent.length;
+    const scores   = masteryAttemptScoresByWord.get(key) || [];
+    const recent   = scores.slice(-4);
+    const total    = recent.length;
     const scoreSum = recent.reduce((s, v) => s + v, 0);
-    const rate = total > 0 ? ((scoreSum / total) * 100) : null;
+    const rate     = total > 0 ? ((scoreSum / total) * 100) : null;
     stats.masteryRecentTotal = total;
-    stats.masteryRecentRate = rate !== null ? rate.toFixed(1) : '-';
+    stats.masteryRecentRate  = rate !== null ? rate.toFixed(1) : '-';
   });
 
   // Convert wordSets from Set to Array for each word pair
@@ -459,12 +459,12 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
       ? wordStats.wordSets.join(', ')
       : wordStats.wordSets[0] || 'Unknown';
 
-    const totalAlmosts = (wordStats.matchingAlmosts || 0) +
+    const totalAlmosts = (wordStats.matchingAlmosts                    || 0) +
                         (wordStats.slovakToFrenchMultipleChoiceAlmosts || 0) +
                         (wordStats.frenchToSlovakMultipleChoiceAlmosts || 0) +
-                        (wordStats.reorderLettersAlmosts || 0) +
-                        (wordStats.slovakToFrenchTypingAlmosts || 0) +
-                        (wordStats.frenchToSlovakTypingAlmosts || 0);
+                        (wordStats.reorderLettersAlmosts               || 0) +
+                        (wordStats.slovakToFrenchTypingAlmosts         || 0) +
+                        (wordStats.frenchToSlovakTypingAlmosts         || 0);
 
     row.innerHTML = `
       <td>${wordStats.frenchWord}</td>
@@ -557,25 +557,25 @@ function prepareProgressionData(allResults, filterWordSet = 'all') {
   if (resultsArr.length === 0) return { dailyStats: [], labels: [] };
 
   const firstDay = window.SlovakData.localDateKeyFromTs(resultsArr[0]._ts);
-  const lastDay = window.SlovakData.localDateKeyFromTs(resultsArr[resultsArr.length - 1]._ts);
+  const lastDay  = window.SlovakData.localDateKeyFromTs(resultsArr[resultsArr.length - 1]._ts);
 
-  const dateRange = [];
+  const dateRange   = [];
   const currentDate = new Date(firstDay);
-  const endDate = new Date(lastDay);
+  const endDate     = new Date(lastDay);
   while (currentDate <= endDate) {
     dateRange.push(currentDate.toISOString().split('T')[0]);
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
   // Build per-word attempts across all results once
-  const perWord = window.SlovakData.buildPerWordAttempts(allResults);
+  const perWord    = window.SlovakData.buildPerWordAttempts(allResults);
   const thresholds = { masteredStreak: 4, windowSize: 20, minMastering: 5, masteringRate: 90, minStruggling: 1, strugglingRate: 70 };
 
   const dailyStats = [];
   dateRange.forEach(day => {
-    const dayTs = window.SlovakData.endOfLocalDayTs(day);
+    const dayTs  = window.SlovakData.endOfLocalDayTs(day);
     const counts = window.SlovakData.computeDailyCounts(perWord, dayTs, thresholds, filterWordSet);
-    const total = counts.mastered + counts.mastering + counts.learning + counts.struggling;
+    const total  = counts.mastered + counts.mastering + counts.learning + counts.struggling;
     dailyStats.push({ date: day, ...counts, total });
   });
 
@@ -807,11 +807,11 @@ function prepareDailyActivityData(allResults, filterWordSet = 'all') {
 
   // Create date range from first to last day
   const firstDay = timelineData[0].date;
-  const lastDay = timelineData[timelineData.length - 1].date;
+  const lastDay  = timelineData[timelineData.length - 1].date;
 
-  const dateRange = [];
+  const dateRange   = [];
   const currentDate = new Date(firstDay);
-  const endDate = new Date(lastDay);
+  const endDate     = new Date(lastDay);
 
   while (currentDate <= endDate) {
     dateRange.push(currentDate.toISOString().split('T')[0]);
@@ -825,9 +825,9 @@ function prepareDailyActivityData(allResults, filterWordSet = 'all') {
     // Get quiz results for this specific day
     const dayResults = timelineData.filter(entry => entry.date === day);
 
-    let correctAnswers = 0;
+    let correctAnswers   = 0;
     let incorrectAnswers = 0;
-    let almostAnswers = 0;
+    let almostAnswers    = 0;
 
     // Process all quiz results for this day
     dayResults.forEach(entry => {
@@ -840,19 +840,19 @@ function prepareDailyActivityData(allResults, filterWordSet = 'all') {
         }
 
         // Count all attempts across all quiz types
-        const frenchToSlovakCorrect = wordData.french_to_slovak_successes || 0;
-        const frenchToSlovakIncorrect = wordData.french_to_slovak_failures || 0;
-        const frenchToSlovakAlmost = wordData.french_to_slovak_almosts || 0;
-        const slovakToFrenchCorrect = wordData.slovak_to_french_successes || 0;
-        const slovakToFrenchIncorrect = wordData.slovak_to_french_failures || 0;
-        const slovakToFrenchAlmost = wordData.slovak_to_french_almosts || 0;
-        const matchingCorrect = wordData.matching_successes || 0;
-        const matchingIncorrect = wordData.matching_failures || 0;
-        const matchingAlmost = wordData.matching_almosts || 0;
+        const frenchToSlovakCorrect   = wordData.french_to_slovak_successes || 0;
+        const frenchToSlovakIncorrect = wordData.french_to_slovak_failures  || 0;
+        const frenchToSlovakAlmost    = wordData.french_to_slovak_almosts   || 0;
+        const slovakToFrenchCorrect   = wordData.slovak_to_french_successes || 0;
+        const slovakToFrenchIncorrect = wordData.slovak_to_french_failures  || 0;
+        const slovakToFrenchAlmost    = wordData.slovak_to_french_almosts   || 0;
+        const matchingCorrect         = wordData.matching_successes         || 0;
+        const matchingIncorrect       = wordData.matching_failures          || 0;
+        const matchingAlmost          = wordData.matching_almosts           || 0;
 
-        correctAnswers += frenchToSlovakCorrect + slovakToFrenchCorrect + matchingCorrect;
+        correctAnswers   += frenchToSlovakCorrect   + slovakToFrenchCorrect   + matchingCorrect;
         incorrectAnswers += frenchToSlovakIncorrect + slovakToFrenchIncorrect + matchingIncorrect;
-        almostAnswers += frenchToSlovakAlmost + slovakToFrenchAlmost + matchingAlmost;
+        almostAnswers    += frenchToSlovakAlmost    + slovakToFrenchAlmost    + matchingAlmost;
       });
     });
 
@@ -1179,14 +1179,14 @@ async function initializeAndAuthenticate() {
 
   try {
     console.log("Initializing Firebase and Auth for results...");
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
-    const { getDatabase } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
+    const { initializeApp }               = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
+    const { getDatabase }                 = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
     const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js");
 
     if (!firebaseApp) {
       firebaseApp = initializeApp(firebaseConfig);
-      database = getDatabase(firebaseApp);
-      auth = getAuth(firebaseApp);
+      database    = getDatabase(firebaseApp);
+      auth        = getAuth(firebaseApp);
       console.log("Firebase with Auth initialized successfully for results");
     }
 
