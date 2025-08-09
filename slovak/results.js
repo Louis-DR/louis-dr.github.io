@@ -17,6 +17,24 @@ let database    = null;
 let auth = null;
 let currentUser = null;
 
+// Ensure shared data helpers are present
+async function ensureDataHelpersLoaded() {
+  if (window.SlovakData) return true;
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[src$="data.js"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve(true));
+      existing.addEventListener('error', () => reject(new Error('Failed to load data.js')));
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'data.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => reject(new Error('Failed to load data.js'));
+    document.head.appendChild(script);
+  });
+}
+
 /**
  * Initialize Firebase if not already done
  */
@@ -86,7 +104,24 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
   const wordStats = new Map();
   const allWordSets = new Set(); // Track all unique word sets
 
-  // Process each quiz result
+  // Build a time-ordered list of results to compute recent mastery typing rates
+  const orderedResults = Object.values(allResults)
+    .map(r => ({
+      ...r,
+      _ts: (() => {
+        const raw = r.completionTimestamp || r.timestamp || r.date;
+        const str = typeof raw === 'number' ? new Date(raw).toISOString() : String(raw || '');
+        const normalized = (str.includes(' ') && !str.includes('T')) ? str.replace(' ', 'T') : str;
+        const d = new Date(normalized);
+        return isNaN(d.getTime()) ? 0 : d.getTime();
+      })()
+    }))
+    .sort((a, b) => a._ts - b._ts);
+
+  // Map of wordPairKey -> array of recent mastery typing attempt scores (1 success, 0.5 almost, 0 failure)
+  const masteryAttemptScoresByWord = new Map();
+
+  // Process each quiz result for aggregate stats
   Object.values(allResults).forEach(result => {
     if (result.words && Array.isArray(result.words)) {
       const quizType = result.quizType || 'unknown';
@@ -221,6 +256,47 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
     }
   });
 
+  // Compute recent mastery typing success rate (last 4 attempts) per word
+  orderedResults.forEach(result => {
+    if (!result || !Array.isArray(result.words)) return;
+    const isMasteryTyping = (result.selectionMode === 'mastered') && ((result.quizType || 'typing') === 'typing');
+    if (!isMasteryTyping) return;
+    result.words.forEach(wordData => {
+      // Extract wordPair
+      let wp;
+      if (Array.isArray(wordData.wordPair)) wp = wordData.wordPair;
+      else if (wordData.wordPair && typeof wordData.wordPair === 'object') wp = [wordData.wordPair[0] || wordData.wordPair['0'], wordData.wordPair[1] || wordData.wordPair['1']];
+      if (!wp || wp.length < 2 || !wp[0] || !wp[1]) return;
+      const key = `${wp[0]}|${wp[1]}`;
+
+      if (!masteryAttemptScoresByWord.has(key)) masteryAttemptScoresByWord.set(key, []);
+      const arr = masteryAttemptScoresByWord.get(key);
+
+      const s1 = wordData.french_to_slovak_successes || 0;
+      const f1 = wordData.french_to_slovak_failures || 0;
+      const a1 = wordData.french_to_slovak_almosts || 0;
+      const s2 = wordData.slovak_to_french_successes || 0;
+      const f2 = wordData.slovak_to_french_failures || 0;
+      const a2 = wordData.slovak_to_french_almosts || 0;
+
+      // Push successes (1), almosts (0.5), failures (0)
+      for (let i = 0; i < s1 + s2; i++) arr.push(1);
+      for (let i = 0; i < a1 + a2; i++) arr.push(0.5);
+      for (let i = 0; i < f1 + f2; i++) arr.push(0);
+    });
+  });
+
+  // Attach recent mastery rate to stats
+  wordStats.forEach((stats, key) => {
+    const scores = masteryAttemptScoresByWord.get(key) || [];
+    const recent = scores.slice(-4);
+    const total = recent.length;
+    const scoreSum = recent.reduce((s, v) => s + v, 0);
+    const rate = total > 0 ? ((scoreSum / total) * 100) : null;
+    stats.masteryRecentTotal = total;
+    stats.masteryRecentRate = rate !== null ? rate.toFixed(1) : '-';
+  });
+
   // Convert wordSets from Set to Array for each word pair
   const result = Array.from(wordStats.values()).map(stats => ({
     ...stats,
@@ -328,6 +404,7 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
     <th>Ensembles</th>
     <th>Total Questions</th>
     <th>Réussite Globale</th>
+    <th>Réussite Maîtrise</th>
     <th>Correspondances</th>
     <th>SK→FR Choix Multiple</th>
     <th>FR→SK Choix Multiple</th>
@@ -395,6 +472,7 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
       <td class="word-sets-cell">${wordSetsDisplay}</td>
       <td>${wordStats.totalQuestions}</td>
       <td>${globalSuccessRate}%</td>
+      <td>${wordStats.masteryRecentRate}${wordStats.masteryRecentRate !== '-' ? '%' : ''}${wordStats.masteryRecentTotal ? ` (${wordStats.masteryRecentTotal})` : ''}</td>
       <td>${matchingSuccessRate}${matchingSuccessRate !== '-' ? '%' : ''}</td>
       <td>${slovakToFrenchMultipleChoiceSuccessRate}${slovakToFrenchMultipleChoiceSuccessRate !== '-' ? '%' : ''}</td>
       <td>${frenchToSlovakMultipleChoiceSuccessRate}${frenchToSlovakMultipleChoiceSuccessRate !== '-' ? '%' : ''}</td>
@@ -413,8 +491,8 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
         td.innerHTML = `<span class="word-slovak">${td.textContent}</span>`;
       }
 
-      // Highlight success rates (columns 4-10 are success rate columns, after adding word sets column)
-      if (cellIndex >= 4 && cellIndex <= 10) {
+      // Highlight success rates (columns 4-11 are success rate columns, after adding word sets column and recent mastery)
+      if (cellIndex >= 4 && cellIndex <= 11) {
         const rateText = td.textContent.replace('%', '');
         if (rateText !== '-') {
           const rate = parseFloat(rateText);
@@ -466,197 +544,48 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
  * Extract and prepare daily progression data for charts
  */
 function prepareProgressionData(allResults, filterWordSet = 'all') {
-  // Collect all quiz results with timestamps
-  const timelineData = [];
-
-  Object.values(allResults).forEach(result => {
-    if (result && result.words && Array.isArray(result.words)) {
-      const rawTs = result.completionTimestamp ?? result.timestamp ?? result.date;
-      if (!rawTs) {
-        return;
-      }
-
-      let date;
-      if (typeof rawTs === 'number') {
-        date = new Date(rawTs);
-      } else {
-        const tsString = String(rawTs);
-        // Normalize common non-ISO "YYYY-MM-DD HH:mm:ss" to ISO by inserting 'T'
-        const normalized = (tsString.includes(' ') && !tsString.includes('T')) ? tsString.replace(' ', 'T') : tsString;
-        date = new Date(normalized);
-      }
-
-      // Check for invalid date
-      if (isNaN(date.getTime())) {
-        console.warn('Invalid timestamp found in progression data:', rawTs);
-        return; // Skip this result
-      }
-
-      const dayKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
-
-      timelineData.push({
-        date: dayKey,
-        timestamp: date.getTime(),
-        quizType: result.quizType || 'unknown',
-        quizName: result.quizName || 'Unknown Quiz',
-        words: result.words
-      });
-    }
-  });
-
-  // Sort by timestamp
-  timelineData.sort((a, b) => a.timestamp - b.timestamp);
-
-  if (timelineData.length === 0) {
+  if (!window.SlovakData) {
+    console.warn('SlovakData not loaded; falling back to empty progression');
     return { dailyStats: [], labels: [] };
   }
 
-  // Get all unique word pairs
-  const allWordPairs = new Set();
-  timelineData.forEach(entry => {
-    entry.words.forEach(wordData => {
-      // Handle both array and object formats for wordPair
-      let wordPairArray;
-      if (Array.isArray(wordData.wordPair)) {
-        wordPairArray = wordData.wordPair;
-      } else if (wordData.wordPair && typeof wordData.wordPair === 'object') {
-        wordPairArray = [wordData.wordPair[0] || wordData.wordPair["0"], wordData.wordPair[1] || wordData.wordPair["1"]];
-      }
+  const resultsArr = Object.values(allResults || {}).map(r => ({
+    ...r,
+    _ts: window.SlovakData.normalizeTimestamp(r.completionTimestamp || r.timestamp || r.date)
+  })).sort((a, b) => a._ts - b._ts);
 
-      if (wordPairArray && wordPairArray.length >= 2 && wordPairArray[0] && wordPairArray[1]) {
-        const wordPairKey = `${wordPairArray[0]}|${wordPairArray[1]}`;
-        allWordPairs.add(wordPairKey);
-      }
-    });
-  });
+  if (resultsArr.length === 0) return { dailyStats: [], labels: [] };
 
-  // Create date range from first to last day
-  const firstDay = timelineData[0].date;
-  const lastDay = timelineData[timelineData.length - 1].date;
+  const firstDay = window.SlovakData.localDateKeyFromTs(resultsArr[0]._ts);
+  const lastDay = window.SlovakData.localDateKeyFromTs(resultsArr[resultsArr.length - 1]._ts);
 
   const dateRange = [];
   const currentDate = new Date(firstDay);
   const endDate = new Date(lastDay);
-
   while (currentDate <= endDate) {
     dateRange.push(currentDate.toISOString().split('T')[0]);
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  // Calculate cumulative word stats for each day
+  // Build per-word attempts across all results once
+  const perWord = window.SlovakData.buildPerWordAttempts(allResults);
+  const thresholds = { masteredStreak: 4, windowSize: 20, minMastering: 5, masteringRate: 90, minStruggling: 1, strugglingRate: 70 };
+
   const dailyStats = [];
-
-  console.log(`prepareProgressionData: Processing ${dateRange.length} days for filter "${filterWordSet}"`);
-  console.log(`prepareProgressionData: Timeline data has ${timelineData.length} entries`);
-
   dateRange.forEach(day => {
-    // Get all quiz results up to and including this day
-    const resultsUpToThisDay = timelineData.filter(entry => entry.date <= day);
-
-    // Track only words that have actually appeared by this day
-    const cumulativeWordStats = new Map();
-
-    // Process all results up to this day to find which words have been seen
-    resultsUpToThisDay.forEach(entry => {
-      entry.words.forEach(wordData => {
-        // Handle both array and object formats for wordPair
-        let wordPairArray;
-        if (Array.isArray(wordData.wordPair)) {
-          wordPairArray = wordData.wordPair;
-        } else if (wordData.wordPair && typeof wordData.wordPair === 'object') {
-          // Handle object format: {"0": "French", "1": "Slovak", "wordSetName": "..."}
-          wordPairArray = [wordData.wordPair[0] || wordData.wordPair["0"], wordData.wordPair[1] || wordData.wordPair["1"]];
-        } else {
-          return; // Skip if wordPair is invalid
-        }
-
-        if (wordPairArray && wordPairArray.length >= 2 && wordPairArray[0] && wordPairArray[1]) {
-          const wordSetName = wordData.wordSetName || entry.quizName || 'Unknown Set';
-
-          // Debug logging for filtering
-          if (day === dateRange[dateRange.length - 1]) { // Only log for the last day to avoid spam
-            console.log(`prepareProgressionData: Word ${wordPairArray[1]}, wordSetName: "${wordSetName}", filter: "${filterWordSet}", matches: ${filterWordSet === 'all' || wordSetName === filterWordSet}`);
-          }
-
-          // Apply filter if specified
-          if (filterWordSet && filterWordSet !== 'all' && wordSetName !== filterWordSet) {
-            return; // Skip this word if it doesn't match the filter
-          }
-
-          const wordPairKey = `${wordPairArray[0]}|${wordPairArray[1]}`;
-
-          // Initialize word stats if we haven't seen this word before
-          if (!cumulativeWordStats.has(wordPairKey)) {
-            cumulativeWordStats.set(wordPairKey, {
-              totalQuestions: 0,
-              totalCorrect: 0,
-              successRate: 0
-            });
-          }
-
-          const stats = cumulativeWordStats.get(wordPairKey);
-
-          // Sum up all attempts across all quiz types
-          const frenchToSlovakTotal = (wordData.french_to_slovak_successes || 0) + (wordData.french_to_slovak_failures || 0);
-          const slovakToFrenchTotal = (wordData.slovak_to_french_successes || 0) + (wordData.slovak_to_french_failures || 0);
-          const matchingTotal = (wordData.matching_successes || 0) + (wordData.matching_failures || 0);
-
-          const totalAttempts = frenchToSlovakTotal + slovakToFrenchTotal + matchingTotal;
-          const totalCorrect = (wordData.french_to_slovak_successes || 0) +
-                              (wordData.slovak_to_french_successes || 0) +
-                              (wordData.matching_successes || 0);
-
-          stats.totalQuestions += totalAttempts;
-          stats.totalCorrect += totalCorrect;
-        }
-      });
-    });
-
-    // Calculate success rates and categorize words (only words that have been seen)
-    let masteredCount = 0;
-    let learningCount = 0;
-    let strugglingCount = 0;
-
-    cumulativeWordStats.forEach(stats => {
-      if (stats.totalQuestions > 0) {
-        stats.successRate = (stats.totalCorrect / stats.totalQuestions) * 100;
-
-        // Apply the same categorization logic as the adaptive quiz
-        if (stats.totalQuestions >= 10 && stats.successRate >= 90) {
-          masteredCount++;
-        } else if (stats.successRate < 65) {
-          strugglingCount++;
-        } else {
-          learningCount++;
-        }
-      } else {
-        // This shouldn't happen since we only add words that have been quizzed
-        learningCount++;
-      }
-    });
-
-    const dayTotal = masteredCount + learningCount + strugglingCount;
-    if (day === dateRange[dateRange.length - 1]) { // Only log for the last day
-      console.log(`prepareProgressionData: Day ${day} stats - Mastered: ${masteredCount}, Learning: ${learningCount}, Struggling: ${strugglingCount}, Total: ${dayTotal}`);
-    }
-
-    dailyStats.push({
-      date: day,
-      mastered: masteredCount,
-      learning: learningCount,
-      struggling: strugglingCount,
-      total: dayTotal
-    });
+    const dayTs = window.SlovakData.endOfLocalDayTs(day);
+    const counts = window.SlovakData.computeDailyCounts(perWord, dayTs, thresholds, filterWordSet);
+    const total = counts.mastered + counts.mastering + counts.learning + counts.struggling;
+    dailyStats.push({ date: day, ...counts, total });
   });
 
-    return {
+  return {
     dailyStats,
     labels: dateRange.map(date => {
       const d = new Date(date);
-      // Show month/day for shorter labels
       return `${d.getDate()}/${d.getMonth() + 1}`;
     }),
-    dateRange: dateRange // Keep original dates for debugging
+    dateRange
   };
 }
 
@@ -701,26 +630,35 @@ function displayProgressionChart(progressionData, filterWordSet = 'all') {
       {
         label: 'Mots Maîtrisés',
         data: progressionData.dailyStats.map(day => day.mastered),
-        backgroundColor: 'rgba(40, 167, 69, 0.8)',
-        borderColor: 'rgba(40, 167, 69, 1)',
+        backgroundColor: 'hsla(130, 60%, 40%, 0.80)',
+        borderColor: 'hsl(130, 60%, 40%)',
         borderWidth: 1.5,
         fill: true,
         stepped: true // For step effect
       },
       {
-        label: 'Mots en Apprentissage',
-        data: progressionData.dailyStats.map(day => day.learning),
-        backgroundColor: 'rgba(0, 123, 255, 0.8)',
-        borderColor: 'rgba(0, 123, 255, 1)',
+        label: 'Mots en Maîtrise',
+        data: progressionData.dailyStats.map(day => day.mastering || 0),
+        backgroundColor: 'hsla(210, 80%, 50%, 0.80)',
+        borderColor: 'hsl(210, 80%, 50%)',
         borderWidth: 1.5,
         fill: true,
-        stepped: true // For step effect
+        stepped: true
+      },
+      {
+        label: 'Mots en Apprentissage',
+        data: progressionData.dailyStats.map(day => day.learning || 0),
+        backgroundColor: 'hsla(45, 80%, 50%, 0.80)',
+        borderColor: 'hsl(45, 80%, 50%)',
+        borderWidth: 1.5,
+        fill: true,
+        stepped: true
       },
       {
         label: 'Mots Difficiles',
         data: progressionData.dailyStats.map(day => day.struggling),
-        backgroundColor: 'rgba(220, 53, 69, 0.8)',
-        borderColor: 'rgba(220, 53, 69, 1)',
+        backgroundColor: 'hsla(0, 60%, 50%, 0.80)',
+        borderColor: 'hsl(0, 60%, 50%)',
         borderWidth: 1.5,
         fill: true,
         stepped: true // For step effect
@@ -854,6 +792,7 @@ function prepareDailyActivityData(allResults, filterWordSet = 'all') {
         date: dayKey,
         timestamp: date.getTime(),
         quizName: result.quizName || 'Unknown Quiz',
+        selectionMode: result.selectionMode || 'all',
         words: result.words
       });
     }
@@ -982,22 +921,22 @@ function displayDailyActivityChart(activityData, filterWordSet = 'all') {
       {
         label: 'Réponses Correctes',
         data: activityData.dailyActivity.map(day => day.correct),
-        backgroundColor: 'rgba(40, 167, 69, 0.8)',
-        borderColor: 'rgba(40, 167, 69, 1)',
+        backgroundColor: 'hsla(130, 60%, 40%, 0.80)',
+        borderColor: 'hsl(130, 60%, 40%)',
         borderWidth: 1
       },
       {
         label: 'Presque',
         data: activityData.dailyActivity.map(day => day.almost || 0),
-        backgroundColor: 'rgba(255, 193, 7, 0.8)',
-        borderColor: 'rgba(255, 193, 7, 1)',
+        backgroundColor: 'hsla(45, 80%, 50%, 0.80)',
+        borderColor: 'hsl(45, 80%, 50%)',
         borderWidth: 1
       },
       {
         label: 'Réponses Incorrectes',
         data: activityData.dailyActivity.map(day => day.incorrect),
-        backgroundColor: 'rgba(220, 53, 69, 0.8)',
-        borderColor: 'rgba(220, 53, 69, 1)',
+        backgroundColor: 'hsla(0, 60%, 50%, 0.80)',
+        borderColor: 'hsl(0, 60%, 50%)',
         borderWidth: 1
       }
     ]
@@ -1183,6 +1122,9 @@ function renderAuthStatusFooter() {
 async function loadAndDisplayResults(filterWordSet = 'all') {
   try {
     console.log("Loading results from Firebase...");
+
+    // Load shared helpers
+    await ensureDataHelpersLoaded();
 
     // Show loading message
     const container = document.querySelector('.results-container') || document.body;

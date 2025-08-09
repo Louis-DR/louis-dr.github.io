@@ -61,6 +61,42 @@ let firebaseApp = null;
 let database    = null;
 let auth        = null;
 
+// Dynamic loader for shared helpers
+async function ensureDataHelpersLoaded() {
+  if (window.SlovakData) return true;
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[src$="data.js"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve(true));
+      existing.addEventListener('error', () => reject(new Error('Failed to load data.js')));
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'data.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => reject(new Error('Failed to load data.js'));
+    document.head.appendChild(script);
+  });
+}
+
+// Dynamic loader for audio library
+async function ensureAudioLibLoaded() {
+  if (window.AudioLib && typeof window.AudioLib.play === 'function') return true;
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[src$="audio.js"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve(true));
+      existing.addEventListener('error', () => reject(new Error('Failed to load audio.js')));
+    return;
+    }
+    const script = document.createElement('script');
+    script.src = 'audio.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => reject(new Error('Failed to load audio.js'));
+    document.head.appendChild(script);
+  });
+}
+
 // Main Quiz State Machine
 class QuizStateMachine {
   constructor() {
@@ -78,6 +114,7 @@ class QuizStateMachine {
     this.currentQuestion         = null;
     this.feedbackData            = null;
     this.user                    = null;
+    this.isGlobalAdaptive        = false;
 
     // UI state
     this.matchingSelections      = {};
@@ -125,6 +162,7 @@ class QuizStateMachine {
   async initialize(wordPairs, quizName, enabledQuizTypes) {
     this.wordPairs        = wordPairs        || [];
     this.quizName         = quizName         || 'Slovak Language Quiz';
+    this.isGlobalAdaptive = !wordPairs || (Array.isArray(wordPairs) && wordPairs.length === 0);
     this.selectionMode    = 'all'; // Default to 'all' for regular quizzes
     this.enabledQuizTypes = enabledQuizTypes || [QuizTypes.MATCHING, QuizTypes.MULTIPLE_CHOICE, QuizTypes.REORDER_LETTERS, QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
 
@@ -186,15 +224,25 @@ class QuizStateMachine {
       }
 
       // Analyze performance for both provided word pairs and historical data
-      const { analysis: wordAnalysis, extractedWordPairs } = await this.analyzeWordPairPerformance(this.wordPairs);
+      const { perWord, extractedWordPairs } = await this.analyzeWordPairPerformance(this.wordPairs);
 
       // For global adaptive quiz (no word pairs provided), use extracted word pairs
       if (this.wordPairs.length === 0 && extractedWordPairs.length > 0) {
         this.wordPairs = extractedWordPairs;
       }
 
-      // Create categories from the word analysis
-      const categories = this.categorizeWordPairs(wordAnalysis);
+      // Create categories from the per-word attempts map
+      const isGlobalHistory = (this.quizName && this.quizName.toLowerCase().includes('historique'));
+      // Normalize quizName to match saved set names (strip adaptive suffixes)
+      const normalizeSetName = (name) => {
+        if (!name) return null;
+        let s = String(name).trim();
+        s = s.replace(/\s*-\s*(Vérification des acquis|Consolidation de l'apprentissage|Correction des lacunes)$/i, '').trim();
+        return s;
+      };
+      // If no explicit wordPairs were provided (global adaptive quiz), do not filter by set
+      const filterWordSet = (isGlobalHistory || this.isGlobalAdaptive || this.quizName === 'Slovak Language Quiz') ? null : normalizeSetName(this.quizName);
+      const categories = this.categorizeWordPairs(perWord, filterWordSet);
 
       // Always show adaptive menu
       await this.transition(QuizStates.ADAPTIVE_MENU, { categories });
@@ -449,7 +497,8 @@ class QuizStateMachine {
     }
 
     const isHistoryMode = this.quizName.includes('Historique') || this.quizName.includes('Adaptatif');
-    const totalWords    = categories.mastered.length + categories.learning.length + categories.struggling.length;
+    const masteredOrMasteringCount = (categories.mastered.length + (categories.mastering ? categories.mastering.length : 0));
+    const totalWords    = masteredOrMasteringCount + categories.learning.length + categories.struggling.length;
 
     let subtitle;
     if (isHistoryMode && totalWords === 0) {
@@ -474,10 +523,10 @@ class QuizStateMachine {
             </small>
           </button>
 
-          <button class="btn btn-success btn-lg adaptive-option" data-mode="mastered" ${categories.mastered.length === 0 ? 'disabled' : ''}>
+          <button class="btn btn-success btn-lg adaptive-option" data-mode="mastered" ${masteredOrMasteringCount === 0 ? 'disabled' : ''}>
             🎯 Vérifier les acquis
             <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
-              ${categories.mastered.length} mot(s) maîtrisé(s) • Taux de réussite ≥90% et ≥10 réponses
+              ${masteredOrMasteringCount} mot(s) à perfectionner (Maîtrisés + En maîtrise)
             </small>
           </button>
 
@@ -516,9 +565,10 @@ class QuizStateMachine {
             // Keep original quiz name for 'all' mode
             break;
           case 'mastered':
-            // Limit to maxWords and use only typing quizzes for mastered words
-            const shuffledMastered = this.shuffleArray([...categories.mastered]);
-            selectedWordPairs      = shuffledMastered.slice(0, Math.min(maxWords, categories.mastered.length));
+            // Limit to maxWords and use only typing quizzes for mastered OR mastering words
+            const masteredOrMastering = [...(categories.mastered || []), ...(categories.mastering || [])];
+            const shuffledMastered = this.shuffleArray(masteredOrMastering);
+            selectedWordPairs      = shuffledMastered.slice(0, Math.min(maxWords, masteredOrMastering.length));
             enabledQuizTypes       = [QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
             this.selectionMode     = 'mastered';
             this.quizName          = `${this.quizName} - Vérification des acquis`;
@@ -1153,9 +1203,16 @@ class QuizStateMachine {
     audioEmoji.style.marginLeft = marginLeft;
     audioEmoji.addEventListener('click', (event) => {
       event.stopPropagation();
-        if (typeof playAudio === 'function') {
-        playAudio(word);
-      }
+        (async () => {
+          try {
+            await ensureAudioLibLoaded();
+            if (window.AudioLib && typeof window.AudioLib.play === 'function') {
+              window.AudioLib.play(word);
+            }
+          } catch (e) {
+            console.error('Audio library failed to load', e);
+          }
+        })();
     });
     return audioEmoji;
   }
@@ -1475,6 +1532,7 @@ class QuizStateMachine {
   // Firebase and data methods
   async analyzeWordPairPerformance(originalWordPairs) {
     try {
+      await ensureDataHelpersLoaded();
       await this.initializeFirebase();
       const { ref, get } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
 
@@ -1491,96 +1549,57 @@ class QuizStateMachine {
       }
 
       const allResults = snapshot.val();
-      const wordAnalysis = {};
+      const perWord = window.SlovakData.buildPerWordAttempts(allResults);
+
+      // Build extractedWordPairs if not provided
       const extractedWordPairs = [];
-
       if (!originalWordPairs || originalWordPairs.length === 0) {
-        const uniqueWordPairs = new Map();
-        Object.values(allResults).forEach(result => {
-          if (result.words && Array.isArray(result.words)) {
-            result.words.forEach(wordResult => {
-              if (wordResult.wordPair && Array.isArray(wordResult.wordPair) && wordResult.wordPair.length >= 2) {
-                const frenchWord = wordResult.wordPair[0];
-                const slovakWord = wordResult.wordPair[1];
-                const wordSetName = wordResult.wordSetName || result.quizName || 'Unknown Set';
-
-                // Create enhanced word pair with wordSetName
-                const wordPair = [frenchWord, slovakWord];
-                wordPair.wordSetName = wordSetName;
-
-                uniqueWordPairs.set(slovakWord, wordPair);
-              }
-            });
-          }
+        perWord.forEach(node => {
+          const pair = node.wordPair.slice(0, 2);
+          // Attach one set name for display (first available)
+          pair.wordSetName = Array.from(node.wordSets)[0] || 'Unknown Set';
+          extractedWordPairs.push(pair);
         });
-        originalWordPairs = Array.from(uniqueWordPairs.values());
-        extractedWordPairs.push(...originalWordPairs);
       }
 
-      originalWordPairs.forEach(pair => {
-        const slovakWord = pair[1];
-        wordAnalysis[slovakWord] = {
-          wordPair: pair,
-          totalQuestions: 0,
-          totalCorrect: 0,
-          successRate: 0
-        };
-      });
-
-      Object.values(allResults).forEach(result => {
-        if (result.words && Array.isArray(result.words)) {
-          result.words.forEach(wordResult => {
-            const slovakWord = wordResult.word;
-            if (wordAnalysis[slovakWord]) {
-              const frenchToSlovakTotal = (wordResult.french_to_slovak_successes || 0) + (wordResult.french_to_slovak_failures || 0);
-              const slovakToFrenchTotal = (wordResult.slovak_to_french_successes || 0) + (wordResult.slovak_to_french_failures || 0);
-              const matchingTotal = (wordResult.matching_successes || 0) + (wordResult.matching_failures || 0);
-
-              const totalAttempts = frenchToSlovakTotal + slovakToFrenchTotal + matchingTotal;
-              const totalCorrect = (wordResult.french_to_slovak_successes || 0) +
-                                  (wordResult.slovak_to_french_successes || 0) +
-                                  (wordResult.matching_successes || 0);
-
-              wordAnalysis[slovakWord].totalQuestions += totalAttempts;
-              wordAnalysis[slovakWord].totalCorrect += totalCorrect;
-            }
-          });
-        }
-      });
-
-      Object.keys(wordAnalysis).forEach(slovakWord => {
-        const analysis = wordAnalysis[slovakWord];
-        if (analysis.totalQuestions > 0) {
-          analysis.successRate = (analysis.totalCorrect / analysis.totalQuestions) * 100;
-        }
-      });
-
-      return { analysis: wordAnalysis, extractedWordPairs };
+      return { perWord, extractedWordPairs };
   } catch (error) {
       console.error("Error analyzing word pair performance:", error);
       return { analysis: {}, extractedWordPairs: [] };
     }
   }
 
-  categorizeWordPairs(wordAnalysis) {
-    const categories = {
-      mastered: [],
-      learning: [],
-      struggling: []
-    };
-
-    Object.values(wordAnalysis).forEach(analysis => {
-      const { wordPair, totalQuestions, successRate } = analysis;
-
-      if (totalQuestions >= 10 && successRate >= 90) {
-        categories.mastered.push(wordPair);
-      } else if (successRate < 65) {
-        categories.struggling.push(wordPair);
-      } else {
-        categories.learning.push(wordPair);
+  categorizeWordPairs(perWord, filterWordSet = null) {
+    const categories = { mastered: [], learning: [], struggling: [], mastering: [] };
+    const thresholds = (window.SlovakData && window.SlovakData.defaultThresholds) ? window.SlovakData.defaultThresholds : { masteredStreak: 4, windowSize: 20, minMastering: 5, masteringRate: 90, minStruggling: 1, strugglingRate: 70 };
+    const nowTs = Date.now();
+    let considered = 0;
+    let masteryOnlyTotal = 0;
+    let masteryOnlyCorrectStreaks = 0;
+    perWord.forEach(node => {
+      if (filterWordSet && !node.wordSets.has(filterWordSet)) {
+        return; // skip non-matching sets
       }
+      const cat = window.SlovakData.categorizeWordByCriteria(node, nowTs, thresholds, filterWordSet);
+      if (!cat) return;
+      const pair = node.wordPair;
+      categories[cat].push(pair);
+      considered++;
+      // Track mastery-only attempts for debugging parity with results
+      masteryOnlyTotal += node.masteryTyping.length;
+      const last4 = node.masteryTyping.filter(a => a.t <= nowTs).slice(-4);
+      if (last4.length === 4 && last4.every(a => a.ok)) masteryOnlyCorrectStreaks++;
     });
-
+    console.log('Adaptive categorizeWordPairs:', {
+      filterWordSet,
+      considered,
+      mastered: categories.mastered.length,
+      mastering: categories.mastering.length,
+      learning: categories.learning.length,
+      struggling: categories.struggling.length,
+      masteryOnlyTotal,
+      masteryOnlyCorrectStreaks
+    });
     return categories;
   }
 
