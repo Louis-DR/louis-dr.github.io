@@ -306,6 +306,29 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
     wordSets: Array.from(stats.wordSets).sort() // Convert Set to sorted Array
   }));
 
+  // Compute recent rolling success rate (same criteria window used for mastering)
+  try {
+    if (window.SlovakData && typeof window.SlovakData.buildPerWordAttempts === 'function') {
+      const perWord = window.SlovakData.buildPerWordAttempts(allResults);
+      const thresholds = (window.SlovakData && window.SlovakData.defaultThresholds) ? window.SlovakData.defaultThresholds : { windowSize: 20 };
+      const nowTs = Date.now();
+      result.forEach(stats => {
+        const key = `${stats.frenchWord}|${stats.slovakWord}`;
+        const node = perWord.get(key);
+        if (node && typeof window.SlovakData.computeWindowStats === 'function') {
+          const { total, successRate } = window.SlovakData.computeWindowStats(node.attempts, nowTs, thresholds.windowSize);
+          stats.recentWindowTotal = total;
+          stats.recentWindowRate = total > 0 ? successRate.toFixed(1) : '-';
+        } else {
+          stats.recentWindowTotal = 0;
+          stats.recentWindowRate = '-';
+        }
+      });
+    }
+  } catch (e) {
+    console.warn('Failed computing recent rolling rates:', e);
+  }
+
   return {
     wordPairStats: result,
     allWordSets: Array.from(allWordSets).sort() // Return all unique word sets
@@ -316,18 +339,16 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
  * Create and display the results table
  */
 function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all') {
-  // Sort by success rate (lowest first) to show most problematic words at the top
-  // If success rates are equal, sort by number of questions (highest first) to show better mastery
+  // Sort by recent rolling success rate (ascending). If equal, fallback to global success rate.
   wordPairStats.sort((a, b) => {
-    const successRateA = a.totalQuestions > 0 ? ((a.totalQuestions - a.totalErrors) / a.totalQuestions) * 100 : 100;
-    const successRateB = b.totalQuestions > 0 ? ((b.totalQuestions - b.totalErrors) / b.totalQuestions) * 100 : 100;
+    const recentA = a.recentWindowRate === '-' ? -1 : parseFloat(a.recentWindowRate);
+    const recentB = b.recentWindowRate === '-' ? -1 : parseFloat(b.recentWindowRate);
+    if (recentA !== recentB) return recentA - recentB;
 
-    // Primary sort: by success rate (ascending - lowest first)
-    if (successRateA !== successRateB) {
-      return successRateA - successRateB;
-    }
+    const globalA = a.totalQuestions > 0 ? ((a.totalQuestions - a.totalErrors) / a.totalQuestions) * 100 : 100;
+    const globalB = b.totalQuestions > 0 ? ((b.totalQuestions - b.totalErrors) / b.totalQuestions) * 100 : 100;
+    if (globalA !== globalB) return globalA - globalB;
 
-    // Secondary sort: by number of questions (descending - most questions first for better mastery)
     return a.totalQuestions - b.totalQuestions;
   });
 
@@ -406,8 +427,9 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
     <th>Slovaque</th>
     <th>Ensembles</th>
     <th>Total Questions</th>
+    <th>Réussite Récente</th>
+    <th>Maîtrise Récente</th>
     <th>Réussite Globale</th>
-    <th>Réussite Maîtrise</th>
     <th>Correspondances</th>
     <th>SK→FR Choix Multiple</th>
     <th>FR→SK Choix Multiple</th>
@@ -474,8 +496,9 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
       <td><strong>${wordStats.slovakWord}</strong></td>
       <td class="word-sets-cell">${wordSetsDisplay}</td>
       <td>${wordStats.totalQuestions}</td>
-      <td>${globalSuccessRate}%</td>
+      <td>${wordStats.recentWindowRate}${wordStats.recentWindowRate !== '-' ? '%' : ''}${wordStats.recentWindowTotal ? ` (${wordStats.recentWindowTotal})` : ''}</td>
       <td>${wordStats.masteryRecentRate}${wordStats.masteryRecentRate !== '-' ? '%' : ''}${wordStats.masteryRecentTotal ? ` (${wordStats.masteryRecentTotal})` : ''}</td>
+      <td>${globalSuccessRate}%</td>
       <td>${matchingSuccessRate}${matchingSuccessRate !== '-' ? '%' : ''}</td>
       <td>${slovakToFrenchMultipleChoiceSuccessRate}${slovakToFrenchMultipleChoiceSuccessRate !== '-' ? '%' : ''}</td>
       <td>${frenchToSlovakMultipleChoiceSuccessRate}${frenchToSlovakMultipleChoiceSuccessRate !== '-' ? '%' : ''}</td>
@@ -494,8 +517,8 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
         td.innerHTML = `<span class="word-slovak">${td.textContent}</span>`;
       }
 
-      // Highlight success rates (columns 4-11 are success rate columns, after adding word sets column and recent mastery)
-      if (cellIndex >= 4 && cellIndex <= 11) {
+      // Highlight success rates (columns 4-12 are success rate columns, after adding recent rolling and recent mastery)
+      if (cellIndex >= 4 && cellIndex <= 12) {
         const rateText = td.textContent.replace('%', '');
         if (rateText !== '-') {
           const rate = parseFloat(rateText);
