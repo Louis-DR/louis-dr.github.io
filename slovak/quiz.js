@@ -284,8 +284,12 @@ class QuizStateMachine {
     // Initialize results tracking
     this.selectedWordPairs.forEach(pair => {
       const wordKey = pair[1];
+
+      // Always ensure wordPair is a clean array, never an object with nested properties
+      const cleanWordPair = Array.isArray(pair) ? [pair[0], pair[1]] : [pair[0] || pair['0'], pair[1] || pair['1']];
+
       this.results[wordKey] = {
-        wordPair: pair,
+        wordPair: cleanWordPair,
         // Track per-word word set name (normalize to strip adaptive suffixes if helper exists)
         wordSetName: (window.SlovakData && typeof window.SlovakData.normalizeWordSetName === 'function')
           ? window.SlovakData.normalizeWordSetName(pair.wordSetName || this.quizName)
@@ -1568,9 +1572,14 @@ class QuizStateMachine {
       const extractedWordPairs = [];
       if (!originalWordPairs || originalWordPairs.length === 0) {
         perWord.forEach(node => {
-          const pair = node.wordPair.slice(0, 2);
-          // Attach one set name for display (first available)
-          pair.wordSetName = Array.from(node.wordSets)[0] || 'Unknown Set';
+          const pair = [node.wordPair[0], node.wordPair[1]]; // Ensure it's a clean array
+          // Attach the most specific set name available from database
+          const availableSets = Array.from(node.wordSets);
+          // Prefer non-default set names
+          const preferredSet = availableSets.find(setName =>
+            setName !== 'Slovak Language Quiz' && setName !== 'Unknown Set'
+          ) || availableSets[0] || 'Unknown Set';
+          pair.wordSetName = preferredSet;
           extractedWordPairs.push(pair);
         });
       }
@@ -1595,7 +1604,13 @@ class QuizStateMachine {
       }
       const cat = window.SlovakData.categorizeWordByCriteria(node, nowTs, thresholds, filterWordSet);
       if (!cat) return;
-      const pair = node.wordPair;
+
+      // Create word pair with preserved set name from database
+      const pair = [node.wordPair[0], node.wordPair[1]]; // Ensure it's a clean array
+      // Use the most appropriate set name: filtered set if specified, otherwise first available set
+      const availableSets = Array.from(node.wordSets);
+      pair.wordSetName = filterWordSet || availableSets[0] || 'Unknown Set';
+
       categories[cat].push(pair);
       considered++;
       // Track mastery-only attempts for debugging parity with results
@@ -1650,9 +1665,14 @@ class QuizStateMachine {
       ? window.SlovakData.normalizeWordSetName(wordData.wordSetName || this.quizName)
       : (wordData.wordSetName || this.quizName);
 
+    // Ensure wordPair is always a clean array in results
+    const cleanWordPair = Array.isArray(wordData.wordPair)
+      ? [wordData.wordPair[0], wordData.wordPair[1]]
+      : [wordData.wordPair[0] || wordData.wordPair['0'], wordData.wordPair[1] || wordData.wordPair['1']];
+
     wordResults.push({
         word: wordKey,
-        wordPair: wordData.wordPair,
+        wordPair: cleanWordPair,
         wordSetName: normalizedSetName,
         french_to_slovak_successes: stats.french_to_slovak.successes,
         french_to_slovak_failures: stats.french_to_slovak.failures,
