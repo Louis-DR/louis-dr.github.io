@@ -120,6 +120,8 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
 
   // Map of wordPairKey -> array of recent mastery typing attempt scores (1 success, 0.5 almost, 0 failure)
   const masteryAttemptScoresByWord = new Map();
+  // Map of wordPairKey -> { frenchToSlovak: [], slovakToFrench: [] } for direction-specific tracking
+  const masteryAttemptsByDirection = new Map();
 
   // Process each quiz result for aggregate stats
   Object.values(allResults).forEach(result => {
@@ -273,7 +275,10 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
       const key = `${wp[0]}|${wp[1]}`;
 
       if (!masteryAttemptScoresByWord.has(key)) masteryAttemptScoresByWord.set(key, []);
+      if (!masteryAttemptsByDirection.has(key)) masteryAttemptsByDirection.set(key, { frenchToSlovak: [], slovakToFrench: [] });
+
       const arr = masteryAttemptScoresByWord.get(key);
+      const dirArr = masteryAttemptsByDirection.get(key);
 
       const s1 = wordData.french_to_slovak_successes || 0;
       const f1 = wordData.french_to_slovak_failures  || 0;
@@ -282,22 +287,63 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
       const f2 = wordData.slovak_to_french_failures  || 0;
       const a2 = wordData.slovak_to_french_almosts   || 0;
 
-      // Push successes (1), almosts (0.5), failures (0)
+      // Push to overall array (legacy)
       for (let i = 0; i < s1 + s2; i++) arr.push(1);
       for (let i = 0; i < a1 + a2; i++) arr.push(0.5);
       for (let i = 0; i < f1 + f2; i++) arr.push(0);
+
+      // Push to direction-specific arrays
+      for (let i = 0; i < s1; i++) dirArr.frenchToSlovak.push(1);
+      for (let i = 0; i < a1; i++) dirArr.frenchToSlovak.push(0.5);
+      for (let i = 0; i < f1; i++) dirArr.frenchToSlovak.push(0);
+      for (let i = 0; i < s2; i++) dirArr.slovakToFrench.push(1);
+      for (let i = 0; i < a2; i++) dirArr.slovakToFrench.push(0.5);
+      for (let i = 0; i < f2; i++) dirArr.slovakToFrench.push(0);
     });
   });
 
-  // Attach recent mastery rate to stats
+  // Attach recent mastery rate to stats with direction separation
   wordStats.forEach((stats, key) => {
-    const scores   = masteryAttemptScoresByWord.get(key) || [];
-    const recent   = scores.slice(-4);
-    const total    = recent.length;
+    const scores = masteryAttemptScoresByWord.get(key) || [];
+    const dirScores = masteryAttemptsByDirection.get(key) || { frenchToSlovak: [], slovakToFrench: [] };
+
+    // Calculate overall recent rate (legacy)
+    const recent = scores.slice(-4);
+    const total = recent.length;
     const scoreSum = recent.reduce((s, v) => s + v, 0);
-    const rate     = total > 0 ? ((scoreSum / total) * 100) : null;
+    const rate = total > 0 ? ((scoreSum / total) * 100) : null;
     stats.masteryRecentTotal = total;
-    stats.masteryRecentRate  = rate !== null ? rate.toFixed(1) : '-';
+    stats.masteryRecentRate = rate !== null ? rate.toFixed(1) : '-';
+
+    // Calculate direction-specific mastery rates (latest 2 attempts per direction)
+    const frenchToSlovakRecent = dirScores.frenchToSlovak.slice(-2);
+    const slovakToFrenchRecent = dirScores.slovakToFrench.slice(-2);
+
+    const frenchToSlovakRate = frenchToSlovakRecent.length >= 2
+      ? (frenchToSlovakRecent.reduce((sum, score) => sum + score, 0) / frenchToSlovakRecent.length * 100)
+      : null;
+    const slovakToFrenchRate = slovakToFrenchRecent.length >= 2
+      ? (slovakToFrenchRecent.reduce((sum, score) => sum + score, 0) / slovakToFrenchRecent.length * 100)
+      : null;
+
+    stats.masterySlovakToFrenchRate = slovakToFrenchRate !== null ? slovakToFrenchRate.toFixed(1) : '-';
+    stats.masteryFrenchToSlovakRate = frenchToSlovakRate !== null ? frenchToSlovakRate.toFixed(1) : '-';
+
+    // Determine mastery status based on the new criteria (75% in both directions + overall mastering)
+    const meetsFrenchToSlovak = frenchToSlovakRate !== null && frenchToSlovakRate >= 75;
+    const meetsSlovakToFrench = slovakToFrenchRate !== null && slovakToFrenchRate >= 75;
+    const overallSuccessRate = stats.totalQuestions > 0 ? ((stats.totalQuestions - stats.totalErrors) / stats.totalQuestions) * 100 : 0;
+    const qualifiesOverall = stats.totalQuestions >= 5 && overallSuccessRate >= 90;
+
+    if (meetsFrenchToSlovak && meetsSlovakToFrench && qualifiesOverall) {
+      stats.masteryStatus = 'mastered';
+    } else if (qualifiesOverall) {
+      stats.masteryStatus = 'mastering';
+    } else if (stats.totalQuestions >= 1 && overallSuccessRate < 70) {
+      stats.masteryStatus = 'struggling';
+    } else {
+      stats.masteryStatus = 'learning';
+    }
   });
 
   // Convert wordSets from Set to Array for each word pair
@@ -427,8 +473,10 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
     <th>Slovaque</th>
     <th>Ensembles</th>
     <th>Total Questions</th>
+    <th>Statut Maîtrise</th>
     <th>Réussite Récente</th>
-    <th>Maîtrise Récente</th>
+    <th>Maîtrise SK→FR</th>
+    <th>Maîtrise FR→SK</th>
     <th>Réussite Globale</th>
     <th>Correspondances</th>
     <th>SK→FR Choix Multiple</th>
@@ -436,7 +484,6 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
     <th>FR→SK Réorganiser</th>
     <th>SK→FR Saisie</th>
     <th>FR→SK Saisie</th>
-    <th>Presque (Total)</th>
   `;
 
   // Table header styling is handled by CSS classes
@@ -484,20 +531,26 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
       ? wordStats.wordSets.join(', ')
       : wordStats.wordSets[0] || 'Unknown';
 
-    const totalAlmosts = (wordStats.matchingAlmosts                    || 0) +
-                        (wordStats.slovakToFrenchMultipleChoiceAlmosts || 0) +
-                        (wordStats.frenchToSlovakMultipleChoiceAlmosts || 0) +
-                        (wordStats.reorderLettersAlmosts               || 0) +
-                        (wordStats.slovakToFrenchTypingAlmosts         || 0) +
-                        (wordStats.frenchToSlovakTypingAlmosts         || 0);
+    // Format mastery status with color-coded badge
+    const masteryStatusDisplay = (() => {
+      switch(wordStats.masteryStatus) {
+        case 'mastered': return '<span class="status-mastered">Maîtrisé</span>';
+        case 'mastering': return '<span class="status-mastering">En Maîtrise</span>';
+        case 'learning': return '<span class="status-learning">Apprentissage</span>';
+        case 'struggling': return '<span class="status-struggling">Difficile</span>';
+        default: return '<span class="status-unknown">-</span>';
+      }
+    })();
 
     row.innerHTML = `
       <td>${wordStats.frenchWord}</td>
       <td><strong>${wordStats.slovakWord}</strong></td>
       <td class="word-sets-cell">${wordSetsDisplay}</td>
       <td>${wordStats.totalQuestions}</td>
+      <td>${masteryStatusDisplay}</td>
       <td>${wordStats.recentWindowRate}${wordStats.recentWindowRate !== '-' ? '%' : ''}${wordStats.recentWindowTotal ? ` (${wordStats.recentWindowTotal})` : ''}</td>
-      <td>${wordStats.masteryRecentRate}${wordStats.masteryRecentRate !== '-' ? '%' : ''}${wordStats.masteryRecentTotal ? ` (${wordStats.masteryRecentTotal})` : ''}</td>
+      <td>${wordStats.masterySlovakToFrenchRate}${wordStats.masterySlovakToFrenchRate !== '-' ? '%' : ''}</td>
+      <td>${wordStats.masteryFrenchToSlovakRate}${wordStats.masteryFrenchToSlovakRate !== '-' ? '%' : ''}</td>
       <td>${globalSuccessRate}%</td>
       <td>${matchingSuccessRate}${matchingSuccessRate !== '-' ? '%' : ''}</td>
       <td>${slovakToFrenchMultipleChoiceSuccessRate}${slovakToFrenchMultipleChoiceSuccessRate !== '-' ? '%' : ''}</td>
@@ -505,10 +558,9 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
       <td>${reorderLettersSuccessRate}${reorderLettersSuccessRate !== '-' ? '%' : ''}</td>
       <td>${slovakToFrenchTypingSuccessRate}${slovakToFrenchTypingSuccessRate !== '-' ? '%' : ''}</td>
       <td>${frenchToSlovakTypingSuccessRate}${frenchToSlovakTypingSuccessRate !== '-' ? '%' : ''}</td>
-      <td>${totalAlmosts}</td>
     `;
 
-    // Apply success rate colors (columns 3-9 are success rate columns)
+    // Apply styling to specific columns
     Array.from(row.children).forEach((td, cellIndex) => {
       // Add word coloring for first two columns
       if (cellIndex === 0) {
@@ -517,8 +569,8 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
         td.innerHTML = `<span class="word-slovak">${td.textContent}</span>`;
       }
 
-      // Highlight success rates (columns 4-12 are success rate columns, after adding recent rolling and recent mastery)
-      if (cellIndex >= 4 && cellIndex <= 12) {
+      // Highlight success rates (columns 5, 6, 7, 8 and 9-14 are success rate columns)
+      if ((cellIndex >= 5 && cellIndex <= 8) || (cellIndex >= 9 && cellIndex <= 14)) {
         const rateText = td.textContent.replace('%', '');
         if (rateText !== '-') {
           const rate = parseFloat(rateText);
@@ -562,6 +614,54 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
   `;
 
   container.appendChild(summary);
+
+  // Add CSS styles for mastery status badges if not already added
+  if (!document.querySelector('#mastery-status-styles')) {
+    const style = document.createElement('style');
+    style.id = 'mastery-status-styles';
+    style.textContent = `
+      .status-mastered {
+        background-color: hsla(130, 60%, 40%, 0.80);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+      .status-mastering {
+        background-color: hsla(210, 80%, 50%, 0.80);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+      .status-learning {
+        background-color: hsla(45, 80%, 50%, 0.80);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+      .status-struggling {
+        background-color: hsla(0, 60%, 50%, 0.80);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+      .status-unknown {
+        background-color: #ccc;
+        color: #666;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
   console.log(`Displayed results for ${totalWords} word pairs`);
 }

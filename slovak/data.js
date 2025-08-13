@@ -72,8 +72,15 @@
         pushAttempts(node.attempts, ts, wordData.matching_successes,         wordData.matching_almosts,         wordData.matching_failures);
 
         if (isMasteryTyping) {
-          pushAttempts(node.masteryTyping, ts, wordData.french_to_slovak_successes, wordData.french_to_slovak_almosts, wordData.french_to_slovak_failures);
-          pushAttempts(node.masteryTyping, ts, wordData.slovak_to_french_successes, wordData.slovak_to_french_almosts, wordData.slovak_to_french_failures);
+          // Push attempts with direction information for mastery typing
+          const pushAttemptsWithDirection = (array, timestamp, successes, almosts, failures, direction) => {
+            for (let i = 0; i < (successes || 0); i++) array.push({ t: timestamp, ok: true, almost: false, direction });
+            for (let i = 0; i < (almosts || 0); i++) array.push({ t: timestamp, ok: false, almost: true, direction });
+            for (let i = 0; i < (failures || 0); i++) array.push({ t: timestamp, ok: false, almost: false, direction });
+          };
+
+          pushAttemptsWithDirection(node.masteryTyping, ts, wordData.french_to_slovak_successes, wordData.french_to_slovak_almosts, wordData.french_to_slovak_failures, 'french_to_slovak');
+          pushAttemptsWithDirection(node.masteryTyping, ts, wordData.slovak_to_french_successes, wordData.slovak_to_french_almosts, wordData.slovak_to_french_failures, 'slovak_to_french');
         }
       });
     });
@@ -107,10 +114,29 @@
     const { total, successRate } = computeWindowStats(node.attempts, dayTs, windowSize);
     const qualifiesMasteringOverall = (total >= minMastering) && (successRate >= masteringRate);
 
-    // Mastered requires BOTH: recent perfect mastery streak AND overall qualifies for mastering
-    const masteryAttempts = node.masteryTyping.filter(a => a.t <= dayTs).slice(-masteredStreak);
-    const hasPerfectMasteryStreak = masteryAttempts.length === masteredStreak && masteryAttempts.every(a => a.ok === true);
-    if (hasPerfectMasteryStreak && qualifiesMasteringOverall) return 'mastered';
+    // Mastered requires BOTH: 75% success on latest 2 attempts per direction AND overall qualifies for mastering
+    const masteryAttempts = node.masteryTyping.filter(a => a.t <= dayTs);
+
+    // Separate attempts by direction
+    const frenchToSlovakAttempts = masteryAttempts.filter(a => a.direction === 'french_to_slovak').slice(-2);
+    const slovakToFrenchAttempts = masteryAttempts.filter(a => a.direction === 'slovak_to_french').slice(-2);
+
+    // Check if we have at least 2 attempts in each direction
+    const hasSufficientFrenchToSlovak = frenchToSlovakAttempts.length >= 2;
+    const hasSufficientSlovakToFrench = slovakToFrenchAttempts.length >= 2;
+
+    if (hasSufficientFrenchToSlovak && hasSufficientSlovakToFrench) {
+      // Calculate success rate for each direction (75% threshold)
+      const frenchToSlovakScore = frenchToSlovakAttempts.reduce((sum, a) => sum + (a.ok ? 1 : (a.almost ? 0.5 : 0)), 0) / frenchToSlovakAttempts.length;
+      const slovakToFrenchScore = slovakToFrenchAttempts.reduce((sum, a) => sum + (a.ok ? 1 : (a.almost ? 0.5 : 0)), 0) / slovakToFrenchAttempts.length;
+
+      const meetsFrenchToSlovakThreshold = frenchToSlovakScore >= 0.75;
+      const meetsSlovakToFrenchThreshold = slovakToFrenchScore >= 0.75;
+
+      if (meetsFrenchToSlovakThreshold && meetsSlovakToFrenchThreshold && qualifiesMasteringOverall) {
+        return 'mastered';
+      }
+    }
 
     if (total >= minMastering  && successRate >= masteringRate) return 'mastering';
     if (total >= minStruggling && successRate < strugglingRate) return 'struggling';

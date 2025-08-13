@@ -85,9 +85,14 @@ async function ensureAudioLibLoaded() {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector('script[src$="audio.js"]');
     if (existing) {
-      existing.addEventListener('load', () => resolve(true));
-      existing.addEventListener('error', () => reject(new Error('Failed to load audio.js')));
-    return;
+      // If script exists but AudioLib isn't ready yet, wait for it
+      if (window.AudioLib && typeof window.AudioLib.play === 'function') {
+        resolve(true);
+      } else {
+        existing.addEventListener('load', () => resolve(true));
+        existing.addEventListener('error', () => reject(new Error('Failed to load audio.js')));
+      }
+      return;
     }
     const script = document.createElement('script');
     script.src = 'audio.js';
@@ -115,6 +120,7 @@ class QuizStateMachine {
     this.feedbackData            = null;
     this.user                    = null;
     this.isGlobalAdaptive        = false;
+    this.autoAudioEnabled        = this.getAutoAudioSetting();
 
     // UI state
     this.matchingSelections      = {};
@@ -305,6 +311,22 @@ class QuizStateMachine {
     return this.enabledQuizTypes[this.currentQuizTypeIndex];
   }
 
+  getMasteryQuizDirection() {
+    // Get the current direction from localStorage, default to Slovak to French
+    const lastDirection = localStorage.getItem('masteryQuizDirection') || QuizTypes.SLOVAK_TO_FRENCH_TYPING;
+
+    // Alternate to the opposite direction
+    const newDirection = lastDirection === QuizTypes.SLOVAK_TO_FRENCH_TYPING
+      ? QuizTypes.FRENCH_TO_SLOVAK_TYPING
+      : QuizTypes.SLOVAK_TO_FRENCH_TYPING;
+
+    // Store the new direction for next time
+    localStorage.setItem('masteryQuizDirection', newDirection);
+
+    console.log(`Mastery quiz direction: ${lastDirection} -> ${newDirection}`);
+    return newDirection;
+  }
+
   // Event handlers
   bindEvents() {
     // Global keyboard handler
@@ -322,6 +344,14 @@ class QuizStateMachine {
       if (nextButton && !nextButton.disabled) {
         event.preventDefault();
         await this.continue();
+      }
+    }
+    // Handle Enter key for restart button on completion screen
+    else if (this.state === QuizStates.QUIZ_COMPLETE) {
+      const restartButton = document.querySelector('#restart-quiz-button');
+      if (restartButton && !restartButton.disabled) {
+        event.preventDefault();
+        await this.restart();
       }
     }
   }
@@ -409,6 +439,14 @@ class QuizStateMachine {
   async restart() {
     console.log('restart() called');
     this.currentQuizTypeIndex = 0;
+
+    // If this is a mastery quiz, update the direction for the new session
+    if (this.selectionMode === 'mastered') {
+      const newDirection = this.getMasteryQuizDirection();
+      this.enabledQuizTypes = [newDirection];
+      console.log('Mastery quiz restart: updated direction to', newDirection);
+    }
+
     await this.startQuiz(); // This will select new random words
   }
 
@@ -483,7 +521,10 @@ class QuizStateMachine {
     }
 
     this.container.innerHTML = `
-      <div class="quiz-start">
+      <div class="quiz-start" style="position: relative;">
+        <button class="btn btn-outline btn-sm" id="auto-audio-toggle" style="position: absolute; top: 10px; left: 10px; font-size: 18px; padding: 8px 12px; z-index: 100;" title="${this.autoAudioEnabled ? 'Audio automatique activé' : 'Audio automatique désactivé'}">
+          ${this.autoAudioEnabled ? '🔊' : '🔇'}
+        </button>
         ${pendingNotification}
         <button class="btn btn-success btn-lg start-button" id="start-quiz-button">
           Commencer le Quiz "${this.quizName}"
@@ -498,6 +539,13 @@ class QuizStateMachine {
         console.error("Error uploading pending results:", error);
       }
       await this.startQuiz();
+    });
+
+    document.getElementById('auto-audio-toggle').addEventListener('click', () => {
+      this.setAutoAudioSetting(!this.autoAudioEnabled);
+      const toggleButton = document.getElementById('auto-audio-toggle');
+      toggleButton.innerHTML = this.autoAudioEnabled ? '🔊' : '🔇';
+      toggleButton.title = this.autoAudioEnabled ? 'Audio automatique activé' : 'Audio automatique désactivé';
     });
   }
 
@@ -522,7 +570,10 @@ class QuizStateMachine {
     }
 
     this.container.innerHTML = `
-      <div class="adaptive-quiz-menu">
+      <div class="adaptive-quiz-menu" style="position: relative;">
+        <button class="btn btn-outline btn-sm" id="auto-audio-toggle" style="position: absolute; top: 10px; left: 10px; font-size: 18px; padding: 8px 12px; z-index: 100;" title="${this.autoAudioEnabled ? 'Audio automatique activé' : 'Audio automatique désactivé'}">
+          ${this.autoAudioEnabled ? '🔊' : '🔇'}
+        </button>
         ${pendingNotification}
         <h2 style="color: #007bff; margin-bottom: 30px;">Quiz Adaptatif - ${this.quizName}</h2>
         <p style="margin-bottom: 30px; color: #495057;">${subtitle}</p>
@@ -579,12 +630,15 @@ class QuizStateMachine {
             // Keep original quiz name for 'all' mode
             break;
           case 'mastered':
-            // Limit to maxWords and use only typing quizzes for mastered OR mastering words
+            // Limit to maxWords and use only ONE typing direction per session (alternating)
             const masteredOrMastering = [...(categories.mastered || []), ...(categories.mastering || [])];
             selectionPool = masteredOrMastering;
             const shuffledMastered = this.shuffleArray(selectionPool);
             selectedWordPairs      = shuffledMastered.slice(0, Math.min(maxWords, selectionPool.length));
-            enabledQuizTypes       = [QuizTypes.SLOVAK_TO_FRENCH_TYPING, QuizTypes.FRENCH_TO_SLOVAK_TYPING];
+
+            // Alternate direction for mastery quizzes
+            const currentDirection = this.getMasteryQuizDirection();
+            enabledQuizTypes       = [currentDirection];
             this.selectionMode     = 'mastered';
             break;
           case 'learning':
@@ -621,7 +675,13 @@ class QuizStateMachine {
       });
     });
 
-
+    // Bind auto audio toggle button for adaptive menu
+    document.getElementById('auto-audio-toggle').addEventListener('click', () => {
+      this.setAutoAudioSetting(!this.autoAudioEnabled);
+      const toggleButton = document.getElementById('auto-audio-toggle');
+      toggleButton.innerHTML = this.autoAudioEnabled ? '🔊' : '🔇';
+      toggleButton.title = this.autoAudioEnabled ? 'Audio automatique activé' : 'Audio automatique désactivé';
+    });
   }
 
   async renderActiveQuiz() {
@@ -740,6 +800,9 @@ class QuizStateMachine {
       const questionElement = this.container.querySelector('.question');
       const audioEmoji      = this.createAudioEmoji(questionText);
       questionElement.appendChild(audioEmoji);
+
+      // Play auto audio for Slovak questions at the start (with half-second delay)
+      this.playAutoAudio(questionText, 500);
     }
 
     const choicesContainer = this.container.querySelector('.choices');
@@ -808,8 +871,11 @@ class QuizStateMachine {
     if (!isFrenchQuestion) {
       const questionElement = this.container.querySelector('.question');
       const audioEmoji = this.createAudioEmoji(questionText);
-    questionElement.appendChild(audioEmoji);
-  }
+      questionElement.appendChild(audioEmoji);
+
+      // Play auto audio for Slovak questions at the start (with half-second delay)
+      this.playAutoAudio(questionText, 500);
+    }
 
     const inputField = this.container.querySelector('.typing-input');
     const submitButton = this.container.querySelector('.submit-button');
@@ -924,6 +990,9 @@ class QuizStateMachine {
       <div class="reorder-letters-container"></div>
       <button class="btn btn-primary submit-button" disabled>Vérifier</button>
     `;
+
+    // Note: Reorder quiz shows French question but doesn't need auto audio at start
+    // Auto audio will play the Slovak answer when validating
 
     this.updateReorderDisplay();
 
@@ -1087,15 +1156,23 @@ class QuizStateMachine {
 
   showMultipleChoiceFeedback(answer, isCorrect) {
     // Feedback is already shown by the button highlighting in renderMultipleChoiceQuiz
-    // Just add audio emoji for correct Slovak answers
-    if (isCorrect && this.currentQuestion.direction === 'french_to_slovak') {
-      const choicesContainer = this.container.querySelector('.choices');
-      const correctButton = Array.from(choicesContainer.querySelectorAll('button')).find(btn =>
-        btn.textContent.includes(this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer)
-      );
-      if (correctButton && !correctButton.querySelector('.audio-emoji')) {
-        const audioEmoji = this.createAudioEmoji(this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer);
-        correctButton.appendChild(audioEmoji);
+    // Add auto audio for Slovak answers (only for French→Slovak direction)
+    if (this.currentQuestion.direction === 'french_to_slovak') {
+      const slovakAnswer = this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer;
+
+      // Play auto audio when showing the Slovak answer
+      this.playAutoAudio(slovakAnswer);
+
+      // Also add audio emoji for correct answers
+      if (isCorrect) {
+        const choicesContainer = this.container.querySelector('.choices');
+        const correctButton = Array.from(choicesContainer.querySelectorAll('button')).find(btn =>
+          btn.textContent.includes(slovakAnswer)
+        );
+        if (correctButton && !correctButton.querySelector('.audio-emoji')) {
+          const audioEmoji = this.createAudioEmoji(slovakAnswer);
+          correctButton.appendChild(audioEmoji);
+        }
       }
     }
   }
@@ -1107,10 +1184,16 @@ class QuizStateMachine {
     const feedbackDiv = document.createElement('div');
     feedbackDiv.className = 'feedback typing-feedback';
 
+    // Play auto audio for Slovak answers (both correct and incorrect) - only for French→Slovak direction
+    if (this.currentQuestion.direction === 'french_to_slovak') {
+      const slovakAnswer = this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer;
+      this.playAutoAudio(slovakAnswer);
+    }
+
     if (isCorrect) {
       feedbackDiv.innerHTML = `<span class="feedback-success">✓ Correct!</span>`;
 
-      // Add audio for correct Slovak answers
+      // Add audio emoji for correct Slovak answers
       if (this.currentQuestion.direction === 'french_to_slovak') {
         const audioEmoji = this.createAudioEmoji(this.currentQuestion.originalCorrectAnswer, '10px');
         feedbackDiv.appendChild(audioEmoji);
@@ -1125,7 +1208,7 @@ class QuizStateMachine {
         <span class="feedback-info">Réponse correcte: "${this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer}"</span>
       `;
 
-      // Add audio for incorrect Slovak answers
+      // Add audio emoji for incorrect Slovak answers
       if (this.currentQuestion.direction === 'french_to_slovak') {
         const audioEmoji = this.createAudioEmoji(this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer);
         feedbackDiv.appendChild(audioEmoji);
@@ -1142,22 +1225,26 @@ class QuizStateMachine {
     const feedbackDiv = document.createElement('div');
     feedbackDiv.className = 'feedback reorder-feedback';
 
-  if (isCorrect) {
+    // Play auto audio for reorder answers (always Slovak answers)
+    const slovakAnswer = this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer;
+    this.playAutoAudio(slovakAnswer);
+
+    if (isCorrect) {
       feedbackDiv.innerHTML = `<span class="feedback-success">✓ Correct!</span>`;
 
-      // Add audio for correct answers
-      const audioEmoji = this.createAudioEmoji(this.currentQuestion.originalCorrectAnswer, '10px');
+      // Add audio emoji for correct answers
+      const audioEmoji = this.createAudioEmoji(slovakAnswer, '10px');
       feedbackDiv.appendChild(audioEmoji);
-  } else {
+    } else {
       const almostNote = this.currentQuestion.isAlmost ? ' (Presque)' : '';
       const metricInfo = typeof this.currentQuestion.mistakeMetric === 'number' ? ` (écart: ${this.currentQuestion.mistakeMetric})` : '';
       feedbackDiv.innerHTML = `
         <span class="feedback-error">✗ Incorrect${almostNote}${metricInfo}</span><br>
-        <span class="feedback-info">Réponse correcte: "${this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer}"</span>
+        <span class="feedback-info">Réponse correcte: "${slovakAnswer}"</span>
       `;
 
-      // Add audio for incorrect answers
-      const audioEmoji = this.createAudioEmoji(this.currentQuestion.originalCorrectAnswer || this.currentQuestion.correctAnswer);
+      // Add audio emoji for incorrect answers
+      const audioEmoji = this.createAudioEmoji(slovakAnswer);
       feedbackDiv.appendChild(audioEmoji);
     }
 
@@ -1198,6 +1285,37 @@ class QuizStateMachine {
     const nextType = this.enabledQuizTypes[nextIndex];
 
     return typeDisplayNames[nextType] || 'Quiz Suivant';
+  }
+
+  getAutoAudioSetting() {
+    const saved = localStorage.getItem('autoAudioEnabled');
+    return saved === null ? true : saved === 'true'; // Default to enabled
+  }
+
+  setAutoAudioSetting(enabled) {
+    this.autoAudioEnabled = enabled;
+    localStorage.setItem('autoAudioEnabled', enabled.toString());
+  }
+
+  async playAutoAudio(slovakWord, delay = 0) {
+    if (!this.autoAudioEnabled || !slovakWord) return;
+
+    const playAudio = async () => {
+      try {
+        await ensureAudioLibLoaded();
+        if (window.AudioLib && typeof window.AudioLib.play === 'function') {
+          window.AudioLib.play(slovakWord);
+        }
+      } catch (error) {
+        console.error('Auto audio playback failed:', error);
+      }
+    };
+
+    if (delay > 0) {
+      setTimeout(playAudio, delay);
+    } else {
+      await playAudio();
+    }
   }
 
   // Utility methods
@@ -1369,6 +1487,9 @@ class QuizStateMachine {
       this.matchingPairs[frenchWord] = slovakWord;
       delete this.matchingSelections.french;
       delete this.matchingSelections.slovak;
+
+      // Play auto audio when creating a French-Slovak link
+      this.playAutoAudio(slovakWord);
 
       document.querySelectorAll('.matching-word').forEach(button => {
         button.classList.remove('selected');
