@@ -836,12 +836,19 @@ class QuizStateMachine {
 
     const handleSubmit = () => {
       const userAnswer = this.cleanWordForInput(inputField.value.trim());
-      const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+      let isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
 
       // Compute mistake metric and almost classification for typing
       const mistakeMetric = this.computeMistakeMetric(userAnswer, correctAnswer);
       const threshold = this.getAlmostThreshold(correctAnswer.length);
       const isAlmost = !isCorrect && mistakeMetric <= threshold;
+
+      // For Slovak to French typing, treat "almost" answers as correct
+      // This accounts for small typos that don't represent real knowledge gaps
+      if (!isFrenchQuestion && isAlmost) {
+        isCorrect = true;
+      }
+
       this.currentQuestion.mistakeMetric = mistakeMetric;
       this.currentQuestion.isAlmost = isAlmost;
 
