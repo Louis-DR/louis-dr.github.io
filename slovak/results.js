@@ -105,16 +105,19 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
   const allWordSets = new Set(); // Track all unique word sets
 
   // Build a time-ordered list of results to compute recent mastery typing rates
+  // Use consistent timestamp normalization across all widgets
   const orderedResults = Object.values(allResults)
     .map(r => ({
       ...r,
-      _ts: (() => {
-        const raw        = r.completionTimestamp || r.timestamp || r.date;
-        const str        = typeof raw === 'number' ? new Date(raw).toISOString() : String(raw || '');
-        const normalized = (str.includes(' ') && !str.includes('T')) ? str.replace(' ', 'T') : str;
-        const d          = new Date(normalized);
-        return isNaN(d.getTime()) ? 0 : d.getTime();
-      })()
+      _ts: window.SlovakData ?
+        window.SlovakData.normalizeTimestamp(r.completionTimestamp || r.timestamp || r.date) :
+        (() => {
+          const raw        = r.completionTimestamp || r.timestamp || r.date;
+          const str        = typeof raw === 'number' ? new Date(raw).toISOString() : String(raw || '');
+          const normalized = (str.includes(' ') && !str.includes('T')) ? str.replace(' ', 'T') : str;
+          const d          = new Date(normalized);
+          return isNaN(d.getTime()) ? 0 : d.getTime();
+        })()
     }))
     .sort((a, b) => a._ts - b._ts);
 
@@ -328,22 +331,6 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
 
     stats.masterySlovakToFrenchRate = slovakToFrenchRate !== null ? slovakToFrenchRate.toFixed(1) : '-';
     stats.masteryFrenchToSlovakRate = frenchToSlovakRate !== null ? frenchToSlovakRate.toFixed(1) : '-';
-
-    // Determine mastery status based on the new criteria (75% in both directions + overall mastering)
-    const meetsFrenchToSlovak = frenchToSlovakRate !== null && frenchToSlovakRate >= 75;
-    const meetsSlovakToFrench = slovakToFrenchRate !== null && slovakToFrenchRate >= 75;
-    const overallSuccessRate = stats.totalQuestions > 0 ? ((stats.totalQuestions - stats.totalErrors) / stats.totalQuestions) * 100 : 0;
-    const qualifiesOverall = stats.totalQuestions >= 5 && overallSuccessRate >= 90;
-
-    if (meetsFrenchToSlovak && meetsSlovakToFrench && qualifiesOverall) {
-      stats.masteryStatus = 'mastered';
-    } else if (qualifiesOverall) {
-      stats.masteryStatus = 'mastering';
-    } else if (stats.totalQuestions >= 1 && overallSuccessRate < 70) {
-      stats.masteryStatus = 'struggling';
-    } else {
-      stats.masteryStatus = 'learning';
-    }
   });
 
   // Convert wordSets from Set to Array for each word pair
@@ -352,7 +339,7 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
     wordSets: Array.from(stats.wordSets).sort() // Convert Set to sorted Array
   }));
 
-  // Compute recent rolling success rate (same criteria window used for mastering)
+  // Compute recent rolling success rate and proper mastery status using shared criteria
   try {
     if (window.SlovakData && typeof window.SlovakData.buildPerWordAttempts === 'function') {
       const perWord = window.SlovakData.buildPerWordAttempts(allResults);
@@ -361,18 +348,52 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
       result.forEach(stats => {
         const key = `${stats.frenchWord}|${stats.slovakWord}`;
         const node = perWord.get(key);
-        if (node && typeof window.SlovakData.computeWindowStats === 'function') {
-          const { total, successRate } = window.SlovakData.computeWindowStats(node.attempts, nowTs, thresholds.windowSize);
-          stats.recentWindowTotal = total;
-          stats.recentWindowRate = total > 0 ? successRate.toFixed(1) : '-';
+        if (node) {
+          // Compute rolling window stats
+          if (typeof window.SlovakData.computeWindowStats === 'function') {
+            const { total, successRate } = window.SlovakData.computeWindowStats(node.attempts, nowTs, thresholds.windowSize);
+            stats.recentWindowTotal = total;
+            stats.recentWindowRate = total > 0 ? successRate.toFixed(1) : '-';
+          } else {
+            stats.recentWindowTotal = 0;
+            stats.recentWindowRate = '-';
+          }
+
+          // Compute proper mastery status using shared criteria
+          if (typeof window.SlovakData.categorizeWordByCriteria === 'function') {
+            const masteryStatus = window.SlovakData.categorizeWordByCriteria(node, nowTs, thresholds, filterWordSet);
+            stats.masteryStatus = masteryStatus || 'learning';
+          } else {
+            // Fallback to simple logic if shared function unavailable
+            const overallSuccessRate = stats.totalQuestions > 0 ? ((stats.totalQuestions - stats.totalErrors) / stats.totalQuestions) * 100 : 0;
+            if (stats.totalQuestions >= 5 && overallSuccessRate >= 90) {
+              stats.masteryStatus = 'mastering';
+            } else if (stats.totalQuestions >= 1 && overallSuccessRate < 70) {
+              stats.masteryStatus = 'struggling';
+            } else {
+              stats.masteryStatus = 'learning';
+            }
+          }
         } else {
           stats.recentWindowTotal = 0;
           stats.recentWindowRate = '-';
+          stats.masteryStatus = 'learning';
         }
       });
     }
   } catch (e) {
-    console.warn('Failed computing recent rolling rates:', e);
+    console.warn('Failed computing recent rolling rates and mastery status:', e);
+    // Fallback mastery status calculation
+    result.forEach(stats => {
+      const overallSuccessRate = stats.totalQuestions > 0 ? ((stats.totalQuestions - stats.totalErrors) / stats.totalQuestions) * 100 : 0;
+      if (stats.totalQuestions >= 5 && overallSuccessRate >= 90) {
+        stats.masteryStatus = 'mastering';
+      } else if (stats.totalQuestions >= 1 && overallSuccessRate < 70) {
+        stats.masteryStatus = 'struggling';
+      } else {
+        stats.masteryStatus = 'learning';
+      }
+    });
   }
 
   return {
@@ -888,7 +909,16 @@ function displayProgressionChart(progressionData, filterWordSet = 'all') {
  * Extract and prepare daily activity data for bar chart
  */
 function prepareDailyActivityData(allResults, filterWordSet = 'all') {
-  // Collect all quiz results with timestamps
+  // Use consistent date handling with progression chart
+  // IMPORTANT: All widgets must use the same date normalization to ensure
+  // quizzes appear on the same day across all charts and tables.
+  // Uses local timezone (not UTC) so midnight quizzes appear correctly.
+  if (!window.SlovakData) {
+    console.warn('SlovakData not loaded; falling back to empty activity data');
+    return { dailyActivity: [], labels: [] };
+  }
+
+  // Collect all quiz results with timestamps using consistent normalization
   const timelineData = [];
 
   Object.values(allResults).forEach(result => {
@@ -898,26 +928,19 @@ function prepareDailyActivityData(allResults, filterWordSet = 'all') {
         return;
       }
 
-      let date;
-      if (typeof rawTs === 'number') {
-        date = new Date(rawTs);
-      } else {
-        const tsString = String(rawTs);
-        const normalized = (tsString.includes(' ') && !tsString.includes('T')) ? tsString.replace(' ', 'T') : tsString;
-        date = new Date(normalized);
-      }
-
-      // Check for invalid date
-      if (isNaN(date.getTime())) {
+      // Use the same timestamp normalization as progression chart
+      const timestamp = window.SlovakData.normalizeTimestamp(rawTs);
+      if (timestamp === 0) {
         console.warn('Invalid timestamp found in activity data:', rawTs);
         return; // Skip this result
       }
 
-      const dayKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+      // Use the same local date key extraction as progression chart
+      const dayKey = window.SlovakData.localDateKeyFromTs(timestamp);
 
       timelineData.push({
         date: dayKey,
-        timestamp: date.getTime(),
+        timestamp: timestamp,
         quizName: result.quizName || 'Unknown Quiz',
         selectionMode: result.selectionMode || 'all',
         words: result.words

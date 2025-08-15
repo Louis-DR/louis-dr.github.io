@@ -1236,10 +1236,11 @@ class QuizStateMachine {
       const audioEmoji = this.createAudioEmoji(slovakAnswer, '10px');
       feedbackDiv.appendChild(audioEmoji);
     } else {
-      const almostNote = this.currentQuestion.isAlmost ? ' (Presque)' : '';
-      const metricInfo = typeof this.currentQuestion.mistakeMetric === 'number' ? ` (écart: ${this.currentQuestion.mistakeMetric})` : '';
+      const feedbackClass   = this.currentQuestion.isAlmost ? 'feedback-almost' : 'feedback-error';
+      const feedbackMessage = this.currentQuestion.isAlmost ? 'Presque' : 'Incorrect';
+      const metricInfo      = typeof this.currentQuestion.mistakeMetric === 'number' ? ` (écart: ${this.currentQuestion.mistakeMetric})` : '';
       feedbackDiv.innerHTML = `
-        <span class="feedback-error">✗ Incorrect${almostNote}${metricInfo}</span><br>
+        <span class="${feedbackClass}">✗ ${feedbackMessage}${metricInfo}</span><br>
         <span class="feedback-info">Réponse correcte: "${slovakAnswer}"</span>
       `;
 
