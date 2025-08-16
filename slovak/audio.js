@@ -2,11 +2,14 @@
 (function() {
   function sanitize(text) {
     return String(text || '')
+      .replace(/\s*\([^)]*\)\s*/g, '') // Remove anything in parentheses and surrounding spaces
+      .trim() // Remove leading/trailing whitespace
+      .replace(/\s+/g, ' ') // Normalize multiple spaces to single space
       .toLowerCase()
       .replaceAll('/', '-')
       .replaceAll('.', '')
       .replaceAll('?', '')
-      .trim();
+      .trim(); // Final trim after all processing
   }
 
   function play(text) {
