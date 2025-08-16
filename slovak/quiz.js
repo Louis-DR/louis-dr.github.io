@@ -1943,7 +1943,7 @@ class QuizStateMachine {
         return;
       }
 
-      let successCount = 0;
+      let processedCount = 0; // Successfully processed (uploaded OR already exists)
       const failedResults = [];
 
       for (const result of pendingResults) {
@@ -1961,9 +1961,9 @@ class QuizStateMachine {
 
           const snapshot = await Promise.race([checkPromise, timeoutPromise]);
           if (snapshot.exists()) {
-            console.log(`Pending result ${cleanResult.uniqueId} already exists in Firebase for user ${this.user.uid}, skipping duplicate`);
-            successCount++;
-            continue;
+            console.log(`Pending result ${cleanResult.uniqueId} already exists in Firebase for user ${this.user.uid}, removing from pending queue`);
+            processedCount++;
+            continue; // Don't add to failedResults - this should be removed from pending
           }
 
           const uploadPromise = set(resultRef, cleanResult);
@@ -1973,7 +1973,7 @@ class QuizStateMachine {
 
           await Promise.race([uploadPromise, uploadTimeoutPromise]);
           console.log(`Uploaded pending result. ID: ${cleanResult.uniqueId} for user ${this.user.uid}`);
-          successCount++;
+          processedCount++;
         } catch (uploadError) {
           console.error("Failed to upload individual pending result:", uploadError);
           failedResults.push(result);
@@ -1988,8 +1988,8 @@ class QuizStateMachine {
         console.log('All pending results uploaded successfully');
       }
 
-      if (successCount > 0 && pendingResults.length > 0) {
-        console.log(`Successfully uploaded ${successCount} pending results`);
+      if (processedCount > 0 && pendingResults.length > 0) {
+        console.log(`Successfully processed ${processedCount} pending results (uploaded or already existed)`);
       }
     } catch (error) {
       console.error("Error uploading pending results:", error);
