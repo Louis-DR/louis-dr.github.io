@@ -1937,6 +1937,12 @@ class QuizStateMachine {
 
       const { ref, set, get } = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js");
 
+      // Check if user is available for upload
+      if (!this.user) {
+        console.log("User not logged in, cannot upload pending results. Keeping them pending.");
+        return;
+      }
+
       let successCount = 0;
       const failedResults = [];
 
@@ -1945,7 +1951,8 @@ class QuizStateMachine {
           const cleanResult = { ...result };
           delete cleanResult.localStorageTimestamp;
 
-          const resultRef = ref(database, `results/${cleanResult.uniqueId}`);
+          // Use correct Firebase path with user ID (same as pushQuizResultsToFirebase)
+          const resultRef = ref(database, `results/${this.user.uid}/${cleanResult.uniqueId}`);
 
           const checkPromise = get(resultRef);
           const timeoutPromise = new Promise((_, reject) =>
@@ -1954,7 +1961,7 @@ class QuizStateMachine {
 
           const snapshot = await Promise.race([checkPromise, timeoutPromise]);
           if (snapshot.exists()) {
-            console.log(`Pending result ${cleanResult.uniqueId} already exists in Firebase, skipping duplicate`);
+            console.log(`Pending result ${cleanResult.uniqueId} already exists in Firebase for user ${this.user.uid}, skipping duplicate`);
             successCount++;
             continue;
           }
@@ -1965,7 +1972,7 @@ class QuizStateMachine {
           );
 
           await Promise.race([uploadPromise, uploadTimeoutPromise]);
-          console.log(`Uploaded pending result. ID: ${cleanResult.uniqueId}`);
+          console.log(`Uploaded pending result. ID: ${cleanResult.uniqueId} for user ${this.user.uid}`);
           successCount++;
         } catch (uploadError) {
           console.error("Failed to upload individual pending result:", uploadError);
