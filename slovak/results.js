@@ -403,22 +403,9 @@ function aggregateWordPairStats(allResults, filterWordSet = null) {
 }
 
 /**
- * Create and display the results table
+ * Create and display the results header with filter
  */
-function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all') {
-  // Sort by recent rolling success rate (ascending). If equal, fallback to global success rate.
-  wordPairStats.sort((a, b) => {
-    const recentA = a.recentWindowRate === '-' ? -1 : parseFloat(a.recentWindowRate);
-    const recentB = b.recentWindowRate === '-' ? -1 : parseFloat(b.recentWindowRate);
-    if (recentA !== recentB) return recentA - recentB;
-
-    const globalA = a.totalQuestions > 0 ? ((a.totalQuestions - a.totalErrors) / a.totalQuestions) * 100 : 100;
-    const globalB = b.totalQuestions > 0 ? ((b.totalQuestions - b.totalErrors) / b.totalQuestions) * 100 : 100;
-    if (globalA !== globalB) return globalA - globalB;
-
-    return a.totalQuestions - b.totalQuestions;
-  });
-
+function displayResultsHeader(allWordSets, selectedWordSet = 'all') {
   // Get or create container
   let container = document.querySelector('.results-container');
   if (!container) {
@@ -477,6 +464,26 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
   headerSection.appendChild(filterSection);
 
   container.appendChild(headerSection);
+}
+
+/**
+ * Create and display the results table
+ */
+function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all') {
+  // Sort by recent rolling success rate (ascending). If equal, fallback to global success rate.
+  wordPairStats.sort((a, b) => {
+    const recentA = a.recentWindowRate === '-' ? -1 : parseFloat(a.recentWindowRate);
+    const recentB = b.recentWindowRate === '-' ? -1 : parseFloat(b.recentWindowRate);
+    if (recentA !== recentB) return recentA - recentB;
+
+    const globalA = a.totalQuestions > 0 ? ((a.totalQuestions - a.totalErrors) / a.totalQuestions) * 100 : 100;
+    const globalB = b.totalQuestions > 0 ? ((b.totalQuestions - b.totalErrors) / b.totalQuestions) * 100 : 100;
+    if (globalA !== globalB) return globalA - globalB;
+
+    return a.totalQuestions - b.totalQuestions;
+  });
+
+  const container = document.querySelector('.results-container');
 
   // Create table wrapper for horizontal scrolling
   const tableWrapper = document.createElement('div');
@@ -744,12 +751,36 @@ function displayProgressionChart(progressionData, filterWordSet = 'all') {
   const chartContainer = document.createElement('div');
   chartContainer.className = 'chart-container';
 
+  // Create title and toggle container
+  const titleContainer = document.createElement('div');
+  titleContainer.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;';
+
   const chartTitle = document.createElement('h3');
   const titleText = filterWordSet === 'all'
     ? 'Progression de l\'Apprentissage dans le Temps'
     : `Progression de l\'Apprentissage dans le Temps - ${filterWordSet}`;
   chartTitle.textContent = titleText;
-  chartContainer.appendChild(chartTitle);
+  chartTitle.style.margin = '0';
+  titleContainer.appendChild(chartTitle);
+
+  // Create toggle switch
+  const toggleContainer = document.createElement('div');
+  toggleContainer.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+
+  const toggleLabel = document.createElement('label');
+  toggleLabel.textContent = 'Pourcentage:';
+  toggleLabel.style.cssText = 'font-size: 14px; font-weight: normal;';
+
+  const toggleSwitch = document.createElement('input');
+  toggleSwitch.type = 'checkbox';
+  toggleSwitch.id = 'progression-percentage-toggle';
+  toggleSwitch.style.cssText = 'cursor: pointer; transform: scale(1.2);';
+
+  toggleContainer.appendChild(toggleLabel);
+  toggleContainer.appendChild(toggleSwitch);
+  titleContainer.appendChild(toggleContainer);
+
+  chartContainer.appendChild(titleContainer);
 
   // Create canvas for chart
   const canvas = document.createElement('canvas');
@@ -770,48 +801,60 @@ function displayProgressionChart(progressionData, filterWordSet = 'all') {
     document.body.appendChild(chartContainer);
   }
 
-  // Prepare chart data for stacked area chart
-  const chartData = {
-    labels: progressionData.labels,
-    datasets: [
-      {
-        label: 'Mots Maîtrisés',
-        data: progressionData.dailyStats.map(day => day.mastered),
-        backgroundColor: 'hsla(130, 60%, 40%, 0.80)',
-        borderColor: 'hsl(130, 60%, 40%)',
-        borderWidth: 1.5,
-        fill: true,
-        stepped: true // For step effect
-      },
-      {
-        label: 'Mots en Maîtrise',
-        data: progressionData.dailyStats.map(day => day.mastering || 0),
-        backgroundColor: 'hsla(210, 80%, 50%, 0.80)',
-        borderColor: 'hsl(210, 80%, 50%)',
-        borderWidth: 1.5,
-        fill: true,
-        stepped: true
-      },
-      {
-        label: 'Mots en Apprentissage',
-        data: progressionData.dailyStats.map(day => day.learning || 0),
-        backgroundColor: 'hsla(45, 80%, 50%, 0.80)',
-        borderColor: 'hsl(45, 80%, 50%)',
-        borderWidth: 1.5,
-        fill: true,
-        stepped: true
-      },
-      {
-        label: 'Mots Difficiles',
-        data: progressionData.dailyStats.map(day => day.struggling),
-        backgroundColor: 'hsla(0, 60%, 50%, 0.80)',
-        borderColor: 'hsl(0, 60%, 50%)',
-        borderWidth: 1.5,
-        fill: true,
-        stepped: true // For step effect
+  // Function to create chart data based on toggle state
+  const createChartData = (isPercentage) => {
+    const getData = (key) => progressionData.dailyStats.map(day => {
+      if (isPercentage && day.total > 0) {
+        return (day[key] / day.total) * 100;
       }
-    ]
+      return day[key] || 0;
+    });
+
+    return {
+      labels: progressionData.labels,
+      datasets: [
+        {
+          label: 'Mots Maîtrisés',
+          data: getData('mastered'),
+          backgroundColor: 'hsla(130, 60%, 40%, 0.80)',
+          borderColor: 'hsl(130, 60%, 40%)',
+          borderWidth: 1.5,
+          fill: true,
+          stepped: true
+        },
+        {
+          label: 'Mots en Maîtrise',
+          data: getData('mastering'),
+          backgroundColor: 'hsla(210, 80%, 50%, 0.80)',
+          borderColor: 'hsl(210, 80%, 50%)',
+          borderWidth: 1.5,
+          fill: true,
+          stepped: true
+        },
+        {
+          label: 'Mots en Apprentissage',
+          data: getData('learning'),
+          backgroundColor: 'hsla(45, 80%, 50%, 0.80)',
+          borderColor: 'hsl(45, 80%, 50%)',
+          borderWidth: 1.5,
+          fill: true,
+          stepped: true
+        },
+        {
+          label: 'Mots Difficiles',
+          data: getData('struggling'),
+          backgroundColor: 'hsla(0, 60%, 50%, 0.80)',
+          borderColor: 'hsl(0, 60%, 50%)',
+          borderWidth: 1.5,
+          fill: true,
+          stepped: true
+        }
+      ]
+    };
   };
+
+  // Initial chart data (absolute numbers)
+  let chartData = createChartData(false);
 
   // Chart configuration for stacked area chart (Chart.js v3 compatible)
   const chartConfig = {
@@ -839,7 +882,8 @@ function displayProgressionChart(progressionData, filterWordSet = 'all') {
             text: 'Nombre de Mots'
           },
           stacked: true,
-          beginAtZero: true
+          beginAtZero: true,
+          max: undefined // Will be set dynamically for percentage mode
         }
       },
       elements: {
@@ -867,6 +911,30 @@ function displayProgressionChart(progressionData, filterWordSet = 'all') {
     }
   };
 
+  // Function to initialize chart
+  const initializeChart = () => {
+    if (typeof Chart !== 'undefined') {
+      const chart = new Chart(canvas, chartConfig);
+
+      // Add toggle functionality
+      toggleSwitch.addEventListener('change', () => {
+        const isPercentage = toggleSwitch.checked;
+        chart.data = createChartData(isPercentage);
+
+        // Update Y-axis
+        if (isPercentage) {
+          chart.options.scales.y.title.text = 'Pourcentage de Mots';
+          chart.options.scales.y.max = 100;
+        } else {
+          chart.options.scales.y.title.text = 'Nombre de Mots';
+          chart.options.scales.y.max = undefined;
+        }
+
+        chart.update();
+      });
+    }
+  };
+
   // Load Chart.js dynamically and create chart (or use if already loaded)
   if (typeof Chart === 'undefined') {
     // Check if Chart.js is already being loaded by another chart
@@ -874,11 +942,7 @@ function displayProgressionChart(progressionData, filterWordSet = 'all') {
     if (existingScript) {
       // Wait for existing script to load
       console.log('Waiting for Chart.js to load for progression chart...');
-      existingScript.addEventListener('load', () => {
-        if (typeof Chart !== 'undefined') {
-          new Chart(canvas, chartConfig);
-        }
-      });
+      existingScript.addEventListener('load', initializeChart);
     } else {
       // Load Chart.js for the first time
       console.log('Loading Chart.js library for progression chart...');
@@ -886,11 +950,7 @@ function displayProgressionChart(progressionData, filterWordSet = 'all') {
       script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
       script.onload = () => {
         console.log('Chart.js loaded successfully for progression chart');
-        if (typeof Chart !== 'undefined') {
-          new Chart(canvas, chartConfig);
-        } else {
-          console.error('Chart.js failed to load properly');
-        }
+        initializeChart();
       };
       script.onerror = () => {
         console.error('Failed to load Chart.js from CDN');
@@ -899,10 +959,222 @@ function displayProgressionChart(progressionData, filterWordSet = 'all') {
     }
   } else {
     console.log('Chart.js already available for progression chart');
-    new Chart(canvas, chartConfig);
+    initializeChart();
   }
 
   console.log('Progression chart displayed with', progressionData.dailyStats.length, 'data points');
+}
+
+/**
+ * Prepare pace of progress data (deltas between consecutive days)
+ */
+function preparePaceData(progressionData) {
+  const paceData = [];
+
+  for (let index = 1; index < progressionData.dailyStats.length; index++) {
+    const current = progressionData.dailyStats[index];
+    const previous = progressionData.dailyStats[index - 1];
+
+    const deltaTotal = current.total - previous.total;
+    const deltaMastering = ((current.mastering || 0) + (current.mastered || 0)) - ((previous.mastering || 0) + (previous.mastered || 0));
+    const deltaMastered = current.mastered - previous.mastered;
+
+    paceData.push({
+      date: current.date,
+      deltaTotal,
+      deltaMastering,
+      deltaMastered
+    });
+  }
+
+  return {
+    paceData,
+    labels: paceData.map(day => {
+      const d = new Date(day.date);
+      return `${d.getDate()}/${d.getMonth() + 1}`;
+    })
+  };
+}
+
+/**
+ * Create and display the pace of progress chart
+ */
+function displayPaceChart(progressionData, filterWordSet = 'all') {
+  const paceInfo = preparePaceData(progressionData);
+
+  if (paceInfo.paceData.length === 0) {
+    console.log('No pace data to display');
+    return;
+  }
+
+  // Create chart container
+  const chartContainer = document.createElement('div');
+  chartContainer.className = 'chart-container pace-chart';
+
+  const chartTitle = document.createElement('h3');
+  const titleText = filterWordSet === 'all'
+    ? 'Rythme de Progression (Nouveaux Mots par Jour)'
+    : `Rythme de Progression (Nouveaux Mots par Jour) - ${filterWordSet}`;
+  chartTitle.textContent = titleText;
+  chartContainer.appendChild(chartTitle);
+
+  // Create canvas for chart
+  const canvas = document.createElement('canvas');
+  canvas.id = 'paceChart';
+  canvas.className = 'chart-canvas';
+  chartContainer.appendChild(canvas);
+
+  // Insert chart after the activity chart
+  const resultsContainer = document.querySelector('.results-container');
+  if (resultsContainer) {
+    const activityChart = resultsContainer.querySelector('.activity-chart');
+    if (activityChart && activityChart.nextSibling) {
+      resultsContainer.insertBefore(chartContainer, activityChart.nextSibling);
+    } else {
+      const tableWrapper = resultsContainer.querySelector('.results-table-wrapper');
+      if (tableWrapper) {
+        resultsContainer.insertBefore(chartContainer, tableWrapper);
+      } else {
+        resultsContainer.appendChild(chartContainer);
+      }
+    }
+  } else {
+    document.body.appendChild(chartContainer);
+  }
+
+  // Prepare chart data for line chart
+  const chartData = {
+    labels: paceInfo.labels,
+    datasets: [
+      {
+        label: 'Nouveaux Mots Total',
+        data: paceInfo.paceData.map(day => day.deltaTotal),
+        backgroundColor: 'hsla(45, 80%, 50%, 0.2)',
+        borderColor: 'hsl(45, 80%, 50%)',
+        borderWidth: 2,
+        fill: false,
+        pointBackgroundColor: 'hsl(45, 80%, 50%)',
+        pointBorderColor: 'hsl(45, 80%, 40%)',
+        pointBorderWidth: 2
+      },
+      {
+        label: 'Nouveaux Mots en Maîtrise',
+        data: paceInfo.paceData.map(day => day.deltaMastering),
+        backgroundColor: 'hsla(210, 80%, 50%, 0.2)',
+        borderColor: 'hsl(210, 80%, 50%)',
+        borderWidth: 2,
+        fill: false,
+        pointBackgroundColor: 'hsl(210, 80%, 50%)',
+        pointBorderColor: 'hsl(210, 80%, 40%)',
+        pointBorderWidth: 2
+      },
+      {
+        label: 'Nouveaux Mots Maîtrisés',
+        data: paceInfo.paceData.map(day => day.deltaMastered),
+        backgroundColor: 'hsla(130, 60%, 40%, 0.2)',
+        borderColor: 'hsl(130, 60%, 40%)',
+        borderWidth: 2,
+        fill: false,
+        pointBackgroundColor: 'hsl(130, 60%, 40%)',
+        pointBorderColor: 'hsl(130, 60%, 30%)',
+        pointBorderWidth: 2
+      }
+    ]
+  };
+
+  // Chart configuration for line chart (Chart.js v3 compatible)
+  const chartConfig = {
+    type: 'line',
+    data: chartData,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false,
+      },
+      scales: {
+        x: {
+          display: true,
+          title: {
+            display: true,
+            text: 'Date'
+          }
+        },
+        y: {
+          display: true,
+          title: {
+            display: true,
+            text: 'Nouveaux Mots'
+          },
+          beginAtZero: true
+        }
+      },
+      elements: {
+        point: {
+          radius: 4,
+          hoverRadius: 6
+        },
+        line: {
+          tension: 0.1 // Slight curve for smoother lines
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            footer: function(tooltipItems) {
+              const dataIndex = tooltipItems[0].dataIndex;
+              const dayData = paceInfo.paceData[dataIndex];
+              const total = dayData.deltaTotal + dayData.deltaMastering + dayData.deltaMastered;
+              return `Total progression: ${total} nouveaux mots`;
+            }
+          }
+        }
+      }
+    }
+  };
+
+  // Load Chart.js dynamically and create chart (or use if already loaded)
+  if (typeof Chart === 'undefined') {
+    // Check if Chart.js is already being loaded by another chart
+    const existingScript = document.querySelector('script[src*="chart.min.js"]');
+    if (existingScript) {
+      // Wait for existing script to load
+      console.log('Waiting for Chart.js to load for pace chart...');
+      existingScript.addEventListener('load', () => {
+        if (typeof Chart !== 'undefined') {
+          new Chart(canvas, chartConfig);
+        }
+      });
+    } else {
+      // Load Chart.js for the first time
+      console.log('Loading Chart.js library for pace chart...');
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
+      script.onload = () => {
+        console.log('Chart.js loaded successfully for pace chart');
+        if (typeof Chart !== 'undefined') {
+          new Chart(canvas, chartConfig);
+        } else {
+          console.error('Chart.js failed to load properly for pace chart');
+        }
+      };
+      script.onerror = () => {
+        console.error('Failed to load Chart.js from CDN for pace chart');
+      };
+      document.head.appendChild(script);
+    }
+  } else {
+    console.log('Chart.js already available for pace chart');
+    new Chart(canvas, chartConfig);
+  }
+
+  console.log('Pace chart displayed with', paceInfo.paceData.length, 'data points');
 }
 
 /**
@@ -1290,8 +1562,8 @@ async function loadAndDisplayResults(filterWordSet = 'all') {
     const aggregationResult = aggregateWordPairStats(allResults, filterWordSet);
     const { wordPairStats, allWordSets } = aggregationResult;
 
-    // Display the table with filter
-    displayResultsTable(wordPairStats, allWordSets, filterWordSet);
+    // Create header first (for filter)
+    displayResultsHeader(allWordSets, filterWordSet);
 
     // Prepare and display progression chart (filtered)
     const progressionData = prepareProgressionData(allResults, filterWordSet);
@@ -1308,6 +1580,16 @@ async function loadAndDisplayResults(filterWordSet = 'all') {
     } else {
       console.log('No activity data available for chart');
     }
+
+    // Prepare and display pace of progress chart
+    if (progressionData.dailyStats.length > 0) {
+      displayPaceChart(progressionData, filterWordSet);
+    } else {
+      console.log('No pace data available for chart');
+    }
+
+    // Display the table at the bottom
+    displayResultsTable(wordPairStats, allWordSets, filterWordSet);
 
   } catch (error) {
     console.error("Error loading and displaying results:", error);
