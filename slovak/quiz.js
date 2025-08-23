@@ -129,6 +129,7 @@ class QuizStateMachine {
     this.reorderAvailableLetters = [];
     this.reorderKeydownHandler   = null;
     this.activeAdaptivePool      = null;
+    this.masteryCategories       = null;
 
     // Initialize
     this.container               = null;
@@ -269,6 +270,9 @@ class QuizStateMachine {
     // Select words for this quiz session
     if (selectedWordPairs) {
       this.selectedWordPairs = selectedWordPairs;
+    } else if (this.selectionMode === 'mastered' && this.masteryCategories) {
+      // For mastery quizzes, always use intelligent selection to ensure proper randomization
+      this.selectedWordPairs = this.selectMasteryWords(this.masteryCategories);
     } else if (Array.isArray(this.activeAdaptivePool) && this.activeAdaptivePool.length > 0) {
       const maxPairs = Math.min(maxWords, this.activeAdaptivePool.length);
       const shuffled = this.shuffleArray([...this.activeAdaptivePool]);
@@ -309,6 +313,31 @@ class QuizStateMachine {
 
   getCurrentQuizType() {
     return this.enabledQuizTypes[this.currentQuizTypeIndex];
+  }
+
+  selectMasteryWords(categories) {
+    const masteredWords = categories.mastered || [];
+    const masteringWords = categories.mastering || [];
+
+    // Create prioritized selection with weighted preference for mastering words
+    const targetMasteringWords = Math.min(4, masteringWords.length); // At least 4 mastering words if available
+    const remainingSlots = Math.max(0, maxWords - targetMasteringWords);
+
+    // Select mastering words first (shuffled)
+    const shuffledMastering = this.shuffleArray([...masteringWords]);
+    const selectedMastering = shuffledMastering.slice(0, targetMasteringWords);
+
+    // Fill remaining slots with mastered words, but prefer fewer mastered words
+    const shuffledMastered = this.shuffleArray([...masteredWords]);
+    const selectedMastered = shuffledMastered.slice(0, remainingSlots);
+
+    // Combine and shuffle the final selection
+    const combinedSelection = [...selectedMastering, ...selectedMastered];
+    const finalSelection = this.shuffleArray(combinedSelection);
+
+    console.log(`Mastery quiz selection: ${selectedMastering.length} mastering words, ${selectedMastered.length} mastered words (total: ${finalSelection.length})`);
+
+    return finalSelection;
   }
 
   getMasteryQuizDirection() {
@@ -589,7 +618,7 @@ class QuizStateMachine {
           <button class="btn btn-success btn-lg adaptive-option" data-mode="mastered" ${masteredOrMasteringCount === 0 ? 'disabled' : ''}>
             🎯 Vérifier les acquis
             <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
-              ${masteredOrMasteringCount} mot(s) en maîtrise • Taux de réussite >90%
+              ${(categories.mastering ? categories.mastering.length : 0)} en maîtrise, ${categories.mastered.length} maîtrisés • Priorité aux mots en maîtrise
             </small>
           </button>
 
@@ -629,12 +658,19 @@ class QuizStateMachine {
             this.selectionMode = 'all';
             // Keep original quiz name for 'all' mode
             break;
-          case 'mastered':
-            // Limit to maxWords and use only ONE typing direction per session (alternating)
-            const masteredOrMastering = [...(categories.mastered || []), ...(categories.mastering || [])];
-            selectionPool = masteredOrMastering;
-            const shuffledMastered = this.shuffleArray(selectionPool);
-            selectedWordPairs      = shuffledMastered.slice(0, Math.min(maxWords, selectionPool.length));
+                    case 'mastered':
+            // Store the full categories for intelligent re-selection on restart
+            this.masteryCategories = {
+              mastered: [...(categories.mastered || [])],
+              mastering: [...(categories.mastering || [])]
+            };
+
+            // Use intelligent selection helper
+            selectedWordPairs = this.selectMasteryWords(this.masteryCategories);
+
+            // For restart functionality, store the full pool rather than the selection
+            // This ensures fresh random selection on each restart
+            selectionPool = [...(categories.mastered || []), ...(categories.mastering || [])];
 
             // Alternate direction for mastery quizzes
             const currentDirection = this.getMasteryQuizDirection();
@@ -902,7 +938,9 @@ class QuizStateMachine {
 
     const handleSubmit = () => {
       const userAnswer = this.cleanWordForInput(inputField.value.trim());
-      let isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+      const normalizedUserAnswer = this.normalizeLigatures(userAnswer.toLowerCase());
+      const normalizedCorrectAnswer = this.normalizeLigatures(correctAnswer.toLowerCase());
+      let isCorrect = normalizedUserAnswer === normalizedCorrectAnswer;
 
       // Compute mistake metric and almost classification for typing
       const mistakeMetric = this.computeMistakeMetric(userAnswer, correctAnswer);
@@ -923,6 +961,8 @@ class QuizStateMachine {
 
       if (isCorrect) {
         inputField.classList.add('state-correct');
+      } else if (isAlmost) {
+        inputField.classList.add('state-almost');
       } else {
         inputField.classList.add('state-incorrect');
       }
@@ -1364,13 +1404,19 @@ class QuizStateMachine {
     return word.replace(/\s*\([^)]*\)\s*/g, '').trim();
   }
 
+  normalizeLigatures(text) {
+    return text
+      .replace(/œ/g, 'oe')
+      .replace(/æ/g, 'ae');
+  }
+
   // Compute mistake metric using accent-aware Damerau-Levenshtein
   computeMistakeMetric(userInput, correct) {
-    const user = (userInput || '').toLowerCase();
-    const target = (correct || '').toLowerCase();
+    const user = this.normalizeLigatures((userInput || '').toLowerCase());
+    const target = this.normalizeLigatures((correct || '').toLowerCase());
     if (user === target) return 0;
 
-    const strip = (s) => s
+    const strip = (s) => this.normalizeLigatures(s)
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/ľ|ĺ/g, 'l')
