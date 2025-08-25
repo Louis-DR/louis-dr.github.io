@@ -1042,49 +1042,37 @@ function displayPaceChart(progressionData, filterWordSet = 'all') {
     document.body.appendChild(chartContainer);
   }
 
-  // Prepare chart data for line chart
+  // Prepare chart data for bar chart
   const chartData = {
     labels: paceInfo.labels,
     datasets: [
       {
         label: 'Nouveaux Mots Total',
         data: paceInfo.paceData.map(day => day.deltaTotal),
-        backgroundColor: 'hsla(45, 80%, 50%, 0.2)',
+        backgroundColor: 'hsla(45, 80%, 50%, 0.80)',
         borderColor: 'hsl(45, 80%, 50%)',
-        borderWidth: 2,
-        fill: false,
-        pointBackgroundColor: 'hsl(45, 80%, 50%)',
-        pointBorderColor: 'hsl(45, 80%, 40%)',
-        pointBorderWidth: 2
+        borderWidth: 1
       },
       {
         label: 'Nouveaux Mots en Maîtrise',
         data: paceInfo.paceData.map(day => day.deltaMastering),
-        backgroundColor: 'hsla(210, 80%, 50%, 0.2)',
+        backgroundColor: 'hsla(210, 80%, 50%, 0.80)',
         borderColor: 'hsl(210, 80%, 50%)',
-        borderWidth: 2,
-        fill: false,
-        pointBackgroundColor: 'hsl(210, 80%, 50%)',
-        pointBorderColor: 'hsl(210, 80%, 40%)',
-        pointBorderWidth: 2
+        borderWidth: 1
       },
       {
         label: 'Nouveaux Mots Maîtrisés',
         data: paceInfo.paceData.map(day => day.deltaMastered),
-        backgroundColor: 'hsla(130, 60%, 40%, 0.2)',
+        backgroundColor: 'hsla(130, 60%, 40%, 0.80)',
         borderColor: 'hsl(130, 60%, 40%)',
-        borderWidth: 2,
-        fill: false,
-        pointBackgroundColor: 'hsl(130, 60%, 40%)',
-        pointBorderColor: 'hsl(130, 60%, 30%)',
-        pointBorderWidth: 2
+        borderWidth: 1
       }
     ]
   };
 
-  // Chart configuration for line chart (Chart.js v3 compatible)
+  // Chart configuration for grouped bar chart (Chart.js v3 compatible)
   const chartConfig = {
-    type: 'line',
+    type: 'bar',
     data: chartData,
     options: {
       responsive: true,
@@ -1108,15 +1096,6 @@ function displayPaceChart(progressionData, filterWordSet = 'all') {
             text: 'Nouveaux Mots'
           },
           beginAtZero: true
-        }
-      },
-      elements: {
-        point: {
-          radius: 4,
-          hoverRadius: 6
-        },
-        line: {
-          tension: 0.1 // Slight curve for smoother lines
         }
       },
       plugins: {
