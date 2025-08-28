@@ -274,9 +274,19 @@ class QuizStateMachine {
       // For mastery quizzes, always use intelligent selection to ensure proper randomization
       this.selectedWordPairs = this.selectMasteryWords(this.masteryCategories);
     } else if (Array.isArray(this.activeAdaptivePool) && this.activeAdaptivePool.length > 0) {
+      // For struggling and learning modes, we need to apply intelligent selection logic on restart
+      if (this.selectionMode === 'struggling') {
+        // Re-apply struggling mode selection logic with current categories
+        this.selectedWordPairs = await this.applyStrugglingModeSelection(this.activeAdaptivePool);
+      } else if (this.selectionMode === 'learning') {
+        // Re-apply learning mode selection logic
+        this.selectedWordPairs = await this.applyLearningModeSelection(this.activeAdaptivePool);
+      } else {
+        // For other modes, use simple random selection
       const maxPairs = Math.min(maxWords, this.activeAdaptivePool.length);
       const shuffled = this.shuffleArray([...this.activeAdaptivePool]);
       this.selectedWordPairs = shuffled.slice(0, maxPairs);
+      }
     } else {
       const fallbackMax = Math.min(maxWords, this.wordPairs.length);
       const shuffledPairs = this.shuffleArray([...this.wordPairs]);
@@ -354,6 +364,99 @@ class QuizStateMachine {
 
     console.log(`Mastery quiz direction: ${lastDirection} -> ${newDirection}`);
     return newDirection;
+  }
+
+  async applyStrugglingModeSelection(allAvailableWords) {
+    try {
+      // Re-analyze performance to get current categories
+      const { perWord } = await this.analyzeWordPairPerformance(this.wordPairs);
+      const isGlobalHistory = (this.quizName && this.quizName.toLowerCase().includes('historique'));
+      const normalizeSetName = (name) => {
+        if (!name) return null;
+        let s = String(name).trim();
+        s = s.replace(/\s*-\s*(Vérification des acquis|Consolidation de l'apprentissage|Correction des lacunes)$/i, '').trim();
+        return s;
+      };
+      const filterWordSet = (isGlobalHistory || this.isGlobalAdaptive || this.quizName === 'Slovak Language Quiz') ? null : normalizeSetName(this.quizName);
+      const categories = this.categorizeWordPairs(perWord, filterWordSet);
+
+      const strugglingWords = [...categories.struggling];
+      const unencounteredWords = [...(categories.unencountered || [])];
+
+      // Apply the same selection logic as in the adaptive menu
+      const targetStruggling = Math.min(4, strugglingWords.length);
+      const remainingSlotsAfterStruggling = Math.max(0, maxWords - targetStruggling);
+      const targetUnencountered = Math.min(remainingSlotsAfterStruggling, unencounteredWords.length);
+
+      const shuffledStruggling = this.shuffleArray(strugglingWords);
+      const selectedStruggling = shuffledStruggling.slice(0, targetStruggling);
+
+      const shuffledUnencountered = this.shuffleArray(unencounteredWords);
+      const selectedUnencountered = shuffledUnencountered.slice(0, targetUnencountered);
+
+      const currentSelection = selectedStruggling.length + selectedUnencountered.length;
+      const slotsToFill = maxWords - currentSelection;
+
+      let additionalWords = [];
+      if (slotsToFill > 0) {
+        const alreadySelectedKeys = new Set([
+          ...selectedStruggling.map(w => `${w[0]}|${w[1]}`),
+          ...selectedUnencountered.map(w => `${w[0]}|${w[1]}`)
+        ]);
+
+        const paddingWords = allAvailableWords.filter(pair => !alreadySelectedKeys.has(`${pair[0]}|${pair[1]}`));
+        const shuffledPadding = this.shuffleArray(paddingWords);
+        additionalWords = shuffledPadding.slice(0, slotsToFill);
+      }
+
+      const combinedSelection = [...selectedStruggling, ...selectedUnencountered, ...additionalWords];
+      return this.shuffleArray(combinedSelection);
+    } catch (error) {
+      console.error('Error in applyStrugglingModeSelection:', error);
+      // Fallback to simple random selection
+      const maxPairs = Math.min(maxWords, allAvailableWords.length);
+      const shuffled = this.shuffleArray([...allAvailableWords]);
+      return shuffled.slice(0, maxPairs);
+    }
+  }
+
+  async applyLearningModeSelection(allAvailableWords) {
+    try {
+      // Re-analyze performance to get current categories
+      const { perWord } = await this.analyzeWordPairPerformance(this.wordPairs);
+      const isGlobalHistory = (this.quizName && this.quizName.toLowerCase().includes('historique'));
+      const normalizeSetName = (name) => {
+        if (!name) return null;
+        let s = String(name).trim();
+        s = s.replace(/\s*-\s*(Vérification des acquis|Consolidation de l'apprentissage|Correction des lacunes)$/i, '').trim();
+        return s;
+      };
+      const filterWordSet = (isGlobalHistory || this.isGlobalAdaptive || this.quizName === 'Slovak Language Quiz') ? null : normalizeSetName(this.quizName);
+      const categories = this.categorizeWordPairs(perWord, filterWordSet);
+
+      const learningWords = [...categories.learning];
+
+      if (learningWords.length >= maxWords) {
+        const shuffledLearning = this.shuffleArray(learningWords);
+        return shuffledLearning.slice(0, maxWords);
+      } else {
+        // Need to pad with additional words
+        const slotsToFill = maxWords - learningWords.length;
+        const alreadySelectedKeys = new Set(learningWords.map(w => `${w[0]}|${w[1]}`));
+        const paddingWords = allAvailableWords.filter(pair => !alreadySelectedKeys.has(`${pair[0]}|${pair[1]}`));
+        const shuffledPadding = this.shuffleArray(paddingWords);
+        const selectedPadding = shuffledPadding.slice(0, slotsToFill);
+
+        const combinedSelection = [...learningWords, ...selectedPadding];
+        return this.shuffleArray(combinedSelection);
+      }
+    } catch (error) {
+      console.error('Error in applyLearningModeSelection:', error);
+      // Fallback to simple random selection
+      const maxPairs = Math.min(maxWords, allAvailableWords.length);
+      const shuffled = this.shuffleArray([...allAvailableWords]);
+      return shuffled.slice(0, maxPairs);
+    }
   }
 
   // Event handlers
@@ -618,7 +721,7 @@ class QuizStateMachine {
           <button class="btn btn-success btn-lg adaptive-option" data-mode="mastered" ${masteredOrMasteringCount === 0 ? 'disabled' : ''}>
             🎯 Vérifier les acquis
             <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
-              ${(categories.mastering ? categories.mastering.length : 0)} en maîtrise, ${categories.mastered.length} maîtrisés • Priorité aux mots en maîtrise
+              ${(categories.mastering ? categories.mastering.length : 0)} en maîtrise, ${categories.mastered.length} maîtrisés • Taux de réussite >90%
             </small>
           </button>
 
@@ -629,10 +732,10 @@ class QuizStateMachine {
             </small>
           </button>
 
-          <button class="btn btn-danger btn-lg adaptive-option" data-mode="struggling" ${categories.struggling.length === 0 ? 'disabled' : ''}>
+          <button class="btn btn-danger btn-lg adaptive-option" data-mode="struggling" ${categories.struggling.length === 0 && (categories.unencountered || []).length === 0 && (!this.wordPairs || this.wordPairs.length === 0) && (categories.mastered.length + categories.mastering.length + categories.learning.length) === 0 ? 'disabled' : ''}>
             🔥 Corriger les lacunes
             <small style="display: block; font-size: 14px; margin-top: 5px; opacity: 0.8;">
-              ${categories.struggling.length} mot(s) difficile(s) • Taux de réussite <70%
+              ${categories.struggling.length} difficiles, ${(categories.unencountered || []).length} nouveaux • Taux de réussite <70%
             </small>
           </button>
         </div>
@@ -678,18 +781,167 @@ class QuizStateMachine {
             this.selectionMode     = 'mastered';
             break;
           case 'learning':
-            // Limit to maxWords and use all quiz types for learning words
-            selectionPool = [...categories.learning];
-            const shuffledLearning = this.shuffleArray(selectionPool);
-            selectedWordPairs      = shuffledLearning.slice(0, Math.min(maxWords, selectionPool.length));
+            // For learning mode, prioritize learning words but pad with other words if needed
+            const learningWords = [...categories.learning];
+
+            if (learningWords.length >= maxWords) {
+              // We have enough learning words
+              const shuffledLearning = this.shuffleArray(learningWords);
+              selectedWordPairs = shuffledLearning.slice(0, maxWords);
+              selectionPool = learningWords;
+            } else {
+              // We need to pad with additional words
+              selectedWordPairs = [...learningWords];
+              const slotsToFill = maxWords - learningWords.length;
+
+              if (slotsToFill > 0) {
+                let paddingWords;
+                if (this.wordPairs && this.wordPairs.length > 0) {
+                  // Use words from provided word set that aren't already selected
+                  const alreadySelectedKeys = new Set(learningWords.map(w => `${w[0]}|${w[1]}`));
+                  paddingWords = this.wordPairs
+                    .filter(pair => !alreadySelectedKeys.has(`${pair[0]}|${pair[1]}`))
+                    .map(pair => {
+                      const wordPair = [pair[0], pair[1]];
+                      wordPair.wordSetName = pair.wordSetName || filterWordSet || this.quizName;
+                      return wordPair;
+                    });
+                } else {
+                  // Use words from other categories
+                  const alreadySelectedKeys = new Set(learningWords.map(w => `${w[0]}|${w[1]}`));
+                  paddingWords = [...categories.struggling, ...categories.mastering, ...categories.mastered, ...(categories.unencountered || [])]
+                    .filter(pair => !alreadySelectedKeys.has(`${pair[0]}|${pair[1]}`));
+                }
+
+                const shuffledPadding = this.shuffleArray(paddingWords);
+                const selectedPadding = shuffledPadding.slice(0, slotsToFill);
+                selectedWordPairs = [...selectedWordPairs, ...selectedPadding];
+
+                console.log(`Learning mode: Added ${selectedPadding.length} padding words to ${learningWords.length} learning words`);
+              }
+
+              // Shuffle the final selection
+              selectedWordPairs = this.shuffleArray(selectedWordPairs);
+
+              // Set selection pool for restarts
+              if (this.wordPairs && this.wordPairs.length > 0) {
+                selectionPool = this.wordPairs.map(pair => {
+                  const wordPair = [pair[0], pair[1]];
+                  wordPair.wordSetName = pair.wordSetName || filterWordSet || this.quizName;
+                  return wordPair;
+                });
+              } else {
+                selectionPool = [...learningWords, ...categories.struggling, ...categories.mastering, ...categories.mastered, ...(categories.unencountered || [])];
+              }
+            }
+
             enabledQuizTypes       = this.enabledQuizTypes; // Use default enabled quiz types
             this.selectionMode     = 'learning';
             break;
           case 'struggling':
-            // Limit to maxWords and use all quiz types for struggling words
-            selectionPool = [...categories.struggling];
-            const shuffledStruggling = this.shuffleArray(selectionPool);
-            selectedWordPairs        = shuffledStruggling.slice(0, Math.min(maxWords, selectionPool.length));
+            // For struggling mode, intelligently select from struggling words and unencountered words
+            const strugglingWords = [...categories.struggling];
+            const unencounteredWords = [...(categories.unencountered || [])];
+            const totalTargetWords = strugglingWords.length + unencounteredWords.length;
+
+                        // Use normal selection logic and pad with additional words if needed
+            // Calculate balanced selection (prefer struggling words first, then unencountered)
+            const targetStruggling = Math.min(4, strugglingWords.length);
+            const remainingSlotsAfterStruggling = Math.max(0, maxWords - targetStruggling);
+            const targetUnencountered = Math.min(remainingSlotsAfterStruggling, unencounteredWords.length);
+
+            // Select struggling words first (shuffled)
+            const shuffledStruggling = this.shuffleArray(strugglingWords);
+            const selectedStruggling = shuffledStruggling.slice(0, targetStruggling);
+
+            // Select unencountered words
+            const shuffledUnencountered = this.shuffleArray(unencounteredWords);
+            const selectedUnencountered = shuffledUnencountered.slice(0, targetUnencountered);
+
+            // Calculate how many slots we still need to fill
+            const currentSelection = selectedStruggling.length + selectedUnencountered.length;
+            const slotsToFill = maxWords - currentSelection;
+
+            let additionalWords = [];
+            if (slotsToFill > 0) {
+              // First try to use remaining words from struggling/unencountered pools
+              const remainingStruggling = shuffledStruggling.slice(targetStruggling);
+              const remainingUnencountered = shuffledUnencountered.slice(targetUnencountered);
+              const combinedRemaining = [...remainingStruggling, ...remainingUnencountered];
+
+              if (combinedRemaining.length >= slotsToFill) {
+                // We have enough from the remaining struggling/unencountered words
+                const shuffledRemaining = this.shuffleArray(combinedRemaining);
+                additionalWords = shuffledRemaining.slice(0, slotsToFill);
+              } else {
+                // We need to pad with other words to reach maxWords
+                additionalWords = [...combinedRemaining]; // Use all remaining from target pools
+                const stillNeedToFill = slotsToFill - additionalWords.length;
+
+                if (stillNeedToFill > 0) {
+                  // Get additional words from other categories or word set
+                  let paddingWords;
+                  if (this.wordPairs && this.wordPairs.length > 0) {
+                    // Use words from provided word set that aren't already selected
+                    const alreadySelectedKeys = new Set([
+                      ...selectedStruggling.map(w => `${w[0]}|${w[1]}`),
+                      ...selectedUnencountered.map(w => `${w[0]}|${w[1]}`),
+                      ...additionalWords.map(w => `${w[0]}|${w[1]}`)
+                    ]);
+
+                    paddingWords = this.wordPairs
+                      .filter(pair => !alreadySelectedKeys.has(`${pair[0]}|${pair[1]}`))
+                      .map(pair => {
+                        const wordPair = [pair[0], pair[1]];
+                        wordPair.wordSetName = pair.wordSetName || filterWordSet || this.quizName;
+                        return wordPair;
+                      });
+                  } else {
+                    // Use words from other categories (learning, mastering, mastered)
+                    const alreadySelectedKeys = new Set([
+                      ...selectedStruggling.map(w => `${w[0]}|${w[1]}`),
+                      ...selectedUnencountered.map(w => `${w[0]}|${w[1]}`),
+                      ...additionalWords.map(w => `${w[0]}|${w[1]}`)
+                    ]);
+
+                    paddingWords = [...categories.learning, ...categories.mastering, ...categories.mastered]
+                      .filter(pair => !alreadySelectedKeys.has(`${pair[0]}|${pair[1]}`));
+                  }
+
+                  const shuffledPadding = this.shuffleArray(paddingWords);
+                  const selectedPadding = shuffledPadding.slice(0, stillNeedToFill);
+                  additionalWords = [...additionalWords, ...selectedPadding];
+
+                  console.log(`Added ${selectedPadding.length} padding words to reach target of ${maxWords}`);
+                }
+              }
+            }
+
+                        // Combine and shuffle the final selection
+            const combinedSelection = [...selectedStruggling, ...selectedUnencountered, ...additionalWords];
+            selectedWordPairs = this.shuffleArray(combinedSelection);
+
+            // For struggling mode, include all possible words in the selection pool for restarts
+            // This ensures restarts can also pad properly
+            if (this.wordPairs && this.wordPairs.length > 0) {
+              // Use the full provided word set as the selection pool
+              selectionPool = this.wordPairs.map(pair => {
+                const wordPair = [pair[0], pair[1]];
+                wordPair.wordSetName = pair.wordSetName || filterWordSet || this.quizName;
+                return wordPair;
+              });
+            } else {
+              // For global adaptive, use all categorized words
+              selectionPool = [...strugglingWords, ...unencounteredWords, ...categories.learning, ...categories.mastering, ...categories.mastered];
+            }
+
+            console.log(`Struggling quiz selection: ${selectedStruggling.length} struggling words, ${selectedUnencountered.length} unencountered words, ${additionalWords.length} additional words (total: ${selectedWordPairs.length})`);
+
+            // Fallback only if we have no words at all
+            if (selectedWordPairs.length === 0) {
+              console.warn('No words available for struggling mode, this should not happen');
+            }
+
             enabledQuizTypes         = this.enabledQuizTypes; // Use default enabled quiz types
             this.selectionMode       = 'struggling';
             break;
@@ -1767,12 +2019,16 @@ class QuizStateMachine {
   }
 
   categorizeWordPairs(perWord, filterWordSet = null) {
-    const categories = { mastered: [], learning: [], struggling: [], mastering: [] };
+    const categories = { mastered: [], learning: [], struggling: [], mastering: [], unencountered: [] };
     const thresholds = (window.SlovakData && window.SlovakData.defaultThresholds) ? window.SlovakData.defaultThresholds : { masteredStreak: 4, windowSize: 20, minMastering: 5, masteringRate: 90, minStruggling: 1, strugglingRate: 70 };
     const nowTs = Date.now();
     let considered = 0;
     let masteryOnlyTotal = 0;
     let masteryOnlyCorrectStreaks = 0;
+
+    // Track encountered word pairs for unencountered detection
+    const encounteredWordPairs = new Set();
+
     perWord.forEach(node => {
       if (filterWordSet && !node.wordSets.has(filterWordSet)) {
         return; // skip non-matching sets
@@ -1786,6 +2042,10 @@ class QuizStateMachine {
       const availableSets = Array.from(node.wordSets);
       pair.wordSetName = filterWordSet || availableSets[0] || 'Unknown Set';
 
+      // Track this word pair as encountered
+      const wordPairKey = `${node.wordPair[0]}|${node.wordPair[1]}`;
+      encounteredWordPairs.add(wordPairKey);
+
       categories[cat].push(pair);
       considered++;
       // Track mastery-only attempts for debugging parity with results
@@ -1793,6 +2053,20 @@ class QuizStateMachine {
       const last4 = node.masteryTyping.filter(a => a.t <= nowTs).slice(-4);
       if (last4.length === 4 && last4.every(a => a.ok)) masteryOnlyCorrectStreaks++;
     });
+
+    // For specific word sets (not global adaptive), find unencountered words
+    if (filterWordSet && this.wordPairs && this.wordPairs.length > 0) {
+      this.wordPairs.forEach(pair => {
+        const wordPairKey = `${pair[0]}|${pair[1]}`;
+        if (!encounteredWordPairs.has(wordPairKey)) {
+          // This word from the provided set hasn't been encountered yet
+          const unencounteredPair = [pair[0], pair[1]];
+          unencounteredPair.wordSetName = filterWordSet;
+          categories.unencountered.push(unencounteredPair);
+        }
+      });
+    }
+
     console.log('Adaptive categorizeWordPairs:', {
       filterWordSet,
       considered,
@@ -1800,6 +2074,7 @@ class QuizStateMachine {
       mastering: categories.mastering.length,
       learning: categories.learning.length,
       struggling: categories.struggling.length,
+      unencountered: categories.unencountered.length,
       masteryOnlyTotal,
       masteryOnlyCorrectStreaks
     });

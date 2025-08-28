@@ -470,18 +470,27 @@ function displayResultsHeader(allWordSets, selectedWordSet = 'all') {
  * Create and display the results table
  */
 function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all') {
-  // Sort by recent rolling success rate (ascending). If equal, fallback to global success rate.
-  wordPairStats.sort((a, b) => {
-    const recentA = a.recentWindowRate === '-' ? -1 : parseFloat(a.recentWindowRate);
-    const recentB = b.recentWindowRate === '-' ? -1 : parseFloat(b.recentWindowRate);
-    if (recentA !== recentB) return recentA - recentB;
+  // State for current sorting
+  let currentSortColumn = null;
+  let currentSortData = [...wordPairStats];
 
-    const globalA = a.totalQuestions > 0 ? ((a.totalQuestions - a.totalErrors) / a.totalQuestions) * 100 : 100;
-    const globalB = b.totalQuestions > 0 ? ((b.totalQuestions - b.totalErrors) / b.totalQuestions) * 100 : 100;
-    if (globalA !== globalB) return globalA - globalB;
+  // Default sort by recent rolling success rate (ascending). If equal, fallback to global success rate.
+  const defaultSort = (data) => {
+    return data.sort((a, b) => {
+      const recentA = a.recentWindowRate === '-' ? -1 : parseFloat(a.recentWindowRate);
+      const recentB = b.recentWindowRate === '-' ? -1 : parseFloat(b.recentWindowRate);
+      if (recentA !== recentB) return recentA - recentB;
 
-    return a.totalQuestions - b.totalQuestions;
-  });
+      const globalA = a.totalQuestions > 0 ? ((a.totalQuestions - a.totalErrors) / a.totalQuestions) * 100 : 100;
+      const globalB = b.totalQuestions > 0 ? ((b.totalQuestions - b.totalErrors) / b.totalQuestions) * 100 : 100;
+      if (globalA !== globalB) return globalA - globalB;
+
+      return a.totalQuestions - b.totalQuestions;
+    });
+  };
+
+  // Apply default sort initially
+  currentSortData = defaultSort([...wordPairStats]);
 
   const container = document.querySelector('.results-container');
 
@@ -493,132 +502,208 @@ function displayResultsTable(wordPairStats, allWordSets, selectedWordSet = 'all'
   const table = document.createElement('table');
   table.className = 'results-table';
 
+  // Sorting functions for each sortable column
+  const sortFunctions = {
+    'Total Questions': (a, b) => {
+      if (a.totalQuestions !== b.totalQuestions) return a.totalQuestions - b.totalQuestions;
+      return defaultSort([a, b])[0] === a ? -1 : 1;
+    },
+    'Statut Maîtrise': (a, b) => {
+      const statusOrder = { 'struggling': 0, 'learning': 1, 'mastering': 2, 'mastered': 3 };
+      const statusA = statusOrder[a.masteryStatus] || 0;
+      const statusB = statusOrder[b.masteryStatus] || 0;
+      if (statusA !== statusB) return statusA - statusB;
+      return defaultSort([a, b])[0] === a ? -1 : 1;
+    },
+    'Réussite Récente': (a, b) => {
+      const recentA = a.recentWindowRate === '-' ? -1 : parseFloat(a.recentWindowRate);
+      const recentB = b.recentWindowRate === '-' ? -1 : parseFloat(b.recentWindowRate);
+      if (recentA !== recentB) return recentA - recentB;
+      return defaultSort([a, b])[0] === a ? -1 : 1;
+    },
+    'Réussite Globale': (a, b) => {
+      const globalA = a.totalQuestions > 0 ? ((a.totalQuestions - a.totalErrors) / a.totalQuestions) * 100 : 100;
+      const globalB = b.totalQuestions > 0 ? ((b.totalQuestions - b.totalErrors) / b.totalQuestions) * 100 : 100;
+      if (globalA !== globalB) return globalA - globalB;
+      return defaultSort([a, b])[0] === a ? -1 : 1;
+    }
+  };
+
+  // Function to update table content with current sort
+  const updateTableContent = () => {
+    const tbody = table.querySelector('tbody');
+    tbody.innerHTML = '';
+    renderTableRows(currentSortData, tbody);
+  };
+
+  // Function to handle column header click
+  const handleHeaderClick = (columnName) => {
+    if (sortFunctions[columnName]) {
+      currentSortColumn = columnName;
+      currentSortData = [...wordPairStats].sort(sortFunctions[columnName]);
+      updateHeaderStyles();
+      updateTableContent();
+    }
+  };
+
+  // Function to update header styles
+  const updateHeaderStyles = () => {
+    const headers = table.querySelectorAll('th[data-sortable]');
+    headers.forEach(header => {
+      if (header.dataset.sortable === currentSortColumn) {
+        header.style.textDecoration = 'underline';
+        header.style.cursor = 'pointer';
+      } else {
+        header.style.textDecoration = 'none';
+        header.style.cursor = 'pointer';
+      }
+    });
+  };
+
   // Create header
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
-  headerRow.innerHTML = `
-    <th>Français</th>
-    <th>Slovaque</th>
-    <th>Ensembles</th>
-    <th>Total Questions</th>
-    <th>Statut Maîtrise</th>
-    <th>Réussite Récente</th>
-    <th>Maîtrise SK→FR</th>
-    <th>Maîtrise FR→SK</th>
-    <th>Réussite Globale</th>
-    <th>Correspondances</th>
-    <th>SK→FR Choix Multiple</th>
-    <th>FR→SK Choix Multiple</th>
-    <th>FR→SK Réorganiser</th>
-    <th>SK→FR Saisie</th>
-    <th>FR→SK Saisie</th>
-  `;
 
-  // Table header styling is handled by CSS classes
+  const headers = [
+    { text: 'Français', sortable: false },
+    { text: 'Slovaque', sortable: false },
+    { text: 'Ensembles', sortable: false },
+    { text: 'Total Questions', sortable: true },
+    { text: 'Statut Maîtrise', sortable: true },
+    { text: 'Réussite Récente', sortable: true },
+    { text: 'Maîtrise SK→FR', sortable: false },
+    { text: 'Maîtrise FR→SK', sortable: false },
+    { text: 'Réussite Globale', sortable: true },
+    { text: 'Correspondances', sortable: false },
+    { text: 'SK→FR Choix Multiple', sortable: false },
+    { text: 'FR→SK Choix Multiple', sortable: false },
+    { text: 'FR→SK Réorganiser', sortable: false },
+    { text: 'SK→FR Saisie', sortable: false },
+    { text: 'FR→SK Saisie', sortable: false }
+  ];
+
+  headers.forEach(header => {
+    const th = document.createElement('th');
+    th.textContent = header.text;
+
+    if (header.sortable) {
+      th.dataset.sortable = header.text;
+      th.style.cursor = 'pointer';
+      th.addEventListener('click', () => handleHeaderClick(header.text));
+    }
+
+    headerRow.appendChild(th);
+  });
 
   thead.appendChild(headerRow);
   table.appendChild(thead);
 
+  // Function to render table rows
+  const renderTableRows = (dataToRender, tbody) => {
+    dataToRender.forEach((wordStats, index) => {
+      const row = document.createElement('tr');
+
+      // Calculate success rates for each exercise type
+      const globalSuccessRate = wordStats.totalQuestions > 0
+        ? (((wordStats.totalQuestions - wordStats.totalErrors) / wordStats.totalQuestions) * 100).toFixed(1)
+        : '100.0';
+
+      const matchingSuccessRate = wordStats.matchingQuestions > 0
+        ? (((wordStats.matchingQuestions - wordStats.matchingErrors) / wordStats.matchingQuestions) * 100).toFixed(1)
+        : '-';
+
+      const slovakToFrenchMultipleChoiceSuccessRate = wordStats.slovakToFrenchMultipleChoiceQuestions > 0
+        ? (((wordStats.slovakToFrenchMultipleChoiceQuestions - wordStats.slovakToFrenchMultipleChoiceErrors) / wordStats.slovakToFrenchMultipleChoiceQuestions) * 100).toFixed(1)
+        : '-';
+
+      const frenchToSlovakMultipleChoiceSuccessRate = wordStats.frenchToSlovakMultipleChoiceQuestions > 0
+        ? (((wordStats.frenchToSlovakMultipleChoiceQuestions - wordStats.frenchToSlovakMultipleChoiceErrors) / wordStats.frenchToSlovakMultipleChoiceQuestions) * 100).toFixed(1)
+        : '-';
+
+      const reorderLettersSuccessRate = wordStats.reorderLettersQuestions > 0
+        ? (((wordStats.reorderLettersQuestions - wordStats.reorderLettersErrors) / wordStats.reorderLettersQuestions) * 100).toFixed(1)
+        : '-';
+
+      const slovakToFrenchTypingSuccessRate = wordStats.slovakToFrenchTypingQuestions > 0
+        ? (((wordStats.slovakToFrenchTypingQuestions - wordStats.slovakToFrenchTypingErrors) / wordStats.slovakToFrenchTypingQuestions) * 100).toFixed(1)
+        : '-';
+
+      const frenchToSlovakTypingSuccessRate = wordStats.frenchToSlovakTypingQuestions > 0
+        ? (((wordStats.frenchToSlovakTypingQuestions - wordStats.frenchToSlovakTypingErrors) / wordStats.frenchToSlovakTypingQuestions) * 100).toFixed(1)
+        : '-';
+
+      // Format word sets for display
+      const wordSetsDisplay = wordStats.wordSets.length > 1
+        ? wordStats.wordSets.join(', ')
+        : wordStats.wordSets[0] || 'Unknown';
+
+      // Format mastery status with color-coded badge
+      const masteryStatusDisplay = (() => {
+        switch(wordStats.masteryStatus) {
+          case 'mastered': return '<span class="status-mastered">Maîtrisé</span>';
+          case 'mastering': return '<span class="status-mastering">En Maîtrise</span>';
+          case 'learning': return '<span class="status-learning">Apprentissage</span>';
+          case 'struggling': return '<span class="status-struggling">Difficile</span>';
+          default: return '<span class="status-unknown">-</span>';
+        }
+      })();
+
+      row.innerHTML = `
+        <td>${wordStats.frenchWord}</td>
+        <td><strong>${wordStats.slovakWord}</strong></td>
+        <td class="word-sets-cell">${wordSetsDisplay}</td>
+        <td>${wordStats.totalQuestions}</td>
+        <td>${masteryStatusDisplay}</td>
+        <td>${wordStats.recentWindowRate}${wordStats.recentWindowRate !== '-' ? '%' : ''}${wordStats.recentWindowTotal ? ` (${wordStats.recentWindowTotal})` : ''}</td>
+        <td>${wordStats.masterySlovakToFrenchRate}${wordStats.masterySlovakToFrenchRate !== '-' ? '%' : ''}</td>
+        <td>${wordStats.masteryFrenchToSlovakRate}${wordStats.masteryFrenchToSlovakRate !== '-' ? '%' : ''}</td>
+        <td>${globalSuccessRate}%</td>
+        <td>${matchingSuccessRate}${matchingSuccessRate !== '-' ? '%' : ''}</td>
+        <td>${slovakToFrenchMultipleChoiceSuccessRate}${slovakToFrenchMultipleChoiceSuccessRate !== '-' ? '%' : ''}</td>
+        <td>${frenchToSlovakMultipleChoiceSuccessRate}${frenchToSlovakMultipleChoiceSuccessRate !== '-' ? '%' : ''}</td>
+        <td>${reorderLettersSuccessRate}${reorderLettersSuccessRate !== '-' ? '%' : ''}</td>
+        <td>${slovakToFrenchTypingSuccessRate}${slovakToFrenchTypingSuccessRate !== '-' ? '%' : ''}</td>
+        <td>${frenchToSlovakTypingSuccessRate}${frenchToSlovakTypingSuccessRate !== '-' ? '%' : ''}</td>
+      `;
+
+      // Apply styling to specific columns
+      Array.from(row.children).forEach((td, cellIndex) => {
+        // Add word coloring for first two columns
+        if (cellIndex === 0) {
+          td.innerHTML = `<span class="word-french">${td.textContent}</span>`;
+        } else if (cellIndex === 1) {
+          td.innerHTML = `<span class="word-slovak">${td.textContent}</span>`;
+        }
+
+        // Highlight success rates (columns 5, 6, 7, 8 and 9-14 are success rate columns)
+        if ((cellIndex >= 5 && cellIndex <= 8) || (cellIndex >= 9 && cellIndex <= 14)) {
+          const rateText = td.textContent.replace('%', '');
+          if (rateText !== '-') {
+            const rate = parseFloat(rateText);
+            if (rate >= 90) {
+              td.classList.add('success-rate-very-high');
+            } else if (rate >= 80) {
+              td.classList.add('success-rate-high');
+            } else if (rate >= 70) {
+              td.classList.add('success-rate-medium');
+            } else if (rate >= 50) {
+              td.classList.add('success-rate-low');
+            } else {
+              td.classList.add('success-rate-very-low');
+            }
+          }
+        }
+      });
+
+      tbody.appendChild(row);
+    });
+  };
+
   // Create body
   const tbody = document.createElement('tbody');
 
-        wordPairStats.forEach((wordStats, index) => {
-    const row = document.createElement('tr');
-
-    // Calculate success rates for each exercise type
-    const globalSuccessRate = wordStats.totalQuestions > 0
-      ? (((wordStats.totalQuestions - wordStats.totalErrors) / wordStats.totalQuestions) * 100).toFixed(1)
-      : '100.0';
-
-    const matchingSuccessRate = wordStats.matchingQuestions > 0
-      ? (((wordStats.matchingQuestions - wordStats.matchingErrors) / wordStats.matchingQuestions) * 100).toFixed(1)
-      : '-';
-
-    const slovakToFrenchMultipleChoiceSuccessRate = wordStats.slovakToFrenchMultipleChoiceQuestions > 0
-      ? (((wordStats.slovakToFrenchMultipleChoiceQuestions - wordStats.slovakToFrenchMultipleChoiceErrors) / wordStats.slovakToFrenchMultipleChoiceQuestions) * 100).toFixed(1)
-      : '-';
-
-    const frenchToSlovakMultipleChoiceSuccessRate = wordStats.frenchToSlovakMultipleChoiceQuestions > 0
-      ? (((wordStats.frenchToSlovakMultipleChoiceQuestions - wordStats.frenchToSlovakMultipleChoiceErrors) / wordStats.frenchToSlovakMultipleChoiceQuestions) * 100).toFixed(1)
-      : '-';
-
-    const reorderLettersSuccessRate = wordStats.reorderLettersQuestions > 0
-      ? (((wordStats.reorderLettersQuestions - wordStats.reorderLettersErrors) / wordStats.reorderLettersQuestions) * 100).toFixed(1)
-      : '-';
-
-    const slovakToFrenchTypingSuccessRate = wordStats.slovakToFrenchTypingQuestions > 0
-      ? (((wordStats.slovakToFrenchTypingQuestions - wordStats.slovakToFrenchTypingErrors) / wordStats.slovakToFrenchTypingQuestions) * 100).toFixed(1)
-      : '-';
-
-    const frenchToSlovakTypingSuccessRate = wordStats.frenchToSlovakTypingQuestions > 0
-      ? (((wordStats.frenchToSlovakTypingQuestions - wordStats.frenchToSlovakTypingErrors) / wordStats.frenchToSlovakTypingQuestions) * 100).toFixed(1)
-      : '-';
-
-    // Format word sets for display
-    const wordSetsDisplay = wordStats.wordSets.length > 1
-      ? wordStats.wordSets.join(', ')
-      : wordStats.wordSets[0] || 'Unknown';
-
-    // Format mastery status with color-coded badge
-    const masteryStatusDisplay = (() => {
-      switch(wordStats.masteryStatus) {
-        case 'mastered': return '<span class="status-mastered">Maîtrisé</span>';
-        case 'mastering': return '<span class="status-mastering">En Maîtrise</span>';
-        case 'learning': return '<span class="status-learning">Apprentissage</span>';
-        case 'struggling': return '<span class="status-struggling">Difficile</span>';
-        default: return '<span class="status-unknown">-</span>';
-      }
-    })();
-
-    row.innerHTML = `
-      <td>${wordStats.frenchWord}</td>
-      <td><strong>${wordStats.slovakWord}</strong></td>
-      <td class="word-sets-cell">${wordSetsDisplay}</td>
-      <td>${wordStats.totalQuestions}</td>
-      <td>${masteryStatusDisplay}</td>
-      <td>${wordStats.recentWindowRate}${wordStats.recentWindowRate !== '-' ? '%' : ''}${wordStats.recentWindowTotal ? ` (${wordStats.recentWindowTotal})` : ''}</td>
-      <td>${wordStats.masterySlovakToFrenchRate}${wordStats.masterySlovakToFrenchRate !== '-' ? '%' : ''}</td>
-      <td>${wordStats.masteryFrenchToSlovakRate}${wordStats.masteryFrenchToSlovakRate !== '-' ? '%' : ''}</td>
-      <td>${globalSuccessRate}%</td>
-      <td>${matchingSuccessRate}${matchingSuccessRate !== '-' ? '%' : ''}</td>
-      <td>${slovakToFrenchMultipleChoiceSuccessRate}${slovakToFrenchMultipleChoiceSuccessRate !== '-' ? '%' : ''}</td>
-      <td>${frenchToSlovakMultipleChoiceSuccessRate}${frenchToSlovakMultipleChoiceSuccessRate !== '-' ? '%' : ''}</td>
-      <td>${reorderLettersSuccessRate}${reorderLettersSuccessRate !== '-' ? '%' : ''}</td>
-      <td>${slovakToFrenchTypingSuccessRate}${slovakToFrenchTypingSuccessRate !== '-' ? '%' : ''}</td>
-      <td>${frenchToSlovakTypingSuccessRate}${frenchToSlovakTypingSuccessRate !== '-' ? '%' : ''}</td>
-    `;
-
-    // Apply styling to specific columns
-    Array.from(row.children).forEach((td, cellIndex) => {
-      // Add word coloring for first two columns
-      if (cellIndex === 0) {
-        td.innerHTML = `<span class="word-french">${td.textContent}</span>`;
-      } else if (cellIndex === 1) {
-        td.innerHTML = `<span class="word-slovak">${td.textContent}</span>`;
-      }
-
-      // Highlight success rates (columns 5, 6, 7, 8 and 9-14 are success rate columns)
-      if ((cellIndex >= 5 && cellIndex <= 8) || (cellIndex >= 9 && cellIndex <= 14)) {
-        const rateText = td.textContent.replace('%', '');
-        if (rateText !== '-') {
-          const rate = parseFloat(rateText);
-          if (rate >= 90) {
-            td.classList.add('success-rate-very-high');
-          } else if (rate >= 80) {
-            td.classList.add('success-rate-high');
-          } else if (rate >= 70) {
-            td.classList.add('success-rate-medium');
-          } else if (rate >= 50) {
-            td.classList.add('success-rate-low');
-          } else {
-            td.classList.add('success-rate-very-low');
-          }
-        }
-      }
-    });
-
-    tbody.appendChild(row);
-  });
+  // Render initial data (sorted by default)
+  renderTableRows(currentSortData, tbody);
 
   table.appendChild(tbody);
   tableWrapper.appendChild(table);
