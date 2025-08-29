@@ -620,57 +620,72 @@
     <tr>
       <th colspan="3">Autres - Ostatné</th>
     </tr>
-     <tr>
+    <tr>
       <td class="fr">farine</td>
       <td class="sk audio">múka</td>
       <td class="sk audio"></td>
     </tr>
-     <tr>
+    <tr>
       <td class="fr">riz</td>
       <td class="sk audio">ryža</td>
       <td class="sk audio"></td>
     </tr>
-     <tr>
+    <tr>
       <td class="fr">pâtes</td>
       <td class="sk audio">cestoviny</td>
       <td class="sk audio"></td>
     </tr>
-     <tr>
+    <tr>
       <td class="fr">pain</td>
       <td class="sk audio">chlieb</td>
       <td class="sk audio">chleby</td>
     </tr>
-     <tr>
+    <tr>
+      <td class="fr">tofu</td>
+      <td class="sk audio">tofu</td>
+      <td class="sk audio">tofu</td>
+    </tr>
+    <tr>
       <td class="fr">oeuf</td>
       <td class="sk audio">vajce</td>
       <td class="sk audio">vajcia</td>
     </tr>
-     <tr>
+    <tr>
       <td class="fr">huile</td>
       <td class="sk audio">olej</td>
       <td class="sk audio">oleje</td>
     </tr>
-     <tr>
+    <tr>
       <td class="fr">vinaigre</td>
       <td class="sk audio">ocot</td>
       <td class="sk audio">octy</td>
+    </tr>
+    <tr>
+      <td class="fr">sauce soja</td>
+      <td class="sk audio">sójová omáčka</td>
+      <td class="sk"></td>
     </tr>
     <tr>
       <td class="fr">moutarde</td>
       <td class="sk audio">horčica</td>
       <td class="sk audio">horčice</td>
     </tr>
+    <tr>
+      <td class="fr">curry</td>
+      <td class="sk audio">karí</td>
+      <td class="sk audio">karí</td>
+    </tr>
     <tr><td><br></td></tr>
     <tr>
      <td class="fr">sucre</td>
      <td class="sk audio">cukor</td>
      <td class="sk audio"></td>
-   </tr>
+    </tr>
     <tr>
      <td class="fr">miel</td>
      <td class="sk audio">med</td>
      <td class="sk audio">medy</td>
-   </tr>
+    </tr>
    <tr>
     <td class="fr">sirop</td>
     <td class="sk audio">sirup</td>
@@ -690,6 +705,16 @@
     <td class="fr">chocolat</td>
     <td class="sk audio">čokoláda</td>
     <td class="sk audio">čokolády</td>
+  </tr>
+  <tr>
+    <td class="fr">caramel</td>
+    <td class="sk audio">karamel</td>
+    <td class="sk"></td>
+  </tr>
+  <tr>
+    <td class="fr">syrop d'érable</td>
+    <td class="sk audio">javorový sirup</td>
+    <td class="sk"></td>
   </tr>
   </tbody>
 </table>
@@ -784,6 +809,10 @@ const myWordList = [
   ["Poisson", "Ryba"],
   ["Saumon", "Losos"],
   ["Thon", "Tuniak"],
+  ["Poulpe", "Chobotnica"],
+  ["Fruit de mer", "Mořský plod"],
+  ["Crevette", "Kreveta"],
+  ["Huitre", "Ustrica"],
   ["Épice", "Korenie"],
   ["Sel", "Soľ"],
   ["Poivre", "Čierne korenie"],
@@ -810,15 +839,20 @@ const myWordList = [
   ["Riz", "Ryža"],
   ["Pâtes", "Cestoviny"],
   ["Pain", "Chlieb"],
+  ["Tofu", "Tofu"],
   ["Oeuf", "Vajce"],
   ["Huile", "Olej"],
   ["Vinaigre", "Ocot"],
+  ["Sauce soja", "Sójová omáčka"],
   ["Moutarde", "Horčica"],
+  ["Curry", "Karí"],
   ["Miel", "Med"],
   ["Sirop", "Sirup"],
   ["Confiture", "Džem"],
   ["Pâte à tartiner", "Nátierka"],
   ["Chocolat", "Čokoláda"],
+  ["Caramel", "Karamel"],
+  ["Syrop d'érable", "Javorový sirup"],
 ];
 document.addEventListener('DOMContentLoaded', () => {
   initializeQuiz(myWordList, "Nourriture");
